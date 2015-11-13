@@ -1,2 +1,8 @@
 datasets/*.gz
 __pycache__
+.sconf_temp/
+.sconsign.dblite
+config.log
+phrasit
+libs/leveldb
+storage
