@@ -5,7 +5,7 @@
 
     \brief logging module
 
-    \date 17.08.2014
+    \date 13.11.2015
 
     Copyright 2015 Steve Göring
 **/
@@ -15,10 +15,13 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
+#include <sstream>
 
 namespace phrasit {
     namespace utils {
-        inline std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+
+        inline std::vector<std::string>& split(const std::string& s, char delim, std::vector<std::string>& elems) {
             std::stringstream ss(s);
             std::string item;
             while (std::getline(ss, item, delim)) {
@@ -27,12 +30,18 @@ namespace phrasit {
             return elems;
         }
 
-        inline std::vector<std::string> split(const std::string &s, char delim) {
+        /*
+            split a string by delimiter and return result in a vector of strings
+            \param s string to split
+            \param delim using this character as a delimiter
+            \return splitted strings as a vector
+        */
+        inline std::vector<std::string> split(const std::string& s, char delim) {
             std::vector<std::string> elems;
             split(s, delim, elems);
             return elems;
         }
+
     }
 }
-
 #endif

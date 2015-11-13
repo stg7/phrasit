@@ -15,7 +15,7 @@ for j in $ngrams; do
     echo -n "" > "$outfile"
     for i in `ls *-$j*.gz`; do
         echo "handle $i"
-        zcat $i | ./../utils/transform.py  >> "$outfile"
+        zcat "$i" | ./../utils/transform.py  >> "$outfile"
         echo "."
     done
 done

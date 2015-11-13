@@ -12,6 +12,7 @@
 #include <boost/program_options.hpp>
 #include <iostream>
 #include <vector>
+#include <string>
 #include <fstream>
 #include <sstream>
 
@@ -20,15 +21,6 @@
 
 
 #include "leveldb/db.h"
-
-void import(const std::vector<std::string>& ngram, const std::string& dbname) {
-    leveldb::DB* db;
-    leveldb::Options options;
-    options.create_if_missing = true;
-    leveldb::Status status = leveldb::DB::Open(options, dbname, &db);
-
-    db->Put(leveldb::WriteOptions(), ngram[0], ngram[1]);
-}
 
 /**
     phrasit: command line client
@@ -75,18 +67,32 @@ int main(int argc, const char* argv[]) {
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
         char delimiter = '\t';
+
         std::string input_line;
 
-        while(std::cin) {
+        std::string dbname = storagedir + "/ids";
+        leveldb::DB* db;
+        leveldb::Options options;
+        options.create_if_missing = true;
+        leveldb::Status status = leveldb::DB::Open(options, dbname, &db);
+
+        long ngram_count = 0;
+        while (std::cin) {
             getline(std::cin, input_line);
 
             std::vector<std::string> x = phrasit::utils::split(input_line, delimiter);
 
             if (x.size() == 2) {
-                std::cout << x[0] << "  " << x[1] << std::endl;
-                import(x, storagedir + "/ids");
+                db->Put(leveldb::WriteOptions(), x[0], x[1]);
+                ngram_count++;
+                if (ngram_count % 1000 == 0) {
+                    std::cout << ".";
+                    std::cout.flush();
+                }
             }
         }
+        std::cout << std::endl;
+        LOGMSG("successfully imported " << ngram_count << " ngrams");
         return 0;
     }
 
@@ -95,7 +101,6 @@ int main(int argc, const char* argv[]) {
         LOGMSG("run queries from file: " << queryfile);
     } else {
         LOGMSG("run interactive mode ");
-
     }
 
     LOGINFO("end phrasit");

@@ -16,6 +16,7 @@ SetOption('num_jobs', multiprocessing.cpu_count()) # build with all aviable cpu 
 stylechecker = Builder(action='./test_convention.sh $SOURCES', suffix='', src_suffix='')
 valgrind = Builder(action='valgrind ./$SOURCES', suffix='', src_suffix='')
 
+os.system("./prepare.sh")
 
 env = Environment(CPPPATH = ["src/", "libs/"],
                   BUILDERS = {'StyleCheck' : stylechecker, 'Valgrind': valgrind})
@@ -80,7 +81,7 @@ sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/mai
 libs = glob.glob("libs/*/*.c")
 
 # check code conventions and build programm
-#env.StyleCheck("conventions", ["src/main.cpp", "src/py/positronic.cpp"] + list(sources) + list(header) + list(testcases))
+#env.StyleCheck("conventions", ["src/main.cpp"] + list(sources) + list(header) + list(testcases))
 
 # build unittests
 #unittests = env.Program('unittest', ["src/tests/unittests.cpp"] + list(sources) + libs)

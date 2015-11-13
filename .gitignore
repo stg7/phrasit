@@ -5,4 +5,8 @@ __pycache__
 config.log
 phrasit
 libs/leveldb
+tools
+libs/*
 storage
+*.o
+

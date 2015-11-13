@@ -108,7 +108,7 @@ namespace phrasit {
 
             std::ostream& log(int level, const char* file, int line) {
                 if (!_enabled) {
-                    null_stream.str("");  // TODO: do it in a better way
+                    null_stream.str("");  // TODO(stg7): do it in a better way
                     return null_stream;
                 }
 

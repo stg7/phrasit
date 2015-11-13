@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import sys
-
+from signal import signal, SIGPIPE, SIG_DFL
+signal(SIGPIPE, SIG_DFL)
 
 def main():
     replace_mapping = {
@@ -28,7 +29,8 @@ def main():
             if tmp[0] == current_ngram:
                 freq += int(tmp[-1])
             else:
-                print("\t".join([current_ngram, str(freq)]))
+                if current_ngram != "":
+                    print("\t".join([current_ngram, str(freq)]))
                 freq = 0
                 current_ngram = tmp[0]
 
