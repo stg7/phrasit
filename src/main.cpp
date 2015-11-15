@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) {
         po::store(po::parse_command_line(argc, argv, desc), vm);
         po::notify(vm);
     } catch (po::error& e) {
-        LOGMSG("error: " << e.what());
+        LOGERROR("error: " << e.what());
         std::cout << desc << std::endl;
         return -1;
     }

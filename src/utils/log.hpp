@@ -30,11 +30,11 @@
 #define BLUE(msg) LOG(ldebug, msg)
 #define CYAN(msg) LOG(lnone, msg)
 
-#define LOGINFO(msg) LOGEX(linfo, "[INFO ] ", msg)
-#define LOGMSG(msg) LOGEX(lnone, "[MSG  ] ", msg)
-#define LOGERROR(msg) LOGEX(lerror, "[ERROR] ", msg)
-#define LOGWARN(msg) LOGEX(lwarning, "[WARN ] ", msg)
-#define LOGDEBUG(msg) LOGEX(ldebug, "[DEBUG] ", msg)
+#define LOGINFO(msg) LOGEX(linfo, "INFO ", msg)
+#define LOGMSG(msg) LOGEX(lnew, " MSG ", msg)
+#define LOGERROR(msg) LOGEX(lerror, "ERROR", msg)
+#define LOGWARN(msg) LOGEX(lwarning, "WARN ", msg)
+#define LOGDEBUG(msg) LOGEX(ldebug, "DEBUG", msg)
 
 
 // LOG makro
@@ -45,9 +45,9 @@
         << std::endl;                                                    \
 }
 #define LOGEX(level, type, msg) {                                        \
-    phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__) \
-        << type                                                          \
+    phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__, type) \
         << msg                                                           \
+        << std::setw(20) << std::right                                   \
         << " \033[0m"                                                    \
         << std::endl;                                                    \
 }
@@ -82,12 +82,12 @@ namespace phrasit {
                 _output = &std::cout;
 
                 // define color values
-                _colorValues[lnew] = "\033[0;32m";  // green
-                _colorValues[lerror] = "\033[0;31m";  // red
-                _colorValues[lwarning] = "\033[0;33m";  // yellow
-                _colorValues[linfo] = "\033[0;35m";  // purple
-                _colorValues[ldebug] = "\033[0;34m";  // blue
-                _colorValues[lnone] = "\033[1;36m";  // cyan
+                _colorValues[lnew] = "\033[1;92m";  // green
+                _colorValues[lerror] = "\033[1;91m";  // red
+                _colorValues[lwarning] = "\033[1;93m";  // yellow
+                _colorValues[linfo] = "\033[1;95m";  // purple
+                _colorValues[ldebug] = "\033[1;94m";  // blue
+                _colorValues[lnone] = "\033[1;96m";  // cyan
             }
 
             Log(const Log&);
@@ -106,18 +106,20 @@ namespace phrasit {
                 _enabled = false;
             }
 
-            std::ostream& log(int level, const char* file, int line) {
+            std::ostream& log(int level, const char* file, int line, const char* type="") {
                 if (!_enabled) {
                     null_stream.str("");  // TODO(stg7): do it in a better way
                     return null_stream;
                 }
 
-                *_output << std::left << _colorValues[lnone]
-                        << "[" <<  file << "@" << std::setw(3)
+                *_output << std::left << _colorValues[level]
+                        << "["
+                        << type << "] "
+                        << file << "@" << std::setw(3)
                         << std::right
                         << line
-                        << std::setw(17 - strlen(file) - 4) << " "
-                        << "] " << "\033[0m" << " "
+                        << std::setw(17 - strlen(file) - strlen(type) - 4) << " "
+                        << ": "  << " "
                         << _colorValues[level] << std::left
                         << std::left;
                 return *_output;
