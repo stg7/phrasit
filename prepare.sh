@@ -1,23 +1,38 @@
 #!/bin/bash
 
+#
+#    Printout error message.
+#
+logError() {
+    echo -e "\033[91m[ERROR]\033[0m $@ " 1>&2;
+}
+
+#
+#    Printout info message.
+#
+logInfo() {
+    echo -e "\033[92m[INFO ]\033[0m $@"
+}
+
 leveldb() {
     if [ -d "leveldb" ]; then
-        echo "leveldb already installed locally"
+        logInfo "leveldb already installed locally"
         return
     fi
-    echo "leveldb download and compiling"
+    logInfo "leveldb download and compiling"
     git clone https://github.com/google/leveldb.git
     cd leveldb
     make -j 4
     cd ..
-    echo "leveldb done."
+    logInfo "leveldb done."
 }
+
 mongoose() {
     if [ -d "mongoose-cpp" ]; then
-        echo "mongoose-cpp already installed locally"
+        logInfo "mongoose-cpp already installed locally"
         return
     fi
-    echo "mongoose-cpp download and compiling"
+    logInfo "mongoose-cpp download and compiling"
 
     git clone https://github.com/Gregwar/mongoose-cpp.git
     cd mongoose-cpp
@@ -28,17 +43,20 @@ mongoose() {
 
 cpplint() {
     if [ -f "cpplint.py" ]; then
-        echo "cpplint.py already installed locally"
+        logInfo "cpplint.py already installed locally"
         return
     fi
-    echo "cpplint.py download"
+    logInfo "cpplint.py download"
     wget "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
 }
 
+mkdir -p libs
 cd libs
 leveldb
 mongoose
+cd ..
 
 mkdir -p tools
 cd tools
 cpplint
+cd ..

@@ -88,7 +88,7 @@ As a example you can download [\[4\]](http://storage.googleapis.com/books/ngrams
     ngram TAB year TAB match_count TAB volume_count NEWLINE
 ```
 
-First of all this implementation should only use the english dataset.
+First of all, this implementation should only use the english dataset.
 
 
 

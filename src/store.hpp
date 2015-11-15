@@ -24,7 +24,7 @@
 namespace phrasit {
 
     class store {
-    private:
+     private:
         static constexpr const char* _max_id_key = "__max_id";
 
         std::string _storagedir;
@@ -35,7 +35,7 @@ namespace phrasit {
         long _max_id;
 
         // wrapper for key value store (level db), for better exchange if needed
-        template<typename K, typename V, typename DB> inline void kvs_put(DB db,K key, V value) {
+        template<typename K, typename V, typename DB> inline void kvs_put(DB db, K key, V value) {
             db->Put(leveldb::WriteOptions(), key, value);
         }
 
@@ -47,7 +47,7 @@ namespace phrasit {
             return true;
         }
 
-        template<typename P,typename DB> inline void kvs_open(P path, DB db) {
+        template<typename P, typename DB> inline void kvs_open(P path, DB db) {
             leveldb::Options options;
             options.create_if_missing = true;
             leveldb::DB::Open(options, path, db);
@@ -58,7 +58,7 @@ namespace phrasit {
         }
         // wrapper end
 
-    public:
+     public:
         store(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
             LOGINFO("create store");
 
@@ -90,12 +90,11 @@ namespace phrasit {
             kvs_close(_ngram_to_id);
             kvs_close(_id_to_ngram);
             kvs_close(_freq);
-
         }
 
         long get_id_by_ngram(const std::string& ngram) {
             std::string value = "";
-            if (kvs_get(_ngram_to_id, ngram, &value)){
+            if (kvs_get(_ngram_to_id, ngram, &value)) {
                 return std::stol(value);
             }
             return -1;
@@ -110,7 +109,7 @@ namespace phrasit {
 
             long id = get_id_by_ngram(cleaned_ngram);
             if (id == -1) {
-                _max_id ++;
+                _max_id++;
 
                 kvs_put(_ngram_to_id, cleaned_ngram, std::to_string(_max_id));
                 kvs_put(_id_to_ngram, std::to_string(_max_id), cleaned_ngram);

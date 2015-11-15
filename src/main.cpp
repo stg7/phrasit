@@ -24,7 +24,7 @@
 #include "consts.hpp"
 
 void print_search_results(const std::string& query, phrasit::store& store) {
-    for(auto& res : store.search(query)) {
+    for (auto& res : store.search(query)) {
         std::cout << res << std::endl;
     }
 }
@@ -111,13 +111,12 @@ int main(int argc, const char* argv[]) {
         std::ifstream queryfile(queryfilename);
         phrasit::utils::Timer t;
 
-        for(std::string query = ""; getline(queryfile, query);) {
+        for (std::string query = ""; getline(queryfile, query);) {
             std::cout << "results of query: " << query << std::endl;
             print_search_results(query, store);
         }
 
         LOGDEBUG("needed time: " << t.time() << " ms");
-
     } else {
         LOGMSG("run interactive mode ");
 
@@ -132,7 +131,6 @@ int main(int argc, const char* argv[]) {
             print_search_results(query, store);
 
             LOGDEBUG("needed time: " << t.time() << " ms");
-
         } while (query != phrasit::exit_str && !std::cin.eof());
 
         std::cout << std::endl;
