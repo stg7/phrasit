@@ -15,18 +15,25 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include "boost/filesystem.hpp"
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "store.hpp"
+#include "consts.hpp"
 
-
-#include "leveldb/db.h"
+void print_search_results(const std::string& query, phrasit::store& store) {
+    for(auto& res : store.search(query)) {
+        std::cout << res << std::endl;
+    }
+}
 
 /**
     phrasit: command line client
 **/
 int main(int argc, const char* argv[]) {
     namespace po = boost::program_options;
+    namespace fs = boost::filesystem;
 
     // declare the supported options.
     po::options_description desc("phraseit - an opensource netspeak clone\n\nSteve Göring 2015\nParameter");
@@ -56,13 +63,20 @@ int main(int argc, const char* argv[]) {
         storagedir = vm["storagedir"].as<std::string>();
     }
 
-    std::string queryfile = "";
+    if (!fs::exists(storagedir)) {
+        LOGMSG("create storagedir: " << storagedir);
+        fs::create_directory(storagedir);
+    }
+
+    std::string queryfilename = "";
     if (vm.count("queryfile") != 0) {
-        queryfile = vm["queryfile"].as<std::string>();
+        queryfilename = vm["queryfile"].as<std::string>();
     }
 
     LOGMSG("start phrasit");
     LOGMSG("using storagedir: " << storagedir);
+
+    phrasit::store store(storagedir);
 
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
@@ -70,20 +84,14 @@ int main(int argc, const char* argv[]) {
 
         std::string input_line;
 
-        std::string dbname = storagedir + "/ids";
-        leveldb::DB* db;
-        leveldb::Options options;
-        options.create_if_missing = true;
-        leveldb::Status status = leveldb::DB::Open(options, dbname, &db);
-
         long ngram_count = 0;
         while (std::cin) {
             getline(std::cin, input_line);
 
-            std::vector<std::string> x = phrasit::utils::split(input_line, delimiter);
+            std::vector<std::string> splitted_line = phrasit::utils::split(input_line, delimiter);
 
-            if (x.size() == 2) {
-                db->Put(leveldb::WriteOptions(), x[0], x[1]);
+            if (splitted_line.size() == 2) {
+                store.insert(splitted_line[0], splitted_line[1]);
                 ngram_count++;
                 if (ngram_count % 1000 == 0) {
                     std::cout << ".";
@@ -96,11 +104,28 @@ int main(int argc, const char* argv[]) {
         return 0;
     }
 
-    if (queryfile != "") {
+    if (queryfilename != "") {
         // run queries from a file
-        LOGMSG("run queries from file: " << queryfile);
+        LOGMSG("run queries from file: " << queryfilename);
+        std::ifstream queryfile(queryfilename);
+        for(std::string query = ""; getline(queryfile, query);) {
+            std::cout << "results of query: " << query << std::endl;
+            print_search_results(query, store);
+        }
+
     } else {
         LOGMSG("run interactive mode ");
+
+        std::string query = "";
+        do {
+            std::cout << "please enter your query, ("
+                << phrasit::exit_str << " or ctrl + d for exit): " << std::endl
+                << phrasit::shell_str;
+            getline(std::cin, query);
+            print_search_results(query, store);
+        } while (query != phrasit::exit_str && !std::cin.eof());
+
+        std::cout << std::endl;
     }
 
     LOGINFO("end phrasit");

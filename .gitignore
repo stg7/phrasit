@@ -1,3 +1,4 @@
+datasets/transformed/
 datasets/*.gz
 __pycache__
 .sconf_temp/

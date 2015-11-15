@@ -9,7 +9,9 @@ ngrams="\
 4gram
 5gram
 "
-
+ngrams="\
+1gram
+"
 for j in $ngrams; do
     outfile="transformed/$j"
     echo -n "" > "$outfile"

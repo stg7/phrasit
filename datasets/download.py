@@ -24,11 +24,16 @@ def main():
             links.append(link)
     f.close()
 
+    for l in links:
+        download(l)
+    """
     cpu_count = 1 # multiprocessing.cpu_count()
     lInfo("running with " + str(cpu_count) + " threads")
 
     pool = Pool(processes=cpu_count)
     pool.map(download, links)
+    """
+
 
 if __name__ == "__main__":
     main()
