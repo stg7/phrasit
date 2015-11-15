@@ -20,11 +20,11 @@
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
-#include "store.hpp"
+#include "phrasit.hpp"
 #include "consts.hpp"
 
-void print_search_results(const std::string& query, phrasit::store& store) {
-    for (auto& res : store.search(query)) {
+void print_search_results(const std::string& query, phrasit::phrasit& phrasit) {
+    for (auto& res : phrasit.search(query)) {
         std::cout << res << std::endl;
     }
 }
@@ -77,7 +77,7 @@ int main(int argc, const char* argv[]) {
     LOGMSG("start phrasit");
     LOGMSG("using storagedir: " << storagedir);
 
-    phrasit::store store(storagedir);
+    phrasit::phrasit phrasit(storagedir);
 
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
@@ -92,7 +92,7 @@ int main(int argc, const char* argv[]) {
             std::vector<std::string> splitted_line = phrasit::utils::split(input_line, delimiter);
 
             if (splitted_line.size() == 2) {
-                store.insert(splitted_line[0], splitted_line[1]);
+                phrasit.insert(splitted_line[0], splitted_line[1]);
                 ngram_count++;
                 if (ngram_count % 1000 == 0) {
                     std::cout << ".";
@@ -113,7 +113,7 @@ int main(int argc, const char* argv[]) {
 
         for (std::string query = ""; getline(queryfile, query);) {
             std::cout << "results of query: " << query << std::endl;
-            print_search_results(query, store);
+            print_search_results(query, phrasit);
         }
 
         LOGDEBUG("needed time: " << t.time() << " ms");
@@ -128,7 +128,7 @@ int main(int argc, const char* argv[]) {
             getline(std::cin, query);
             phrasit::utils::Timer t;
 
-            print_search_results(query, store);
+            print_search_results(query, phrasit);
 
             LOGDEBUG("needed time: " << t.time() << " ms");
         } while (query != phrasit::exit_str && !std::cin.eof());
