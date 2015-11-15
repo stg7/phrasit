@@ -136,8 +136,6 @@ int main(int argc, const char* argv[]) {
         std::cout << std::endl;
     }
 
-    phrasit.print_stats();
-
     LOGINFO("end phrasit");
     return 0;
 }

@@ -37,6 +37,14 @@ namespace phrasit {
         return true;
     }
 
+    template<typename K, typename DB> inline bool kvs_get_long_or_default(DB db, K key, long def) {
+        std::string value = "";
+        if (kvs_get(db, key, &value)) {
+            return std::stol(value);
+        }
+        return def;
+    }
+
     template<typename P, typename DB> inline void kvs_open(P path, DB db) {
         leveldb::Options options;
         options.create_if_missing = true;
@@ -87,6 +95,8 @@ namespace phrasit {
         }
 
         ~Phrasit() {
+            print_stats();
+
             LOGINFO("delete store");
 
             kvs_put(_ngram_to_id, _max_id_key, std::to_string(_max_id));
@@ -115,6 +125,8 @@ namespace phrasit {
 
             cleaned_ngram = phrasit::utils::join(parts, " ");
 
+            phrasit::utils::check(parts.size() <= phrasit::max_ngram, "ngram size > " + std::to_string(phrasit::max_ngram));
+
             long id = get_id_by_ngram(cleaned_ngram);
             if (id == -1) {
                 _max_id++;
@@ -124,13 +136,10 @@ namespace phrasit {
                 kvs_put(_freq, std::to_string(_max_id), freq);
 
                 // update global ngram statistic
-                std::string xgram_count = "";
-                long new_xgram_count = 0;
-                if (kvs_get(_global_statistic, std::to_string(parts.size()), &xgram_count)) {
-                    new_xgram_count = std::stol(xgram_count);
-                }
-                new_xgram_count++;
-                kvs_put(_global_statistic, std::to_string(parts.size()), std::to_string(new_xgram_count));
+                long xgram_count = kvs_get_long_or_default(_global_statistic, std::to_string(parts.size()), 0);
+                xgram_count++;
+
+                kvs_put(_global_statistic, std::to_string(parts.size()), std::to_string(xgram_count));
 
                 // TODO(stg7) store parts in (inverted) index
                 for (auto& x : parts) {

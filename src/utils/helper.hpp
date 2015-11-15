@@ -19,8 +19,20 @@
 #include <sstream>
 #include <functional>
 
+#include "consts.hpp"
+#include "utils/log.hpp"
+
 namespace phrasit {
     namespace utils {
+
+        inline void check(bool pred, const std::string msg) {
+            if (phrasit::debug) {
+                if (!pred) {
+                    LOGERROR(msg);
+                    throw "exception";
+                }
+            }
+        }
 
         /**
         *   filter a given string vector `values` by a predicate `f`
