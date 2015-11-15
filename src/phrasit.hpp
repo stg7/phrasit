@@ -23,7 +23,7 @@
 
 namespace phrasit {
 
-    class phrasit {
+    class Phrasit {
      private:
         static constexpr const char* _max_id_key = "__max_id";
 
@@ -59,7 +59,7 @@ namespace phrasit {
         // wrapper end
 
      public:
-        phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
+        Phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
             LOGINFO("create store");
 
             leveldb::Options options;
@@ -82,7 +82,7 @@ namespace phrasit {
             LOGINFO("initialize store with max_id: " << _max_id);
         }
 
-        ~phrasit() {
+        ~Phrasit() {
             LOGINFO("delete store");
 
             kvs_put(_ngram_to_id, _max_id_key, std::to_string(_max_id));

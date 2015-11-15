@@ -23,7 +23,7 @@
 #include "phrasit.hpp"
 #include "consts.hpp"
 
-void print_search_results(const std::string& query, phrasit::phrasit& phrasit) {
+void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
     for (auto& res : phrasit.search(query)) {
         std::cout << res << std::endl;
     }
@@ -77,7 +77,7 @@ int main(int argc, const char* argv[]) {
     LOGMSG("start phrasit");
     LOGMSG("using storagedir: " << storagedir);
 
-    phrasit::phrasit phrasit(storagedir);
+    phrasit::Phrasit phrasit(storagedir);
 
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
