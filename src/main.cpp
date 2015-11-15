@@ -19,6 +19,7 @@
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/timer.hpp"
 #include "store.hpp"
 #include "consts.hpp"
 
@@ -108,10 +109,14 @@ int main(int argc, const char* argv[]) {
         // run queries from a file
         LOGMSG("run queries from file: " << queryfilename);
         std::ifstream queryfile(queryfilename);
+        phrasit::utils::Timer t;
+
         for(std::string query = ""; getline(queryfile, query);) {
             std::cout << "results of query: " << query << std::endl;
             print_search_results(query, store);
         }
+
+        LOGDEBUG("needed time: " << t.time() << " ms");
 
     } else {
         LOGMSG("run interactive mode ");
@@ -122,7 +127,12 @@ int main(int argc, const char* argv[]) {
                 << phrasit::exit_str << " or ctrl + d for exit): " << std::endl
                 << phrasit::shell_str;
             getline(std::cin, query);
+            phrasit::utils::Timer t;
+
             print_search_results(query, store);
+
+            LOGDEBUG("needed time: " << t.time() << " ms");
+
         } while (query != phrasit::exit_str && !std::cin.eof());
 
         std::cout << std::endl;
