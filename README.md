@@ -30,9 +30,10 @@ phraseit - an opensource netspeak clone
 Steve Göring 2015
 Parameter:
   -h [ --help ]           produce help message
-  -s [ --storagedir ] arg storage directory, default='storage'
+  -d [ --storagedir ] arg storage directory, default='storage'
   -f [ --queryfile ] arg  handle queries stored in a file
   -i [ --import ]         import from stdin, format: ngram tab freq
+  -s [ --server ]         start phrasit in server mode
 
 ```
 

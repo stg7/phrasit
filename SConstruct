@@ -36,12 +36,17 @@ env.Append(
 )
 env.Append(LINKFLAGS=['-Wl,--rpath,' + libspath + 'leveldb/', '-pthread'])
 
+# mongoose-cpp
+env.Append(
+    CPPPATH = [libspath + "mongoose-cpp/"],
+    LIBPATH = [libspath + "mongoose-cpp/"]
+)
 
 env.Decider('MD5')
 
 conf = Configure(env)
 
-needed_libs = ['leveldb', 'boost_unit_test_framework', 'boost_program_options', 'boost_system', 'boost_filesystem'] # ,'tbb'
+needed_libs = ['leveldb', 'mongoose', 'boost_unit_test_framework', 'boost_program_options', 'boost_system', 'boost_filesystem'] # ,'tbb'
 for lib in needed_libs:
     if not conf.CheckLib(lib, language="c++"):
         print "Unable to find lib: " + lib + ". Exiting."

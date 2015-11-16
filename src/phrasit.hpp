@@ -3,7 +3,7 @@
 
     \author stg7
 
-    \brief store module
+    \brief Phrasit module
 
     \date 15.11.2015
 
@@ -79,18 +79,8 @@ namespace phrasit {
             kvs_open(_storagedir + "/_freq", &_freq);
             kvs_open(_storagedir + "/_global_statistic", &_global_statistic);
 
+            _max_id = kvs_get_long_or_default(_ngram_to_id, _max_id_key, 0);
 
-            std::string _max_id_str = "";
-
-            if (!kvs_get(_ngram_to_id, _max_id_key, &_max_id_str)) {
-                _max_id = 0;
-            } else {
-                try {
-                    _max_id = std::stol(_max_id_str);
-                } catch(...) {
-                    _max_id = 0;
-                }
-            }
             LOGINFO("initialize store with max_id: " << _max_id);
         }
 
@@ -160,7 +150,7 @@ namespace phrasit {
 
             std::string cleaned_query = phrasit::utils::trim(query);
             std::vector<std::string> parts = phrasit::utils::filter(
-                phrasit::utils::split(cleaned_query, ' '), [](std::string& x){return x != "";});
+                phrasit::utils::split(cleaned_query, ' '), phrasit::notempty_filter);
 
             cleaned_query = phrasit::utils::join(parts, " ");
             std::cout << cleaned_query << std::endl;

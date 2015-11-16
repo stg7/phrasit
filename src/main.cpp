@@ -20,6 +20,7 @@
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
+#include "srv/webserver.hpp"
 #include "phrasit.hpp"
 #include "consts.hpp"
 
@@ -40,9 +41,10 @@ int main(int argc, const char* argv[]) {
     po::options_description desc("phraseit - an opensource netspeak clone\n\nSteve Göring 2015\nParameter");
     desc.add_options()
         ("help,h", "produce help message")
-        ("storagedir,s", po::value<std::string>(), "storage directory, default='storage'")
+        ("storagedir,d", po::value<std::string>(), "storage directory, default='storage'")
         ("queryfile,f", po::value<std::string>(), "handle queries stored in a file")
-        ("import,i", "import from stdin, format: ngram tab freq");
+        ("import,i", "import from stdin, format: ngram tab freq")
+        ("server,s", "start phrasit in server mode");
 
     po::variables_map vm;
     try {
@@ -78,6 +80,13 @@ int main(int argc, const char* argv[]) {
     LOGMSG("using storagedir: " << storagedir);
 
     phrasit::Phrasit phrasit(storagedir);
+
+    if (vm.count("server") != 0) {
+        LOGMSG("server mode: ");
+        phrasit::srv::Webserver webserver(phrasit);
+        webserver.start();
+        return 0;
+    }
 
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
