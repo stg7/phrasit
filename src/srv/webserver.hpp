@@ -13,6 +13,8 @@
 #ifndef SERVER_HEADER_HPP_
 #define SERVER_HEADER_HPP_
 
+#include <string>
+
 #include <mongoose/Server.h>
 #include <mongoose/WebController.h>
 
@@ -40,12 +42,16 @@ namespace phrasit {
                 LOGINFO("end webserver");
             }
 
-            void index(Request &request, StreamResponse &response) {
-                response << "{\"error\":\"not a valid request\"}" << std::endl;
+            void query(Request &request, StreamResponse &response) {
+                std::string query = htmlEntities(request.get("query", ""));
+                std::cout << "query=" << query << std::endl;
+
+                response << "{\"query\":\"" << query << "\"}" << std::endl;
+                // response << "{\"error\":\"not a valid request\"}" << std::endl;
             }
 
             void setup() {
-                addRoute("GET", "/", Webserver, index);
+                addRoute("GET", "/", Webserver, query);
             }
 
             void start() {
