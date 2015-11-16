@@ -66,6 +66,7 @@ namespace phrasit {
             }
 
             void setup() {
+                setPrefix("/api");
                 addRoute("GET", "/", Webserver, query);
             }
 
@@ -74,7 +75,8 @@ namespace phrasit {
                 server.registerController(this);
                 server.start();
                 LOGINFO("server running on port: " << phrasit::webserver_port);
-                LOGINFO("example: http://localhost:" << phrasit::webserver_port << "/?query=test");
+                LOGINFO("example: http://localhost:" << phrasit::webserver_port << "/api/?query=test");
+                this->dumpRoutes();
 
                 while (1) {
                     usleep(1000000);
