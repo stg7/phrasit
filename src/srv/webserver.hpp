@@ -51,7 +51,6 @@ namespace phrasit {
             void start() {
                 Server server(phrasit::webserver_port);
                 server.registerController(this);
-
                 server.start();
 
                 while (1) {
