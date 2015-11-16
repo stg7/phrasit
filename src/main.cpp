@@ -20,8 +20,8 @@
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
-#include "srv/webserver.hpp"
 #include "phrasit.hpp"
+#include "srv/webserver.hpp"
 #include "consts.hpp"
 
 void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {

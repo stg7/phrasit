@@ -20,10 +20,11 @@
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/timer.hpp"
 #include "consts.hpp"
+#include "phrasit.hpp"
 
 namespace phrasit {
-    class Phrasit;
 
     namespace srv {
 
@@ -45,9 +46,23 @@ namespace phrasit {
             void query(Request &request, StreamResponse &response) {
                 std::string query = htmlEntities(request.get("query", ""));
                 std::cout << "query=" << query << std::endl;
+                if (query == "") {
+                    response << "{\"error\":\"not a valid query\"}" << std::endl;
+                    return;
+                }
+                phrasit::utils::Timer t;
 
-                response << "{\"query\":\"" << query << "\"}" << std::endl;
-                // response << "{\"error\":\"not a valid request\"}" << std::endl;
+                std::string res = "";
+                for(auto& r : _phrasit.search(query)) {
+                    res += r;
+                }
+
+                double needed_time = t.time();
+                response << "{"
+                    << "\"query\":\"" << query << "\",\n"
+                    << "\"result\":\"" << res << "\",\n"
+                    << "\"time\":" << needed_time
+                    << "}" << std::endl;
             }
 
             void setup() {
@@ -58,6 +73,8 @@ namespace phrasit {
                 Server server(phrasit::webserver_port);
                 server.registerController(this);
                 server.start();
+                LOGINFO("server running on port: " << phrasit::webserver_port);
+                LOGINFO("example: http://localhost:" << phrasit::webserver_port << "/?query=test");
 
                 while (1) {
                     usleep(1000000);
