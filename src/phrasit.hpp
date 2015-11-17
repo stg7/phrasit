@@ -15,71 +15,41 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 
-#include "leveldb/db.h"
-
+#include "storage/kvs.hpp"
+#include "storage/inverted_index.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "consts.hpp"
 
 namespace phrasit {
 
-    // wrapper for key value store (level db), for better exchange if needed
-    template<typename K, typename V, typename DB> inline void kvs_put(DB db, K key, V value) {
-        db->Put(leveldb::WriteOptions(), key, value);
-    }
-
-    template<typename K, typename V, typename DB> inline bool kvs_get(DB db, K key, V value) {
-        leveldb::Status s = db->Get(leveldb::ReadOptions(), key, value);
-        if (!s.ok()) {
-            return false;
-        }
-        return true;
-    }
-
-    template<typename K, typename DB> inline bool kvs_get_long_or_default(DB db, K key, long def) {
-        std::string value = "";
-        if (kvs_get(db, key, &value)) {
-            return std::stol(value);
-        }
-        return def;
-    }
-
-    template<typename P, typename DB> inline void kvs_open(P path, DB db) {
-        leveldb::Options options;
-        options.create_if_missing = true;
-        leveldb::DB::Open(options, path, db);
-    }
-
-    template<typename DB> inline void kvs_close(DB db) {
-        delete db;
-    }
-    // wrapper end
-
     class Phrasit {
      private:
         static constexpr const char* _max_id_key = "__max_id";
 
         std::string _storagedir;
-        leveldb::DB* _ngram_to_id;
-        leveldb::DB* _id_to_ngram;
-        leveldb::DB* _freq;  //< maps id to ngram freq
-        leveldb::DB* _global_statistic;
+        storage::kvs::type _ngram_to_id;
+        storage::kvs::type _id_to_ngram;
+        storage::kvs::type _freq;  //< maps id to ngram freqs
+        storage::kvs::type _global_statistic;
 
-        long _max_id;
+        std::shared_ptr<storage::Inverted_index> _index = nullptr;
+
+        unsigned long _max_id;
 
      public:
         Phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
             LOGINFO("create store");
+            _index = std::shared_ptr<storage::Inverted_index>(new storage::Inverted_index(_storagedir));
 
-            leveldb::Options options;
-            options.create_if_missing = true;
-            kvs_open(_storagedir + "/_ngram_to_id", &_ngram_to_id);
-            kvs_open(_storagedir + "/_id_to_ngram", &_id_to_ngram);
-            kvs_open(_storagedir + "/_freq", &_freq);
-            kvs_open(_storagedir + "/_global_statistic", &_global_statistic);
+            storage::kvs::open(_storagedir + "/_ngram_to_id", &_ngram_to_id);
+            storage::kvs::open(_storagedir + "/_id_to_ngram", &_id_to_ngram);
+            storage::kvs::open(_storagedir + "/_freq", &_freq);
+            storage::kvs::open(_storagedir + "/_global_statistic", &_global_statistic);
 
-            _max_id = kvs_get_long_or_default(_ngram_to_id, _max_id_key, 0);
+            _max_id = storage::kvs::get_ulong_or_default(_ngram_to_id, _max_id_key, 0);
 
             LOGINFO("initialize store with max_id: " << _max_id);
         }
@@ -89,17 +59,17 @@ namespace phrasit {
 
             LOGINFO("delete store");
 
-            kvs_put(_ngram_to_id, _max_id_key, std::to_string(_max_id));
+            storage::kvs::put(_ngram_to_id, _max_id_key, std::to_string(_max_id));
 
-            kvs_close(_ngram_to_id);
-            kvs_close(_id_to_ngram);
-            kvs_close(_freq);
-            kvs_close(_global_statistic);
+            storage::kvs::close(_ngram_to_id);
+            storage::kvs::close(_id_to_ngram);
+            storage::kvs::close(_freq);
+            storage::kvs::close(_global_statistic);
         }
 
         long get_id_by_ngram(const std::string& ngram) {
             std::string value = "";
-            if (kvs_get(_ngram_to_id, ngram, &value)) {
+            if (storage::kvs::get(_ngram_to_id, ngram, &value)) {
                 return std::stol(value);
             }
             return -1;
@@ -121,21 +91,27 @@ namespace phrasit {
             if (id == -1) {
                 _max_id++;
 
-                kvs_put(_ngram_to_id, cleaned_ngram, std::to_string(_max_id));
-                kvs_put(_id_to_ngram, std::to_string(_max_id), cleaned_ngram);
-                kvs_put(_freq, std::to_string(_max_id), freq);
+                storage::kvs::put(_ngram_to_id, cleaned_ngram, std::to_string(_max_id));
+                storage::kvs::put(_id_to_ngram, std::to_string(_max_id), cleaned_ngram);
+                storage::kvs::put(_freq, std::to_string(_max_id), freq);
 
                 // update global ngram statistic
-                long xgram_count = kvs_get_long_or_default(_global_statistic, std::to_string(parts.size()), 0);
+                long xgram_count = storage::kvs::get_ulong_or_default(_global_statistic, std::to_string(parts.size()), 0);
                 xgram_count++;
 
-                kvs_put(_global_statistic, std::to_string(parts.size()), std::to_string(xgram_count));
+                storage::kvs::put(_global_statistic, std::to_string(parts.size()), std::to_string(xgram_count));
 
                 // TODO(stg7) store parts in (inverted) index
+
+                unsigned long id = _max_id;
+                unsigned long n = parts.size();
+                //std::cout << "current id: " << id << std::endl;
                 for (auto& x : parts) {
-                    std::cout << x << " __ " << std::endl;
+                    //std::cout << x << " __ " << std::endl;
+                    _index->append(x, id, n);
+
                 }
-                std::cout << std::endl;
+                //std::cout << std::endl;
 
                 return _max_id;
             }
@@ -168,7 +144,7 @@ namespace phrasit {
             std::cout << "phrasit statistics:" << std::endl;
             std::string xgram_count = "";
             for(int n = 1; n < phrasit::max_ngram + 1; n++) {
-                if (!kvs_get(_global_statistic, std::to_string(n), &xgram_count)) {
+                if (!storage::kvs::get(_global_statistic, std::to_string(n), &xgram_count)) {
                     xgram_count = "0";
                 }
                 std::cout << "n= " << n  << " -> " << xgram_count << std::endl;

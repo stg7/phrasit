@@ -31,32 +31,32 @@
 #define CYAN(msg) LOG(lnone, msg)
 
 #define LOGINFO(msg) LOGEX(linfo, "INFO ", msg)
-#define LOGMSG(msg) LOGEX(lnew, " MSG ", msg)
+#define LOGMSG(msg) LOGEX(lnew, "MSG  ", msg)
 #define LOGERROR(msg) LOGEX(lerror, "ERROR", msg)
 #define LOGWARN(msg) LOGEX(lwarning, "WARN ", msg)
 #define LOGDEBUG(msg) LOGEX(ldebug, "DEBUG", msg)
 
 
 // LOG makro
-#define LOG(level, msg) {                                                \
-    phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__) \
-        << msg                                                           \
-        << " \033[0m"                                                    \
-        << std::endl;                                                    \
+#define LOG(level, msg) {                                                    \
+    phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__)        \
+        << msg                                                               \
+        << " \033[0m"                                                        \
+        << std::endl;                                                        \
 }
-#define LOGEX(level, type, msg) {                                        \
-    phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__, type) \
-        << msg                                                           \
-        << std::setw(20) << std::right                                   \
-        << " \033[0m"                                                    \
-        << std::endl;                                                    \
+#define LOGEX(level, type, msg) {                                            \
+    phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__, type)  \
+        << msg                                                               \
+        << std::setw(20) << std::right                                       \
+        << " \033[0m"                                                        \
+        << std::endl;                                                        \
 }
 
 #define DISABLE_LOG() {                             \
-    phrasit::utils::Log::getInstance().disable();\
+    phrasit::utils::Log::getInstance().disable();   \
 }
 #define ENABLE_LOG() {                              \
-    phrasit::utils::Log::getInstance().enable(); \
+    phrasit::utils::Log::getInstance().enable();    \
 }
 // logging level
 enum LogLevel {
@@ -108,7 +108,7 @@ namespace phrasit {
 
             std::ostream& log(int level, const char* file, int line, const char* type="") {
                 if (!_enabled) {
-                    null_stream.str("");  // TODO(stg7): do it in a better way
+                    null_stream.str("");
                     return null_stream;
                 }
 

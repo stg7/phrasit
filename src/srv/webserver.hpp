@@ -35,15 +35,15 @@ namespace phrasit {
             Phrasit& _phrasit;
          public:
             Webserver(Phrasit& phrasit): _phrasit(phrasit) {
-                LOGINFO("start webserver");
-
+                LOGINFO("create webserver");
             }
 
             ~Webserver() {
-                LOGINFO("end webserver");
+                LOGINFO("delete webserver");
             }
 
             void query(Request &request, StreamResponse &response) {
+                response.setHeader("Content-Type", "application/json");
                 std::string query = htmlEntities(request.get("query", ""));
                 std::cout << "query=" << query << std::endl;
                 if (query == "") {
@@ -53,7 +53,7 @@ namespace phrasit {
                 phrasit::utils::Timer t;
 
                 std::string res = "";
-                for(auto& r : _phrasit.search(query)) {
+                for (auto& r : _phrasit.search(query)) {
                     res += r;
                 }
 
@@ -71,6 +71,7 @@ namespace phrasit {
             }
 
             void start() {
+                LOGINFO("start webserver");
                 Server server(phrasit::webserver_port);
                 server.registerController(this);
                 server.start();
