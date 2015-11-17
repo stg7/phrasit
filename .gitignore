@@ -8,6 +8,6 @@ phrasit
 libs/leveldb
 tools
 libs/*
-storage
+./storage/
 *.o
 

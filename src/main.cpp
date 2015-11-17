@@ -103,7 +103,7 @@ int main(int argc, const char* argv[]) {
             if (splitted_line.size() == 2) {
                 phrasit.insert(splitted_line[0], splitted_line[1]);
                 ngram_count++;
-                if (ngram_count % 1000 == 0) {
+                if (ngram_count % 10000 == 0) {
                     std::cout << ".";
                     std::cout.flush();
                 }

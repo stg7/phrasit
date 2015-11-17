@@ -76,7 +76,7 @@ else:
     # loop unrolling and link time optimization, options should be tested
     env.Append(CXXFLAGS=['-funroll-loops', '-flto', '-fwhole-program'])
 
-env.Append(LINKFLAGS=['-Wl,--rpath,./libs/tbb/build/lib/'])
+#env.Append(LINKFLAGS=['-Wl,--rpath,./libs/tbb/build/lib/'])
 
 testcases = set(glob.glob("src/tests/*.cpp"))
 
@@ -96,8 +96,8 @@ libs = glob.glob("libs/*/*.c")
 
 env.Program('phrasit', ["src/main.cpp"] + list(sources) + libs)
 
-env.ParseConfig('/usr/bin/python3-config --includes --libs')
-env.Append(LIBS=['boost_python3'])
+#env.ParseConfig('/usr/bin/python3-config --includes --libs')
+#env.Append(LIBS=['boost_python3'])
 
 #env.SharedLibrary('positronic.so', ["src/py/positronic.cpp"] + list(sources) + libs, SHLIBPREFIX='')
 #env.Valgrind("valgrind" ,'positronic')
