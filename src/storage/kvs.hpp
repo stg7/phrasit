@@ -56,6 +56,7 @@ namespace phrasit {
 
             template<typename DB> inline void close(DB db) {
                 delete db;
+                db = nullptr;
             }
             // wrapper end
         }

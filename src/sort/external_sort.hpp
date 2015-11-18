@@ -17,6 +17,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+
 #include <boost/filesystem.hpp>
 
 #include "sort/parallel_sort.hpp"
@@ -28,9 +29,11 @@ namespace phrasit {
         /*
         *   external sorting of a textfile
         */
-        inline void external_sort(const std::string& filename, const std::string& tmppath, const long blocksize=100000000) {
+        inline std::string external_sort(const std::string& filename, const std::string& tmppath, const long blocksize=100000000) {
             LOGDEBUG("external sort");
-            // read file line by line in blockfiles that are sorted
+            namespace fs = boost::filesystem;
+
+            // read file line by line and store it in blockfiles that are sorted
             std::ifstream file(filename);
             std::string line = "";
             std::vector<std::string> lines;
@@ -71,7 +74,7 @@ namespace phrasit {
             }
             out.close();
 
-            // now we can merge each block in a step let us start from the end
+            // now we can merge each block in a step, let us start from the end
             block++;
 
             while (blockfilenames.size() > 1) {
@@ -87,7 +90,7 @@ namespace phrasit {
                 std::string bm = tmppath + "/" + std::to_string(block);
                 block++;
 
-                blockfilenames.emplace_back(bm);
+                blockfilenames.emplace_back(bm); // TODO(stg7) would be better to append it to front
 
                 std::string l1 = "";
                 std::string l2 = "";
@@ -129,15 +132,16 @@ namespace phrasit {
 
                 // tidy up temporary files
                 LOGDEBUG("delete files: " << b1 << " " << b2);
-                if (boost::filesystem::exists(b1)) {
-                    boost::filesystem::remove(b1);
+                if (fs::exists(b1)) {
+                    fs::remove(b1);
                 }
-                if (boost::filesystem::exists(b2)) {
-                    boost::filesystem::remove(b2);
+                if (fs::exists(b2)) {
+                    fs::remove(b2);
                 }
             }
 
             LOGDEBUG("results are stored in: " << blockfilenames.back());
+            return blockfilenames.back();
         }
     }
 }

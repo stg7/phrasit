@@ -46,7 +46,7 @@ env.Decider('MD5')
 
 conf = Configure(env)
 
-needed_libs = ['leveldb', 'mongoose', 'boost_unit_test_framework', 'boost_program_options', 'boost_system', 'boost_filesystem'] # ,'tbb'
+needed_libs = ['leveldb', 'mongoose', 'boost_unit_test_framework', 'boost_program_options', 'boost_system', 'boost_filesystem', 'boost_iostreams'] # ,'tbb'
 for lib in needed_libs:
     if not conf.CheckLib(lib, language="c++"):
         print "Unable to find lib: " + lib + ". Exiting."
@@ -81,7 +81,7 @@ else:
 testcases = set(glob.glob("src/tests/*.cpp"))
 
 header = set(glob.glob("src/*.hpp") +  glob.glob("src/*/*.hpp"))
-sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/main.cpp", "src/tests/unittests.cpp"]) - testcases
+sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/main.cpp", "src/test.cpp", "src/tests/unittests.cpp"]) - testcases
 
 libs = glob.glob("libs/*/*.c")
 
@@ -95,6 +95,7 @@ libs = glob.glob("libs/*/*.c")
 
 
 env.Program('phrasit', ["src/main.cpp"] + list(sources) + libs)
+env.Program('test', ["src/test.cpp"] + list(sources) + libs)
 
 #env.ParseConfig('/usr/bin/python3-config --includes --libs')
 #env.Append(LIBS=['boost_python3'])

@@ -20,8 +20,8 @@
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
-#include "phrasit.hpp"
 #include "srv/webserver.hpp"
+#include "phrasit.hpp"
 #include "consts.hpp"
 
 void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
@@ -94,6 +94,8 @@ int main(int argc, const char* argv[]) {
 
         std::string input_line;
 
+        phrasit::utils::Timer t;
+
         long ngram_count = 0;
         while (std::cin) {
             getline(std::cin, input_line);
@@ -103,13 +105,17 @@ int main(int argc, const char* argv[]) {
             if (splitted_line.size() == 2) {
                 phrasit.insert(splitted_line[0], splitted_line[1]);
                 ngram_count++;
-                if (ngram_count % 10000 == 0) {
+                if (ngram_count % 1000 == 0) {
                     std::cout << ".";
                     std::cout.flush();
                 }
             }
         }
         std::cout << std::endl;
+
+        phrasit.optimize();
+
+        LOGDEBUG("needed time: " << t.time() << " ms");
         LOGMSG("successfully imported " << ngram_count << " ngrams");
         return 0;
     }

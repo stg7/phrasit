@@ -111,7 +111,6 @@ namespace phrasit {
             split(s, delim, elems);
             return elems;
         }
-
     }
 }
 #endif

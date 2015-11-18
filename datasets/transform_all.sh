@@ -10,7 +10,7 @@ ngrams="\
 5gram
 "
 ngrams="\
-1gram
+2gram
 "
 for j in $ngrams; do
     outfile="transformed/$j"

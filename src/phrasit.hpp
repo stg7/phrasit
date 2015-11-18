@@ -79,32 +79,31 @@ namespace phrasit {
         *   insert ngram with frequency
         */
         long insert(const std::string& ngram, const std::string& freq) {
-            std::string cleaned_ngram = phrasit::utils::trim(ngram);
             std::vector<std::string> parts = phrasit::utils::filter(
-                phrasit::utils::split(cleaned_ngram, ' '), [](std::string& x){return x != "";});
+                phrasit::utils::split(phrasit::utils::trim(ngram), ' '), phrasit::notempty_filter);
 
-            cleaned_ngram = phrasit::utils::join(parts, " ");
+            std::string cleaned_ngram = phrasit::utils::join(parts, " ");
 
-            phrasit::utils::check(parts.size() <= phrasit::max_ngram, "ngram size > " + std::to_string(phrasit::max_ngram));
+            unsigned long n = parts.size();
+            phrasit::utils::check(n <= phrasit::max_ngram, "ngram size > " + std::to_string(phrasit::max_ngram));
 
             long id = get_id_by_ngram(cleaned_ngram);
             if (id == -1) {
+                id = _max_id;
                 _max_id++;
 
-                storage::kvs::put(_ngram_to_id, cleaned_ngram, std::to_string(_max_id));
-                storage::kvs::put(_id_to_ngram, std::to_string(_max_id), cleaned_ngram);
-                storage::kvs::put(_freq, std::to_string(_max_id), freq);
+                std::string id_str = std::to_string(id);
+
+                storage::kvs::put(_ngram_to_id, cleaned_ngram, id_str);
+                storage::kvs::put(_id_to_ngram, id_str, cleaned_ngram);
+                storage::kvs::put(_freq, id_str, freq);
 
                 // update global ngram statistic
-                long xgram_count = storage::kvs::get_ulong_or_default(_global_statistic, std::to_string(parts.size()), 0);
+                long xgram_count = storage::kvs::get_ulong_or_default(_global_statistic, std::to_string(n), 0);
                 xgram_count++;
 
-                storage::kvs::put(_global_statistic, std::to_string(parts.size()), std::to_string(xgram_count));
+                storage::kvs::put(_global_statistic, std::to_string(n), std::to_string(xgram_count));
 
-                // TODO(stg7) store parts in (inverted) index
-
-                unsigned long id = _max_id;
-                unsigned long n = parts.size();
                 //std::cout << "current id: " << id << std::endl;
                 for (auto& x : parts) {
                     //std::cout << x << " __ " << std::endl;
@@ -112,10 +111,14 @@ namespace phrasit {
 
                 }
                 //std::cout << std::endl;
-
-                return _max_id;
             }
             return id;
+        }
+
+        void optimize() {
+            LOGINFO("optimize");
+            _index->optimize();
+            // TODO(stg7)
         }
 
         /*
@@ -124,11 +127,13 @@ namespace phrasit {
         const std::vector<std::string> search(const std::string& query) {
             std::vector<std::string> res;
 
-            std::string cleaned_query = phrasit::utils::trim(query);
-            std::vector<std::string> parts = phrasit::utils::filter(
-                phrasit::utils::split(cleaned_query, ' '), phrasit::notempty_filter);
+            // TODO(stg7) add a real query parser
 
-            cleaned_query = phrasit::utils::join(parts, " ");
+            std::vector<std::string> parts = phrasit::utils::filter(
+                phrasit::utils::split(phrasit::utils::trim(query), ' '), phrasit::notempty_filter);
+
+            std::string cleaned_query = phrasit::utils::join(parts, " ");
+
             std::cout << cleaned_query << std::endl;
             for (auto& x : parts) {
                 std::cout << x << " __ " << std::endl;

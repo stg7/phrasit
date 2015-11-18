@@ -58,21 +58,33 @@ namespace phrasit {
 
                 kvs::open(_storagedir + "/_meta", &_meta);
                 _max_id = kvs::get_ulong_or_default(_meta, _max_id_key, 0);
+
+                // TODO(stg7) open it in append mode
                 _tmpfile.open(_storagedir + "/_tmp");
 
                 std::cout << "keys" << std::endl;
                 leveldb::Iterator* it = _meta->NewIterator(leveldb::ReadOptions());
+                long i = 0;
                 for (it->SeekToFirst(); it->Valid(); it->Next()) {
                     std::cout << it->key().ToString() << ": "  << it->value().ToString() << std::endl;
+                    i++;
+                    if (i > 100) {
+                        break;
+                    }
                 }
 
             }
+
             ~Inverted_index() {
                 kvs::put(_meta, _max_id_key, std::to_string(_max_id));
                 for(auto& k : _stores) {
                     kvs::close(k.second);
                 }
-                _tmpfile.close();
+
+                if (_tmpfile.is_open()) {
+                    _tmpfile.close();
+                }
+
                 kvs::close(_meta);
                 LOGINFO("delete ii");
             }
@@ -93,7 +105,7 @@ namespace phrasit {
                     kvs::open(_storagedir + "/_" + std::to_string(id), &_stores[id]);
                 }
                 */
-                _tmpfile << id << ":" << ngram_id << "->" << n << std::endl;
+                _tmpfile << id << "\t" << ngram_id << "\t" << n << "\n";
 
                 // easy way:
                 // store in tmpfile: (id, ngram, n)
@@ -103,6 +115,39 @@ namespace phrasit {
                 //LOGINFO("put: " << ngram_id << " -> " << n);
                 //kvs::put(_stores[id], std::to_string(ngram_id), std::to_string(n));
                 return true;
+            }
+
+            inline bool optimize() {
+                namespace fs = boost::filesystem;
+
+                std::string tmp_filename = _storagedir + "/_tmp";
+
+                if (!fs::exists(tmp_filename)) {
+                    LOGERROR("index is optimized, or something wrong with file: " << tmp_filename);
+                    return false;
+                }
+
+                if (_tmpfile.is_open()) {
+                    _tmpfile.close();
+                }
+
+
+                std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
+
+                // it tmp file is opened in append mode, don't delete tmp
+                if (fs::exists(tmp_filename)) {
+                    //fs::remove(tmp_filename);
+                }
+
+                LOGINFO("sorted file " << resultfilename);
+                // todo(stg7) rename resultfile
+
+                LOGINFO("build index");
+
+                // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
+                // store start & end positions in header file
+                return true;
+
             }
         };
     }

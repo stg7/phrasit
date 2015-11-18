@@ -118,7 +118,7 @@ namespace phrasit {
                         << file << "@" << std::setw(3)
                         << std::right
                         << line
-                        << std::setw(20 - strlen(file) - strlen(type) - 4) << " "
+                        << std::setw(28 - strlen(file) - strlen(type) - 4) << " "
                         << ": "  << " "
                         << _colorValues[level] << std::left
                         << std::left;
