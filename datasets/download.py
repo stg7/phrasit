@@ -4,6 +4,7 @@ tool for downloading ngram corpus from google books parallel
 """
 import re
 import os
+import sys
 from multiprocessing import Pool
 import multiprocessing
 
@@ -11,7 +12,9 @@ def lInfo(msg):
     print("[Info] " + msg)
 
 def download(link):
-    os.system("wget -c " + link)
+    res = os.system("wget -c " + link)
+    if res != 0:
+        sys.exit(1)
 
 def main():
     f = open("download.list", "r")
