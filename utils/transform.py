@@ -34,8 +34,6 @@ def main():
                 freq = 0
                 current_ngram = tmp[0]
 
-    #
-
 
 if __name__ == "__main__":
     main()
