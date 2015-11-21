@@ -25,6 +25,18 @@
 namespace phrasit {
     namespace utils {
 
+        /*
+        *   count lines of a file
+        */
+        std::size_t count_lines(const std::string& filename) {
+            std::fstream file(filename.c_str());
+
+            std::size_t count = std::count_if(std::istreambuf_iterator<char>(file),
+                std::istreambuf_iterator<char>(),
+                [](char c) {return c == '\n';});
+            return count;
+        }
+
         inline void check(bool pred, const std::string msg) {
             if (phrasit::debug) {
                 if (!pred) {
@@ -34,7 +46,7 @@ namespace phrasit {
             }
         }
 
-        /**
+        /*
         *   filter a given string vector `values` by a predicate `f`
         *   \param values a string vector
         *   \param f predicate to apply

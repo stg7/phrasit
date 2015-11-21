@@ -19,6 +19,9 @@
 
 #include <algorithm>
 #include <thread>
+#include <functional>
+
+#include "utils/log.hpp"
 
 namespace phrasit {
     namespace sort {
@@ -28,6 +31,9 @@ namespace phrasit {
 
             if (parts == -1) { // default case: use all aviable cpu cores
                 parts = std::thread::hardware_concurrency();
+            }
+            if (V.size() - parts <= 0 ) {
+                std::sort(std::begin(V), std::begin(V));
             }
 
             // split the data in "parts" pieces and sort each piece in a separate thread

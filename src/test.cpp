@@ -25,11 +25,9 @@
 #include "consts.hpp"
 
 #include "utils/mmfiles.hpp"
+#include "utils/progress_bar.hpp"
 
-/**
-    phrasit: test
-**/
-int main(int argc, const char* argv[]) {
+void mmfiles_test() {
     LOGINFO("start test");
     phrasit::utils::MMArray<unsigned long> f("test_file", phrasit::utils::size::mb(100));
 
@@ -42,6 +40,23 @@ int main(int argc, const char* argv[]) {
     for(unsigned long i = 0; i < f.size(); i++) {
         f[i] = i;
     }
+}
+
+#include <unistd.h>
+
+
+/**
+    phrasit: test
+**/
+int main(int argc, const char* argv[]) {
+    phrasit::utils::Progress_bar pb(100);
+
+    for (long i = 0; i < 100000; i++) {
+        pb.update();
+        usleep( 1000 );
+    }
+    std::cout << std::endl;
+
 
     return 0;
 }

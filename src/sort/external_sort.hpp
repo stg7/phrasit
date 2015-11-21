@@ -43,6 +43,9 @@ namespace phrasit {
             long readed_bytes = 0;
             while (!file.eof()) {
                 getline(file, line);
+                if (line == "") {
+                    continue;
+                }
                 lines.emplace_back(line);
                 readed_bytes += line.length();
 
@@ -69,6 +72,7 @@ namespace phrasit {
             std::ofstream out(blockfilename);
             blockfilenames.push_back(blockfilename);
 
+            parallel_sort(lines);
             for (auto& line : lines) {
                 out << line << "\n";
             }

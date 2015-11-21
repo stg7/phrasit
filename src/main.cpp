@@ -20,6 +20,7 @@
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
+#include "utils/progress_bar.hpp"
 #include "srv/webserver.hpp"
 #include "phrasit.hpp"
 #include "consts.hpp"
@@ -97,21 +98,22 @@ int main(int argc, const char* argv[]) {
         phrasit::utils::Timer t;
 
         long ngram_count = 0;
-        while (std::cin) {
-            getline(std::cin, input_line);
 
-            std::vector<std::string> splitted_line = phrasit::utils::split(input_line, delimiter);
+        {
+            phrasit::utils::Progress_bar pb(1000);
 
-            if (splitted_line.size() == 2) {
-                phrasit.insert(splitted_line[0], splitted_line[1]);
-                ngram_count++;
-                if (ngram_count % 1000 == 0) {
-                    std::cout << ".";
-                    std::cout.flush();
+            while (std::cin) {
+                getline(std::cin, input_line);
+
+                std::vector<std::string> splitted_line = phrasit::utils::split(input_line, delimiter);
+
+                if (splitted_line.size() == 2) {
+                    phrasit.insert(splitted_line[0], splitted_line[1]);
+                    ngram_count++;
+                    pb.update();
                 }
             }
         }
-        std::cout << std::endl;
 
         phrasit.optimize();
 

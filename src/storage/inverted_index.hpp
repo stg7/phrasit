@@ -26,6 +26,8 @@
 #include "storage/kvs.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/progress_bar.hpp"
+#include "utils/mmfiles.hpp"
 #include "consts.hpp"
 
 namespace phrasit {
@@ -98,22 +100,8 @@ namespace phrasit {
                     _max_id++;
                 }
 
-                //LOGDEBUG("ngram_token " << ngram_token);
-                //LOGDEBUG("id " << id);
-                /*
-                if (_stores.find(id) == _stores.end()) {
-                    kvs::open(_storagedir + "/_" + std::to_string(id), &_stores[id]);
-                }
-                */
                 _tmpfile << id << "\t" << ngram_id << "\t" << n << "\n";
 
-                // easy way:
-                // store in tmpfile: (id, ngram, n)
-                // sort external by id
-                // store all in a file and save startpos/endpos of ids in another file
-
-                //LOGINFO("put: " << ngram_id << " -> " << n);
-                //kvs::put(_stores[id], std::to_string(ngram_id), std::to_string(n));
                 return true;
             }
 
@@ -131,7 +119,6 @@ namespace phrasit {
                     _tmpfile.close();
                 }
 
-
                 std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
 
                 // it tmp file is opened in append mode, don't delete tmp
@@ -139,15 +126,85 @@ namespace phrasit {
                     //fs::remove(tmp_filename);
                 }
 
+                fs::rename(resultfilename, _storagedir + "/" + "_sorted");
+                resultfilename = _storagedir + "/" + "_sorted";
                 LOGINFO("sorted file " << resultfilename);
-                // todo(stg7) rename resultfile
 
                 LOGINFO("build index");
 
-                // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
-                // store start & end positions in header file
-                return true;
+                std::ifstream index_txt_file(resultfilename);
 
+                std::string line = "";
+                unsigned long line_count = phrasit::utils::count_lines(resultfilename);
+                LOGINFO("count of lines: " << line_count);
+
+                // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
+                phrasit::utils::MMArray<unsigned long> index(_storagedir + "/" + "_index", line_count * 2 * sizeof(unsigned long));
+                // store start positions in header file
+                phrasit::utils::MMArray<unsigned long> index_header(_storagedir + "/" + "_index_header", (_max_id + 1) * 2 * sizeof(unsigned long));
+
+                char delimiter = '\t';
+                unsigned long current_id = 0;
+
+                unsigned long pos = 0;
+                unsigned long h_pos = 0;
+                index_header[h_pos] = current_id;
+                h_pos++;
+                index_header[h_pos] = 0;
+                h_pos++;
+
+
+                phrasit::utils::Progress_bar pb(100);
+                while (!index_txt_file.eof()) {
+                    getline(index_txt_file, line);
+
+                    std::vector<std::string> splitted_line = phrasit::utils::split(line, delimiter);
+
+                    if (splitted_line.size() == 3) {
+                        unsigned long id = std::stol(splitted_line[0]);
+                        unsigned long ngram_id = std::stol(splitted_line[1]);
+                        unsigned long n = std::stol(splitted_line[2]);
+
+                        if (id != current_id) {
+                            index_header[h_pos] = id;
+                            h_pos++;
+                            index_header[h_pos] = pos;
+                            h_pos++;
+                            current_id = id;
+                        }
+
+                        index[pos] = ngram_id;
+                        pos++;
+                        index[pos] = n;
+                        pos ++;
+                        pb.update();
+                    }
+                }
+                std::cout << std::endl;
+
+                // store dummy element at the end of header for easy accessing
+                index_header[h_pos] = 0;
+                h_pos++;
+                index_header[h_pos] = index.size() - 2;
+                h_pos++;
+
+                {
+                    std::ofstream validation_file;
+                    validation_file.open(_storagedir + "/_validation");
+                    for (unsigned long l = 0; l < index_header.size() - 2; l += 2) {
+                        unsigned long id = index_header[l];
+                        unsigned long pos = index_header[l + 1];
+                        //unsigned long next_id = index_header[l + 2];
+                        unsigned long next_pos = index_header[l + 3];
+
+                        for (unsigned long j = pos; j < next_pos; j += 2) {
+                            unsigned long ngram_id = index[j];
+                            unsigned long n = index[j+1];
+                            validation_file << id << "\t" << ngram_id << "\t" << n << "\n";
+                        }
+                    }
+                }
+                return true;
             }
         };
     }
