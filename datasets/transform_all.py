@@ -30,7 +30,7 @@ def main():
         xgram = re.match(".*-(.gram).*", f).group(1)
         file_group[xgram] = file_group.get(xgram, []) +[f]
 
-    outdir = "transformed/"
+    outdir = "transformed_/"
 
     pool = Pool(processes=cpu_count)
 

@@ -15,8 +15,8 @@
 
 #include <string>
 
-#include <mongoose/Server.h>
-#include <mongoose/WebController.h>
+//#include <mongoose/Server.h>
+//#include <mongoose/WebController.h>
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
@@ -28,9 +28,9 @@ namespace phrasit {
 
     namespace srv {
 
-        using namespace Mongoose;
+        //using namespace Mongoose;
 
-        class Webserver : public WebController {
+        class Webserver  { //: public WebController {
          private:
             Phrasit& _phrasit;
          public:
@@ -41,7 +41,7 @@ namespace phrasit {
             ~Webserver() {
                 LOGINFO("delete webserver");
             }
-
+            /*
             void query(Request &request, StreamResponse &response) {
                 response.setHeader("Content-Type", "application/json");
                 std::string query = htmlEntities(request.get("query", ""));
@@ -64,21 +64,23 @@ namespace phrasit {
                     << "\"time\":" << needed_time
                     << "}" << std::endl;
             }
-
+            */
             void setup() {
+                /*
                 setPrefix("/api");
-                addRoute("GET", "/", Webserver, query);
+                addRoute("GET", "/", Webserver, query); */
             }
 
             void start() {
                 LOGINFO("start webserver");
+                /*
                 Server server(phrasit::webserver_port);
                 server.registerController(this);
                 server.start();
                 LOGINFO("server running on port: " << phrasit::webserver_port);
                 LOGINFO("example: http://localhost:" << phrasit::webserver_port << "/api/?query=test");
                 this->dumpRoutes();
-
+                */
                 while (1) {
                     usleep(1000000);
                 }

@@ -10,8 +10,8 @@
     Copyright 2015 Steve Göring
 **/
 
-#ifndef STORE_HEADER_HPP_
-#define STORE_HEADER_HPP_
+#ifndef PHRASIT_HEADER_HPP_
+#define PHRASIT_HEADER_HPP_
 
 #include <string>
 #include <vector>
@@ -89,8 +89,7 @@ namespace phrasit {
 
             long id = get_id_by_ngram(cleaned_ngram);
             if (id == -1) {
-                id = _max_id;
-                _max_id++;
+                id = _max_id++;
 
                 std::string id_str = std::to_string(id);
 
@@ -115,9 +114,9 @@ namespace phrasit {
             return id;
         }
 
-        void optimize() {
+        void optimize(bool ignore_existing=false) {
             LOGINFO("optimize");
-            _index->optimize();
+            _index->optimize(ignore_existing);
             // TODO(stg7)
         }
 

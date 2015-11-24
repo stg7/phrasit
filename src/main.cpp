@@ -45,7 +45,8 @@ int main(int argc, const char* argv[]) {
         ("storagedir,d", po::value<std::string>(), "storage directory, default='storage'")
         ("queryfile,f", po::value<std::string>(), "handle queries stored in a file")
         ("import,i", "import from stdin, format: ngram tab freq")
-        ("server,s", "start phrasit in server mode");
+        ("server,s", "start phrasit in server mode")
+        ("opt,o", "optimize [debug]");;
 
     po::variables_map vm;
     try {
@@ -88,7 +89,12 @@ int main(int argc, const char* argv[]) {
         webserver.start();
         return 0;
     }
+    if (vm.count("opt") != 0) {
+        LOGMSG("optimize index: ");
 
+        phrasit.optimize(true);
+        return 0;
+    }
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
         char delimiter = '\t';
@@ -100,7 +106,7 @@ int main(int argc, const char* argv[]) {
         long ngram_count = 0;
 
         {
-            phrasit::utils::Progress_bar pb(1000);
+            phrasit::utils::Progress_bar pb(1000, "import");
 
             while (std::cin) {
                 getline(std::cin, input_line);

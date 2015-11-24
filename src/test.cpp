@@ -43,12 +43,7 @@ void mmfiles_test() {
 }
 
 #include <unistd.h>
-
-
-/**
-    phrasit: test
-**/
-int main(int argc, const char* argv[]) {
+void progress_bar() {
     phrasit::utils::Progress_bar pb(100);
 
     for (long i = 0; i < 100000; i++) {
@@ -56,6 +51,54 @@ int main(int argc, const char* argv[]) {
         usleep( 1000 );
     }
     std::cout << std::endl;
+}
+
+#include <deque>
+
+void deq() {
+    std::deque<int> mydeque;
+
+    for(int i = 0; i < 10; i++) {
+        mydeque.push_front(i);
+    }
+
+    while(mydeque.size() > 0) {
+        int back1 = mydeque.back();
+        mydeque.pop_back();
+
+        int back2 = mydeque.back();
+        mydeque.pop_back();
+
+        std::cout << back1 << " : " << back2 << std::endl;
+        mydeque.push_front(back1 + back2);
+
+        for(auto& x: mydeque) {
+            std::cout << x << ",";
+        }
+        std::cout << std::endl;
+    }
+}
+
+
+
+void http_server() {
+}
+
+#include "sort/external_sort.hpp"
+
+void external_sort(std::string filename) {
+    std::cout << "start external sorting" << std::endl;
+    std::string tmppath = "./tmp";
+    std::string res = phrasit::sort::external_sort(filename, tmppath);
+    std::cout << "sorted values are stored in: " << res << std::endl;
+}
+
+/**
+    phrasit: test
+**/
+int main(int argc, const char* argv[]) {
+
+    external_sort("./storage/_ii/_tmp");
 
 
     return 0;

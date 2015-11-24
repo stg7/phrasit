@@ -62,8 +62,10 @@ namespace phrasit {
                 _max_id = kvs::get_ulong_or_default(_meta, _max_id_key, 0);
 
                 // TODO(stg7) open it in append mode
-                _tmpfile.open(_storagedir + "/_tmp");
+                _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
+                _tmpfile.sync_with_stdio(false);
 
+                /*
                 std::cout << "keys" << std::endl;
                 leveldb::Iterator* it = _meta->NewIterator(leveldb::ReadOptions());
                 long i = 0;
@@ -74,7 +76,7 @@ namespace phrasit {
                         break;
                     }
                 }
-
+                */
             }
 
             ~Inverted_index() {
@@ -105,19 +107,22 @@ namespace phrasit {
                 return true;
             }
 
-            inline bool optimize() {
+            inline bool optimize(bool ignore_existing=false) {
                 namespace fs = boost::filesystem;
 
                 std::string tmp_filename = _storagedir + "/_tmp";
 
-                if (!fs::exists(tmp_filename)) {
+                if (!fs::exists(tmp_filename) && !ignore_existing) {
                     LOGERROR("index is optimized, or something wrong with file: " << tmp_filename);
                     return false;
                 }
 
+                // TODO(stg7) check if index files are there, if append all values to tmp_filename
+                // with this approach an incremental import is possible
+                /*
                 if (_tmpfile.is_open()) {
                     _tmpfile.close();
-                }
+                }*/
 
                 std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
 
@@ -138,6 +143,8 @@ namespace phrasit {
                 unsigned long line_count = phrasit::utils::count_lines(resultfilename);
                 LOGINFO("count of lines: " << line_count);
 
+                // TODO(stg7) maybe dont use unsigned long as index value, e.g. struct type
+
                 // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
                 phrasit::utils::MMArray<unsigned long> index(_storagedir + "/" + "_index", line_count * 2 * sizeof(unsigned long));
                 // store start positions in header file
@@ -148,13 +155,11 @@ namespace phrasit {
 
                 unsigned long pos = 0;
                 unsigned long h_pos = 0;
-                index_header[h_pos] = current_id;
-                h_pos++;
-                index_header[h_pos] = 0;
-                h_pos++;
+                index_header[h_pos++] = current_id;
+                index_header[h_pos++] = 0;
 
 
-                phrasit::utils::Progress_bar pb(100);
+                phrasit::utils::Progress_bar pb(1000, "index");
                 while (!index_txt_file.eof()) {
                     getline(index_txt_file, line);
 
@@ -166,27 +171,20 @@ namespace phrasit {
                         unsigned long n = std::stol(splitted_line[2]);
 
                         if (id != current_id) {
-                            index_header[h_pos] = id;
-                            h_pos++;
-                            index_header[h_pos] = pos;
-                            h_pos++;
+                            index_header[h_pos++] = id;
+                            index_header[h_pos++] = pos;
                             current_id = id;
                         }
 
-                        index[pos] = ngram_id;
-                        pos++;
-                        index[pos] = n;
-                        pos ++;
+                        index[pos++] = ngram_id;
+                        index[pos++] = n;
                         pb.update();
                     }
                 }
-                std::cout << std::endl;
 
                 // store dummy element at the end of header for easy accessing
-                index_header[h_pos] = 0;
-                h_pos++;
-                index_header[h_pos] = index.size() - 2;
-                h_pos++;
+                index_header[h_pos++] = 0;
+                index_header[h_pos++] = index.size() - 1;
 
                 {
                     std::ofstream validation_file;
@@ -199,7 +197,7 @@ namespace phrasit {
 
                         for (unsigned long j = pos; j < next_pos; j += 2) {
                             unsigned long ngram_id = index[j];
-                            unsigned long n = index[j+1];
+                            unsigned long n = index[j + 1];
                             validation_file << id << "\t" << ngram_id << "\t" << n << "\n";
                         }
                     }

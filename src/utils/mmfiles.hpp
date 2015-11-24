@@ -59,7 +59,7 @@ namespace phrasit {
                 params.path = filename;
                 params.mode = (std::ios_base::out | std::ios_base::in);
                 if (!fs::exists(filename)) {
-                    phrasit::utils::check(size != 0, "if you open an not existing file, size must be > 0");
+                    phrasit::utils::check(size != 0, "if you open a not existing file, size must be > 0");
                     params.new_file_size = size;
                 }
 
@@ -73,22 +73,22 @@ namespace phrasit {
             }
 
             T get(const unsigned long i) const {
-                phrasit::utils::check(i < size() && i >= 0, "index is not valid");
+                phrasit::utils::check(i < size() && i >= 0, "get- index is not valid");
                 return _data[i];
             }
 
             void set(const unsigned long i, T value) {
-                phrasit::utils::check(i < size() && i >= 0, "index is not valid");
+                phrasit::utils::check(i < size() && i >= 0, "set- index is not valid");
                 _data[i] = value;
             }
 
             T& operator[] (const unsigned long i){
-                phrasit::utils::check(i < size() && i >= 0, "index is not valid");
+                phrasit::utils::check(i < size() && i >= 0, "[] - index is not valid");
                 return _data[i];
             };
 
             const T& operator[] (const unsigned long i) const {
-                phrasit::utils::check(i < size() && i >= 0, "index is not valid");
+                phrasit::utils::check(i < size() && i >= 0, "c[] - index is not valid");
                 return _data[i];
             };
 

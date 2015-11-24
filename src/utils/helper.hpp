@@ -52,7 +52,7 @@ namespace phrasit {
         *   \param f predicate to apply
         *   \return a new vector with values that matches the predicate `f`
         */
-        inline std::vector<std::string> filter(std::vector<std::string> values, std::function<bool (std::string&)> f) {
+        inline std::vector<std::string> filter(const std::vector<std::string> values, std::function<bool (const std::string&)> f) {
             std::vector<std::string> res;
             for (auto& x : values) {
                 if (f(x)) {
@@ -71,7 +71,7 @@ namespace phrasit {
         *   example:
         *       join(["a", "b"], "!") will return "a!b"
         */
-        inline std::string join(std::vector<std::string> values, const std::string& connector) {
+        inline std::string join(const std::vector<std::string> values, const std::string& connector) {
             std::string res = "";
 
             for (auto it = values.begin(); it != values.end(); it++) {
@@ -89,7 +89,7 @@ namespace phrasit {
         *   \param s string for trimming
         *   \return string s without leading/trailing spaces
         */
-        inline std::string trim(const std::string &s) {
+        inline std::string trim(const std::string& s) {
             std::string::const_iterator it = s.begin();
             while (it != s.end() && isspace(*it)) {
                 it++;
@@ -107,7 +107,7 @@ namespace phrasit {
             std::stringstream ss(s);
             std::string item;
             while (std::getline(ss, item, delim)) {
-                elems.push_back(item);
+                elems.emplace_back(item);
             }
             return elems;
         }

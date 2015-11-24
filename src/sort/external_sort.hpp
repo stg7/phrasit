@@ -17,6 +17,7 @@
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <deque>
 
 #include <boost/filesystem.hpp>
 
@@ -29,7 +30,7 @@ namespace phrasit {
         /*
         *   external sorting of a textfile
         */
-        inline std::string external_sort(const std::string& filename, const std::string& tmppath, const long blocksize=100000000) {
+        inline std::string external_sort(const std::string& filename, const std::string& tmppath, const long blocksize=500000000) {
             LOGDEBUG("external sort");
             namespace fs = boost::filesystem;
 
@@ -39,7 +40,8 @@ namespace phrasit {
             std::vector<std::string> lines;
             long block = 0;
 
-            std::vector<std::string> blockfilenames;
+            LOGDEBUG("split files");
+            std::deque<std::string> blockfilenames;
             long readed_bytes = 0;
             while (!file.eof()) {
                 getline(file, line);
@@ -51,15 +53,23 @@ namespace phrasit {
 
                 if (readed_bytes >= blocksize) {
                     readed_bytes = 0;
+                    LOGDEBUG("parallel sort");
 
                     parallel_sort(lines);
 
                     std::string blockfilename = tmppath + "/" + std::to_string(block);
                     std::ofstream out(blockfilename);
-                    blockfilenames.push_back(blockfilename);
+                    out.sync_with_stdio(false);
+                    blockfilenames.push_front(blockfilename);
+
+                    LOGDEBUG("write sorted lines to file: " << blockfilename);
+                    LOGDEBUG("count of lines" << lines.size());
+                    long lc = 0;
                     for (auto& l : lines) {
                         out << l << "\n";
+                        lc ++;
                     }
+                    LOGDEBUG("lines written: " << lc);
                     out.close();
                     lines.clear();
                     block++;
@@ -70,13 +80,16 @@ namespace phrasit {
             // handle remaining lines
             std::string blockfilename = tmppath + "/" + std::to_string(block);
             std::ofstream out(blockfilename);
-            blockfilenames.push_back(blockfilename);
+            out.sync_with_stdio(false);
+            blockfilenames.push_front(blockfilename);
 
+            LOGDEBUG("parallel sort");
             parallel_sort(lines);
             for (auto& line : lines) {
                 out << line << "\n";
             }
             out.close();
+            lines.clear();
 
             // now we can merge each block in a step, let us start from the end
             block++;
@@ -94,17 +107,18 @@ namespace phrasit {
                 std::string bm = tmppath + "/" + std::to_string(block);
                 block++;
 
-                blockfilenames.emplace_back(bm); // TODO(stg7) would be better to append it to front
+                blockfilenames.push_front(bm);
 
                 std::string l1 = "";
                 std::string l2 = "";
                 std::ofstream b_merged(bm);
-
+                b_merged.sync_with_stdio(false);
+                LOGDEBUG("read lines");
                 getline(block1, l1);
                 getline(block2, l2);
 
-                while (!block1.eof() && !block2.eof()) {
-
+                while (!block1.eof() && !block2.eof() && l1 != "" && l2 != "") {
+                    LOGDEBUG("loop1");
                     if(l1 < l2) {
                         // write l1 to result file
                         b_merged << l1 << "\n";
@@ -115,23 +129,30 @@ namespace phrasit {
                         getline(block2, l2);
                     }
                 }
-
+                LOGDEBUG("loop2");
                 while (!block1.eof()) {
-                    // write l1 to result file
-                    b_merged << l1 << "\n";
+                    if (l1 != "") {
+                        // write l1 to result file
+                        b_merged << l1 << "\n";
+                    }
                     getline(block1, l1);
                 }
-                // write l1 to result file
-                b_merged << l1 << "\n";
-
+                if (l1 != "") {
+                    // write l1 to result file
+                    b_merged << l1 << "\n";
+                }
+                LOGDEBUG("loop3");
                 while (!block2.eof()) {
-                    // write l2 to result file
-                    b_merged << l2 << "\n";
+                    if (l2 != "") {
+                        // write l2 to result file
+                        b_merged << l2 << "\n";
+                    }
                     getline(block2, l2);
                 }
-                // write l2 to result file
-                b_merged << l2 << "\n";
-
+                if (l2 != "") {
+                    // write l2 to result file
+                    b_merged << l2 << "\n";
+                }
                 b_merged.close();
 
                 // tidy up temporary files
