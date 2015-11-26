@@ -36,11 +36,46 @@ cpplint() {
     wget "https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py"
 }
 
+boost() {
+    if [ -d "boost" ]; then
+        logInfo "boost is already installed locally"
+        return
+    fi
+    logInfo "boost download"
+    wget -c "http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.bz2/download"
+    mv "download" "boost_1_59_0.tar.bz2"
+    tar -jxvf "boost_1_59_0.tar.bz2"
+    mv "boost_1_59_0" "boost"
+    cd boost
+    mkdir build
+    ./bootstrap.sh --prefix=./build
+    ./b2 install
+    cd ..
+}
 
+cppnetlib() {
+    if [ -d "cpp-netlib" ]; then
+        logInfo "cpp-netlib already installed locally"
+        return
+    fi
+    logInfo "cpp-netlib download"
+    wget -c "http://downloads.cpp-netlib.org/0.11.2/cpp-netlib-0.11.2-final.tar.bz2"
+    tar -jxvf "cpp-netlib-0.11.2-final.tar.bz2"
+    mv "cpp-netlib-0.11.2-final" "cpp-netlib"
+    cd "cpp-netlib"
+    mkdir build
+    cd build
+    cmake ../
+    make -j 4
+    cd ..
+    cd ..
+}
 
 mkdir -p libs
 cd libs
 leveldb
+boost
+#cppnetlib
 cd ..
 
 mkdir -p tools

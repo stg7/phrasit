@@ -113,16 +113,16 @@ namespace phrasit {
                 std::string tmp_filename = _storagedir + "/_tmp";
 
                 if (!fs::exists(tmp_filename) && !ignore_existing) {
-                    LOGERROR("index is optimized, or something wrong with file: " << tmp_filename);
+                    LOGERROR("index is optimized, or something is wrong with file: " << tmp_filename);
                     return false;
                 }
 
                 // TODO(stg7) check if index files are there, if append all values to tmp_filename
                 // with this approach an incremental import is possible
-                /*
+
                 if (_tmpfile.is_open()) {
                     _tmpfile.close();
-                }*/
+                }
 
                 std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
 

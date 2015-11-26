@@ -19,6 +19,8 @@
 #include <fstream>
 #include <deque>
 
+#include <cstdio>
+
 #include <boost/filesystem.hpp>
 
 #include "sort/parallel_sort.hpp"
@@ -43,6 +45,8 @@ namespace phrasit {
             LOGDEBUG("split files");
             std::deque<std::string> blockfilenames;
             long readed_bytes = 0;
+            std::ofstream out;
+
             while (!file.eof()) {
                 getline(file, line);
                 if (line == "") {
@@ -58,7 +62,12 @@ namespace phrasit {
                     parallel_sort(lines);
 
                     std::string blockfilename = tmppath + "/" + std::to_string(block);
-                    std::ofstream out(blockfilename);
+                    //out.rdbuf()->pubsetbuf(0, 0);
+                    out.open(blockfilename);
+                    if (!out.is_open()) {
+                        LOGERROR("there is something wrong with outputfile " << blockfilename);
+                        std::perror("is open fails:");
+                    }
                     out.sync_with_stdio(false);
                     blockfilenames.push_front(blockfilename);
 
@@ -67,6 +76,10 @@ namespace phrasit {
                     long lc = 0;
                     for (auto& l : lines) {
                         out << l << "\n";
+                        if (out.bad()) {
+                            LOGERROR("there is something wrong with appendling line " << l);
+                            std::perror("appending line fails:");
+                        }
                         lc ++;
                     }
                     LOGDEBUG("lines written: " << lc);
@@ -79,20 +92,31 @@ namespace phrasit {
             block++;
             // handle remaining lines
             std::string blockfilename = tmppath + "/" + std::to_string(block);
-            std::ofstream out(blockfilename);
+            out.open(blockfilename);
+            if (!out.is_open()) {
+                LOGERROR("there is something wrong with outputfile " << blockfilename);
+                std::perror("is open fails:");
+            }
             out.sync_with_stdio(false);
             blockfilenames.push_front(blockfilename);
 
             LOGDEBUG("parallel sort");
             parallel_sort(lines);
-            for (auto& line : lines) {
-                out << line << "\n";
+            for (auto& l : lines) {
+                out << l << "\n";
+                if (out.bad()) {
+                    LOGERROR("there is something wrong with appendling line " << l);
+                    std::perror("appending line fails:");
+                }
             }
             out.close();
             lines.clear();
 
             // now we can merge each block in a step, let us start from the end
             block++;
+            std::ifstream block1;
+            std::ifstream block2;
+            std::ofstream b_merged;
 
             while (blockfilenames.size() > 1) {
                 std::string b1 = blockfilenames.back();
@@ -101,8 +125,10 @@ namespace phrasit {
                 blockfilenames.pop_back();
                 LOGDEBUG("merging blocks: " << b1 << " " << b2 << " to " << block);
 
-                std::ifstream block1(b1);
-                std::ifstream block2(b2);
+                //block1.rdbuf()->pubsetbuf(0, 0);
+                block1.open(b1);
+                //block2.rdbuf()->pubsetbuf(0, 0);
+                block2.open(b2);
 
                 std::string bm = tmppath + "/" + std::to_string(block);
                 block++;
@@ -111,14 +137,15 @@ namespace phrasit {
 
                 std::string l1 = "";
                 std::string l2 = "";
-                std::ofstream b_merged(bm);
+                //b_merged.rdbuf()->pubsetbuf(0, 0);
+                b_merged.open(bm);
                 b_merged.sync_with_stdio(false);
                 LOGDEBUG("read lines");
                 getline(block1, l1);
                 getline(block2, l2);
 
+                LOGDEBUG("loop1");
                 while (!block1.eof() && !block2.eof() && l1 != "" && l2 != "") {
-                    LOGDEBUG("loop1");
                     if(l1 < l2) {
                         // write l1 to result file
                         b_merged << l1 << "\n";
@@ -153,7 +180,10 @@ namespace phrasit {
                     // write l2 to result file
                     b_merged << l2 << "\n";
                 }
+
                 b_merged.close();
+                block1.close();
+                block2.close();
 
                 // tidy up temporary files
                 LOGDEBUG("delete files: " << b1 << " " << b2);
