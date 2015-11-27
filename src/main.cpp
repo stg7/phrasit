@@ -79,6 +79,10 @@ int main(int argc, const char* argv[]) {
     }
 
     LOGMSG("start phrasit");
+    LOGMSG("version: " << phrasit::version);
+    LOGMSG("branch: " << phrasit::branch);
+
+
     LOGMSG("using storagedir: " << storagedir);
 
     phrasit::Phrasit phrasit(storagedir);

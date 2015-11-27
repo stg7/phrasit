@@ -17,6 +17,7 @@ stylechecker = Builder(action='./test_convention.sh $SOURCES', suffix='', src_su
 valgrind = Builder(action='valgrind ./$SOURCES', suffix='', src_suffix='')
 
 os.system("./prepare.sh")
+os.system("./addbuildinfos.sh")
 
 env = Environment(CPPPATH = ["src/", "libs/"],
                   BUILDERS = {'StyleCheck' : stylechecker, 'Valgrind': valgrind})

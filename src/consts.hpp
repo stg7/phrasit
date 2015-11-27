@@ -20,6 +20,9 @@ namespace phrasit {
     static constexpr const int webserver_port = 8090;
     static constexpr const bool debug = true;
     static constexpr const auto notempty_filter = [](const std::string& x){return x != "";};
+
+    #include "build.hpp"
 }
+
 
 #endif
