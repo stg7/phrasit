@@ -58,7 +58,10 @@ namespace phrasit {
             print_stats();
 
             LOGINFO("delete store");
+            close();
+        }
 
+        inline void close() {
             storage::kvs::put(_ngram_to_id, _max_id_key, std::to_string(_max_id));
 
             storage::kvs::close(_ngram_to_id);
@@ -116,6 +119,7 @@ namespace phrasit {
 
         void optimize(bool ignore_existing=false) {
             LOGINFO("optimize");
+            //close();
             _index->optimize(ignore_existing);
             // TODO(stg7)
         }

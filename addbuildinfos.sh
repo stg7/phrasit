@@ -9,6 +9,8 @@ logInfo() {
 
 branch=$(git branch | grep "*" | sed "s|\* ||g")
 version=$(git rev-parse HEAD)
+
+version="$version @ $(date)"
 logInfo "branch: $branch"
 logInfo "version: $version"
 

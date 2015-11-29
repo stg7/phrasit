@@ -41,10 +41,7 @@ namespace phrasit {
             unsigned long _max_id;
 
             kvs::type _meta;
-
             std::ofstream _tmpfile;
-
-            std::map<unsigned long, kvs::type> _stores;
 
 
          public:
@@ -80,17 +77,18 @@ namespace phrasit {
             }
 
             ~Inverted_index() {
+                close();
+                LOGINFO("delete ii");
+            }
+
+            inline void close() {
                 kvs::put(_meta, _max_id_key, std::to_string(_max_id));
-                for(auto& k : _stores) {
-                    kvs::close(k.second);
-                }
 
                 if (_tmpfile.is_open()) {
                     _tmpfile.close();
                 }
 
                 kvs::close(_meta);
-                LOGINFO("delete ii");
             }
 
             inline bool append(const std::string& ngram_token, unsigned long ngram_id, unsigned long n) {
@@ -108,6 +106,7 @@ namespace phrasit {
             }
 
             inline bool optimize(bool ignore_existing=false) {
+                //close();
                 namespace fs = boost::filesystem;
 
                 std::string tmp_filename = _storagedir + "/_tmp";
@@ -115,13 +114,6 @@ namespace phrasit {
                 if (!fs::exists(tmp_filename) && !ignore_existing) {
                     LOGERROR("index is optimized, or something is wrong with file: " << tmp_filename);
                     return false;
-                }
-
-                // TODO(stg7) check if index files are there, if append all values to tmp_filename
-                // with this approach an incremental import is possible
-
-                if (_tmpfile.is_open()) {
-                    _tmpfile.close();
                 }
 
                 std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);

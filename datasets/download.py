@@ -16,7 +16,8 @@ def download(link):
     if res != 0:
         sys.exit(1)
 
-def main():
+def main(args):
+    """ args[0] is an optional filter for download links, e.g. 3gram """
     f = open("download.list", "r")
     links = []
     for l in f:
@@ -24,7 +25,12 @@ def main():
         if "href" in l:
             link = l.replace("<a href=\"", "")
             link = re.sub("\">.*</a>", "", link)
-            links.append(link)
+            if len(args) == 1
+                if args[0] in link:
+                    links.append(link)
+            else:
+                links.append(link)
+
     f.close()
 
     for l in links:
@@ -39,4 +45,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

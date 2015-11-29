@@ -50,6 +50,8 @@ namespace phrasit {
 
             template<typename P, typename DB> inline void open(P path, DB db) {
                 leveldb::Options options;
+                options.write_buffer_size = 100 * 1024 * 1024; // 100 MB
+                options.max_open_files = 100;
                 options.create_if_missing = true;
                 leveldb::DB::Open(options, path, db);
             }

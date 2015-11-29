@@ -93,13 +93,49 @@ void external_sort(std::string filename) {
     std::cout << "sorted values are stored in: " << res << std::endl;
 }
 
+/*
+#include "rocksdb/db.h"
+#include "rocksdb/slice.h"
+#include "rocksdb/options.h"
+
+void rocksdb_test() {
+    LOGINFO("rocksdb test");
+
+    std::string kDBPath = "./tmp/rocksdb_simple_example";
+
+    rocksdb::DB* db;
+    rocksdb::Options options;
+    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
+    options.IncreaseParallelism();
+    options.OptimizeLevelStyleCompaction();
+    // create the DB if it's not already present
+    options.create_if_missing = true;
+
+    // open DB
+    rocksdb::Status s = rocksdb::DB::Open(options, kDBPath, &db);
+    assert(s.ok());
+
+    // Put key-value
+    s = db->Put(rocksdb::WriteOptions(), "key1", "value");
+    assert(s.ok());
+    std::string value;
+    // get value
+    s = db->Get(rocksdb::ReadOptions(), "key1", &value);
+    assert(s.ok());
+
+    std::cout << value << std::endl;
+
+    delete db;
+}
+*/
 /**
     phrasit: test
 **/
 int main(int argc, const char* argv[]) {
 
-    external_sort("./storage/_ii/_tmp");
+    //external_sort("./storage/_ii/_tmp");
+    //rocksdb_test();
 
-
+    std::cout << "done" << std::endl;
     return 0;
 }
