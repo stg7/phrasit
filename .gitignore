@@ -1,3 +1,4 @@
+src/build.hpp
 datasets/transformed/
 datasets/*.gz
 __pycache__

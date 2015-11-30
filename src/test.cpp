@@ -79,11 +79,6 @@ void deq() {
     }
 }
 
-
-
-void http_server() {
-}
-
 #include "sort/external_sort.hpp"
 
 void external_sort(std::string filename) {
@@ -93,41 +88,76 @@ void external_sort(std::string filename) {
     std::cout << "sorted values are stored in: " << res << std::endl;
 }
 
-/*
-#include "rocksdb/db.h"
-#include "rocksdb/slice.h"
-#include "rocksdb/options.h"
 
-void rocksdb_test() {
-    LOGINFO("rocksdb test");
+#include <boost/network/protocol/http/server.hpp>
+#include <iostream>
 
-    std::string kDBPath = "./tmp/rocksdb_simple_example";
+#include "utils/consthash.hpp"
 
-    rocksdb::DB* db;
-    rocksdb::Options options;
-    // Optimize RocksDB. This is the easiest way to get RocksDB to perform well
-    options.IncreaseParallelism();
-    options.OptimizeLevelStyleCompaction();
-    // create the DB if it's not already present
-    options.create_if_missing = true;
+class Webserver {
+ private:
+    std::string _bindaddress = "0.0.0.0";
+    std::string _port = "8099";
 
-    // open DB
-    rocksdb::Status s = rocksdb::DB::Open(options, kDBPath, &db);
-    assert(s.ok());
+ public:
+    Webserver() {
 
-    // Put key-value
-    s = db->Put(rocksdb::WriteOptions(), "key1", "value");
-    assert(s.ok());
-    std::string value;
-    // get value
-    s = db->Get(rocksdb::ReadOptions(), "key1", &value);
-    assert(s.ok());
+    }
 
-    std::cout << value << std::endl;
+    void start() {
+        try {
 
-    delete db;
+            boost::network::http::server<Webserver>::options options(*this);
+            boost::network::http::server<Webserver> server_(options.address(_bindaddress).port(_port));
+            server_.run();
+        }
+        catch (std::exception& e) {
+            LOGERROR(e.what());
+        }
+    }
+
+    void operator()(boost::network::http::server<Webserver>::request const &request,
+                boost::network::http::server<Webserver>::response &response) {
+
+        using namespace phrasit::utils;
+
+        std::ostringstream data;
+
+        std::string dest = request.destination;
+
+        LOGINFO("dest:" << dest);
+
+        switch (r_hash(dest)) {
+            case c_hash("/api/"): {
+                    data << "call api";
+                }
+                break;
+            case c_hash("/help"): {
+                    data << "call help";
+                }
+                break;
+            case c_hash("/info"): {
+                    data << "call info";
+                }
+                break;
+            default: {
+                    LOGERROR("processing error, unknwon path");
+                }
+        }
+
+        response = boost::network::http::server<Webserver>::response::stock_reply(
+            boost::network::http::server<Webserver>::response::ok, data.str());
+    }
+    void log(...) { }
+};
+
+
+void http_server_cppnetlib() {
+    Webserver w;
+    w.start();
+
 }
-*/
+
 /**
     phrasit: test
 **/
@@ -135,6 +165,7 @@ int main(int argc, const char* argv[]) {
 
     //external_sort("./storage/_ii/_tmp");
     //rocksdb_test();
+    http_server_cppnetlib();
 
     std::cout << "done" << std::endl;
     return 0;

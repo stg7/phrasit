@@ -55,7 +55,7 @@ namespace phrasit {
         }
 
         ~Phrasit() {
-            print_stats();
+            print_stats(std::cout);
 
             LOGINFO("delete store");
             close();
@@ -148,17 +148,17 @@ namespace phrasit {
         /*
         *   printout global collected statistics
         */
-        const void print_stats() {
-            std::cout << "phrasit statistics:" << std::endl;
+        const void print_stats(std::ostream& out) {
+            out << "phrasit statistics:" << std::endl;
             std::string xgram_count = "";
             for(int n = 1; n < phrasit::max_ngram + 1; n++) {
                 if (!storage::kvs::get(_global_statistic, std::to_string(n), &xgram_count)) {
                     xgram_count = "0";
                 }
-                std::cout << "n= " << n  << " -> " << xgram_count << std::endl;
+                out << "n= " << n  << " -> " << xgram_count << std::endl;
             }
 
-            std::cout << "max_id: " << _max_id << std::endl;
+            out << "max_id: " << _max_id << std::endl;
         }
     };
 }

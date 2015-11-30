@@ -25,7 +25,7 @@ def main(args):
         if "href" in l:
             link = l.replace("<a href=\"", "")
             link = re.sub("\">.*</a>", "", link)
-            if len(args) == 1
+            if len(args) == 1:
                 if args[0] in link:
                     links.append(link)
             else:

@@ -72,17 +72,13 @@ namespace phrasit {
                     blockfilenames.push_front(blockfilename);
 
                     LOGDEBUG("write sorted lines to file: " << blockfilename);
-                    LOGDEBUG("count of lines" << lines.size());
-                    long lc = 0;
                     for (auto& l : lines) {
                         out << l << "\n";
                         if (out.bad()) {
                             LOGERROR("there is something wrong with appendling line " << l);
                             std::perror("appending line fails:");
                         }
-                        lc ++;
                     }
-                    LOGDEBUG("lines written: " << lc);
                     out.close();
                     lines.clear();
                     block++;
@@ -125,9 +121,7 @@ namespace phrasit {
                 blockfilenames.pop_back();
                 LOGDEBUG("merging blocks: " << b1 << " " << b2 << " to " << block);
 
-                //block1.rdbuf()->pubsetbuf(0, 0);
                 block1.open(b1);
-                //block2.rdbuf()->pubsetbuf(0, 0);
                 block2.open(b2);
 
                 std::string bm = tmppath + "/" + std::to_string(block);
@@ -137,14 +131,11 @@ namespace phrasit {
 
                 std::string l1 = "";
                 std::string l2 = "";
-                //b_merged.rdbuf()->pubsetbuf(0, 0);
                 b_merged.open(bm);
                 b_merged.sync_with_stdio(false);
-                LOGDEBUG("read lines");
                 getline(block1, l1);
                 getline(block2, l2);
 
-                LOGDEBUG("loop1");
                 while (!block1.eof() && !block2.eof() && l1 != "" && l2 != "") {
                     if(l1 < l2) {
                         // write l1 to result file
@@ -156,7 +147,6 @@ namespace phrasit {
                         getline(block2, l2);
                     }
                 }
-                LOGDEBUG("loop2");
                 while (!block1.eof()) {
                     if (l1 != "") {
                         // write l1 to result file
@@ -168,7 +158,6 @@ namespace phrasit {
                     // write l1 to result file
                     b_merged << l1 << "\n";
                 }
-                LOGDEBUG("loop3");
                 while (!block2.eof()) {
                     if (l2 != "") {
                         // write l2 to result file

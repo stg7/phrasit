@@ -24,10 +24,16 @@ env = Environment(CPPPATH = ["src/", "libs/"],
 
 # include local installed libs
 libspath = 'libs/'
-libs = [] #['tbb']
+libs = [] # "boost" ['tbb']
 env.Append(
     LIBPATH=['.'] + [libspath + x +  "/build/lib" for x in libs],
     CPPPATH=[libspath + x + "/build/include" for x in libs]
+)
+
+#cpp-netlib
+env.Append(
+    LIBPATH=[libspath + "/cpp-netlib/build/lib"],
+    CPPPATH=[libspath + "/cpp-netlib/" ]
 )
 
 # leveldb
@@ -36,7 +42,7 @@ env.Append(
     LIBPATH = [libspath + 'leveldb/']
 )
 
-env.Append(LINKFLAGS=['-Wl,--rpath,' + libspath + 'leveldb/', '-pthread'])
+env.Append(LINKFLAGS=['-Wl,--rpath,' + libspath + 'leveldb/', '-Wl,--rpath,' + libspath + 'boost/build/lib', '-pthread'])
 
 env.Decider('MD5')
 

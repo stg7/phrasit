@@ -27,21 +27,6 @@ leveldb() {
     logInfo "leveldb done."
 }
 
-rocksdb() {
-    if [ -d "rocksdb" ]; then
-        logInfo "rocksdb already installed locally"
-        return
-    fi
-    wget "https://github.com/facebook/rocksdb/archive/v4.1.tar.gz"
-    tar -zxvf "v4.1.tar.gz"
-    mv "rocksdb-4.1" "rocksdb"
-    cd rocksdb
-    make clean
-    make static_lib -j 4
-    cd ..
-
-}
-
 cpplint() {
     if [ -f "cpplint.py" ]; then
         logInfo "cpplint.py already installed locally"
@@ -82,6 +67,8 @@ cppnetlib() {
     cd build
     cmake ../
     make -j 4
+    mkdir -p lib
+    find ./libs/ -name "*.a" -exec cp {} ./lib/ \;
     cd ..
     cd ..
 }
@@ -89,9 +76,8 @@ cppnetlib() {
 mkdir -p libs
 cd libs
 leveldb
-#rocksdb
 boost
-#cppnetlib
+cppnetlib
 cd ..
 
 mkdir -p tools
