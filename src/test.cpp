@@ -158,6 +158,20 @@ void http_server_cppnetlib() {
 
 }
 
+#include "compress/gzip.hpp"
+
+void gzip_comp() {
+    std::string str = "hello";
+    auto x = phrasit::compress::gzip::compress(str);
+    LOGINFO("compress: " << str.length());
+    LOGINFO(x.length());
+
+    auto y = phrasit::compress::gzip::decompress(x);
+
+    LOGINFO(y);
+
+}
+
 /**
     phrasit: test
 **/
@@ -165,7 +179,9 @@ int main(int argc, const char* argv[]) {
 
     //external_sort("./storage/_ii/_tmp");
     //rocksdb_test();
-    http_server_cppnetlib();
+    // http_server_cppnetlib();
+    std::cout << "start" << std::endl;
+    gzip_comp();
 
     std::cout << "done" << std::endl;
     return 0;

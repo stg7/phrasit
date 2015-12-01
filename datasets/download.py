@@ -33,8 +33,11 @@ def main(args):
 
     f.close()
 
+    i = 0
     for l in links:
         download(l)
+        lInfo("{}/{} done.".format(i, len(links)))
+        i += 1
     """
     cpu_count = 1 # multiprocessing.cpu_count()
     lInfo("running with " + str(cpu_count) + " threads")

@@ -28,7 +28,7 @@ namespace phrasit {
         /*
         *   count lines of a file
         */
-        std::size_t count_lines(const std::string& filename) {
+        inline std::size_t count_lines(const std::string& filename) {
             std::fstream file(filename.c_str());
 
             std::size_t count = std::count_if(std::istreambuf_iterator<char>(file),
