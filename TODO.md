@@ -1,1 +1,0 @@
-replace mongoose-cpp with [cpp-netlib](http://cpp-netlib.org/0.11.2/examples/http/hello_world_server.html)
