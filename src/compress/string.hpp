@@ -38,6 +38,7 @@ namespace phrasit {
                         if (rep != "\0" && data.compare(i, len, rep) == 0) {
                             res += j;
                             replaced = true;
+                            break;
                         }
                     }
                     if (!replaced) {
@@ -60,7 +61,6 @@ namespace phrasit {
                         res += c;
                     }
                 }
-
                 return res;
             }
         };

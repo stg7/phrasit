@@ -160,7 +160,7 @@ void http_server_cppnetlib() {
 
 #include "compress/string.hpp"
 
-std::string bytes_str(std::string s) {
+std::string bytes_str(const std::string& s) {
     std::string res = "";
     for (auto& c : s) {
         res += std::to_string((int) c) + ",";
@@ -168,8 +168,26 @@ std::string bytes_str(std::string s) {
     return res;
 }
 
+#include <random>
+#include <functional> //for std::function
+#include <algorithm>  //for std::generate_n
+
+std::string random_string(size_t length) {
+    auto randchar = []() -> char {
+        const char charset[] =
+        "abcdefghijklmnopqrstuvwxyz ";
+        //"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        //"0123456789"
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[ rand() % max_index ];
+    };
+    std::string str(length,0);
+    std::generate_n(str.begin(), length, randchar);
+    return str;
+}
+
 void string_comp() {
-    std::string instr = "hello and world";
+    std::string instr = "hello and world" + random_string(10);
     auto cstr = phrasit::compress::string::compress(instr);
     LOGINFO("instr:  " << bytes_str(instr));
     LOGINFO("insize: " << instr.length());
@@ -180,6 +198,43 @@ void string_comp() {
     LOGINFO("decompressed: " << y);
 
     phrasit::utils::check(instr == y, "decompression failed!");
+
+    std::vector<std::string> strings;
+    int max_str = 100000;
+    int string_len = 140;
+
+    long size = 0;
+    for (int i = 0; i < max_str; i++) {
+        strings.emplace_back(random_string(string_len));
+        size += string_len;
+    }
+
+    {
+        phrasit::utils::Timer t;
+
+        std::vector<std::string> compressed_strings;
+        long csize = 0;
+
+        for (size_t i = 0; i < strings.size(); i++) {
+            std::string cstr = phrasit::compress::string::compress(strings[i]);
+            csize += cstr.size();
+            compressed_strings.emplace_back(cstr);
+        }
+
+        auto needed_time = t.time();
+
+        for (size_t i = 0; i < strings.size(); i++) {
+            auto x = phrasit::compress::string::decompress(compressed_strings[i]);
+            phrasit::utils::check(strings[i] == x, "decompression failed! \n" + strings[i]  + " \n" + x);
+        }
+
+        LOGINFO("needed time: " << needed_time);
+        LOGINFO("ms/str: " << (needed_time/max_str));
+        LOGINFO("size:  " << size);
+        LOGINFO("csize: " << csize);
+        LOGINFO("ratio: " << (((double) csize) / size));
+
+    }
 }
 
 /**
