@@ -164,21 +164,7 @@ namespace phrasit {
             // get all results and store it in a map, maybe TODO(stg7) use a set
             // because this approach is an intersection of all result sets for each part
             for (auto& x : parts) {
-                if (x == "?") {
-                    query_parts --;
-                    pos ++;
-                    continue;
-                }
 
-                auto res_for_part = _index->get_by_key(x, parts.size(), pos);
-                if (result_ids.size() == 0) {
-                    result_ids = res_for_part;
-                } else {
-                    result_ids = phrasit::utils::instersection<unsigned long>(result_ids, res_for_part);
-                }
-                pos ++;
-
-                /*
                 if (x == "?") {
                     query_parts --;
                     pos ++;
@@ -193,7 +179,6 @@ namespace phrasit {
                     }
                 }
                 pos ++;
-                */
             }
 
             // sort results based on ngram frequency
@@ -204,17 +189,7 @@ namespace phrasit {
 
             std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
 
-            for (auto& x : result_ids) {
-                queue.push(std::make_tuple(x, get_freq(x)));
 
-                // remove elements from queue to reduce memory overhead
-                // if a query will receive a lot of results
-                if (queue.size() > phrasit::max_result_size) {
-                    queue.pop();
-                }
-            }
-
-            /*
             for (auto& x : res_map) {
                 // only use ngrams, that are in the intersection of all parts
                 if (x.second == query_parts) {
@@ -226,7 +201,7 @@ namespace phrasit {
                         queue.pop();
                     }
                 }
-            }*/
+            }
 
             // insert elements sorted to result vector, from min to max frequency
             while (!queue.empty()) {
