@@ -35,7 +35,7 @@ namespace phrasit {
 
         class Inverted_index {
          private:
-            static constexpr const char* _max_id_key = "__max_id";
+            static constexpr const char* _max_id_key = "__max_id";  //< used as max_id key in kv-store
 
             std::string _storagedir;
             unsigned long _max_id;
@@ -58,7 +58,6 @@ namespace phrasit {
                 kvs::open(_storagedir + "/_meta", &_meta);
                 _max_id = kvs::get_ulong_or_default(_meta, _max_id_key, 0);
 
-                // TODO(stg7) open it in append mode
                 _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
                 _tmpfile.sync_with_stdio(false);
 
@@ -77,11 +76,6 @@ namespace phrasit {
             }
 
             ~Inverted_index() {
-                close();
-                LOGINFO("delete ii");
-            }
-
-            inline void close() {
                 kvs::put(_meta, _max_id_key, std::to_string(_max_id));
 
                 if (_tmpfile.is_open()) {
@@ -89,11 +83,13 @@ namespace phrasit {
                 }
 
                 kvs::close(_meta);
+                LOGINFO("delete ii");
             }
 
+            /*
+            *   append ngram token with ngram id and "n" to the index
+            */
             inline bool append(const std::string& ngram_token, unsigned long ngram_id, unsigned long n) {
-                //LOGINFO("append(" << ngram_token << ", " << ngram_id << ")");
-
                 unsigned long id = kvs::get_ulong_or_default(_meta, ngram_token, _max_id);
                 if (id == _max_id) {
                     kvs::put(_meta, ngram_token, std::to_string(_max_id));
@@ -105,8 +101,11 @@ namespace phrasit {
                 return true;
             }
 
+            /*
+            *   optimize index: build a memory mapped index
+            *   if ignore_existing is true then an already existing index will be ignored
+            */
             inline bool optimize(bool ignore_existing=false) {
-                //close();
                 namespace fs = boost::filesystem;
 
                 std::string tmp_filename = _storagedir + "/_tmp";
@@ -178,7 +177,7 @@ namespace phrasit {
                 index_header[h_pos++] = 0;
                 index_header[h_pos++] = index.size() - 1;
 
-                {
+                { // write validation file, for debugging
                     std::ofstream validation_file;
                     validation_file.open(_storagedir + "/_validation");
                     for (unsigned long l = 0; l < index_header.size() - 2; l += 2) {

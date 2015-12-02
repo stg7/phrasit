@@ -11,13 +11,40 @@ import sys
 import glob
 import multiprocessing
 
+def terminal_width():
+    rows, columns = os.popen('stty size', 'r').read().split()
+    return int(columns)
+
+def colorgreen(m):
+    return "\033[92m" + m + "\033[0m"
+
+def lInfo(msg):
+    print(colorgreen("[INFO ] ") + str(msg))
+
+def line():
+    print("-" * terminal_width())
+
+def dline():
+    print("=" * terminal_width())
+
 SetOption('num_jobs', multiprocessing.cpu_count()) # build with all aviable cpu cores/threads
+
+line()
+lInfo("build target(s): " + str(map(str, BUILD_TARGETS)))
+lInfo("run with cpus  : " + str(multiprocessing.cpu_count()))
+line()
 
 stylechecker = Builder(action='./test_convention.sh $SOURCES', suffix='', src_suffix='')
 valgrind = Builder(action='valgrind ./$SOURCES', suffix='', src_suffix='')
 
+lInfo("check local installed libs")
+dline()
 os.system("./prepare.sh")
+line()
+lInfo("add build infos")
+dline()
 os.system("./addbuildinfos.sh")
+line()
 
 env = Environment(CPPPATH = ["src/", "libs/"],
                   BUILDERS = {'StyleCheck' : stylechecker, 'Valgrind': valgrind})
@@ -85,7 +112,7 @@ testcases = set(glob.glob("src/tests/*.cpp"))
 header = set(glob.glob("src/*.hpp") +  glob.glob("src/*/*.hpp"))
 sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/main.cpp", "src/test.cpp", "src/tests/unittests.cpp"]) - testcases
 
-libs = glob.glob("libs/*/*.c")
+#libs = glob.glob("libs/*/*.c")
 
 # check code conventions and build programm
 #env.StyleCheck("conventions", ["src/main.cpp"] + list(sources) + list(header) + list(testcases))
@@ -96,9 +123,10 @@ libs = glob.glob("libs/*/*.c")
 #AlwaysBuild(test_alias)
 
 
-env.Program('phrasit', ["src/main.cpp"] + list(sources) + libs)
-env.Program('test', ["src/test.cpp"] + list(sources) + libs)
+phrasit = env.Program('phrasit', ["src/main.cpp"] + list(sources)) # + libs)
+test = env.Program('test', ["src/test.cpp"] + list(sources))# + libs)
 
+Default(phrasit, test)
 #env.ParseConfig('/usr/bin/python3-config --includes --libs')
 #env.Append(LIBS=['boost_python3'])
 

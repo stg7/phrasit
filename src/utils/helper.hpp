@@ -27,6 +27,8 @@ namespace phrasit {
 
         /*
         *   count lines of a file
+        *   \param filename name of file
+        *   \return count of lines
         */
         inline std::size_t count_lines(const std::string& filename) {
             std::fstream file(filename.c_str());
@@ -37,11 +39,16 @@ namespace phrasit {
             return count;
         }
 
+        /*
+        *   check a specific predicate
+        *   e.g. check(1 == 2; "you are wrong, check '1==2' failed");
+        */
         inline void check(bool pred, const std::string msg) {
             if (phrasit::debug) {
                 if (!pred) {
                     LOGERROR(msg);
-                    throw "exception";
+                    class checkException {};
+                    throw new checkException();
                 }
             }
         }
@@ -113,10 +120,10 @@ namespace phrasit {
         }
 
         /*
-            split a string by delimiter and return result in a vector of strings
-            \param s string to split
-            \param delim using this character as a delimiter
-            \return splitted strings as a vector
+        *   split a string by delimiter and return result in a vector of strings
+        *   \param s string to split
+        *   \param delim using this character as a delimiter
+        *   \return splitted strings as a vector
         */
         inline std::vector<std::string> split(const std::string& s, char delim) {
             std::vector<std::string> elems;
