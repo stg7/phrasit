@@ -16,6 +16,10 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
+#include <queue>
+#include <tuple>
+#include <algorithm>
 
 #include "storage/kvs.hpp"
 #include "storage/inverted_index.hpp"
@@ -107,10 +111,11 @@ namespace phrasit {
                 storage::kvs::put(_global_statistic, std::to_string(n), std::to_string(xgram_count));
 
                 //std::cout << "current id: " << id << std::endl;
+                int pos = 1;
                 for (auto& x : parts) {
                     //std::cout << x << " __ " << std::endl;
-                    _index->append(x, id, n);
-
+                    _index->append(x, id, n, pos);
+                    pos++;
                 }
                 //std::cout << std::endl;
             }
@@ -124,11 +129,21 @@ namespace phrasit {
             // TODO(stg7)
         }
 
+        std::string get_ngram(const unsigned long id) {
+            std::string ngram = "";
+            storage::kvs::get(_id_to_ngram, std::to_string(id), &ngram);
+            return ngram;
+        }
+
+        unsigned long get_freq(const unsigned long id) {
+            return storage::kvs::get_ulong_or_default(_freq, std::to_string(id), 0);
+        }
+
         /*
         *   handle a query and return all results as a vector
         */
-        const std::vector<std::string> search(const std::string& query) {
-            std::vector<std::string> res;
+        const std::vector<unsigned long> search(const std::string& query) {
+            std::vector<unsigned long> res;
 
             // TODO(stg7) add a real query parser
 
@@ -137,11 +152,91 @@ namespace phrasit {
 
             std::string cleaned_query = phrasit::utils::join(parts, " ");
 
-            std::cout << cleaned_query << std::endl;
+            LOGINFO("handle query: " << query);
+
+            std::map<unsigned long, unsigned long> res_map;
+
+            int pos = 1;
+            unsigned long query_parts = parts.size();
+
+            std::vector<unsigned long> result_ids;
+
+            // get all results and store it in a map, maybe TODO(stg7) use a set
+            // because this approach is an intersection of all result sets for each part
             for (auto& x : parts) {
-                std::cout << x << " __ " << std::endl;
+                if (x == "?") {
+                    query_parts --;
+                    pos ++;
+                    continue;
+                }
+
+                auto res_for_part = _index->get_by_key(x, parts.size(), pos);
+                if (result_ids.size() == 0) {
+                    result_ids = res_for_part;
+                } else {
+                    result_ids = phrasit::utils::instersection<unsigned long>(result_ids, res_for_part);
+                }
+                pos ++;
+
+                /*
+                if (x == "?") {
+                    query_parts --;
+                    pos ++;
+                    continue;
+                }
+
+                for (auto& y : _index->get_by_key(x, parts.size(), pos)) {
+                    if (res_map.find(y) != res_map.end()) {
+                        res_map[y] ++;
+                    } else {
+                        res_map[y] = 1;
+                    }
+                }
+                pos ++;
+                */
             }
-            res.push_back("test");
+
+            // sort results based on ngram frequency
+
+            typedef std::tuple<unsigned long, unsigned long> pair;
+
+            auto cmp = [](pair& left, pair& right) -> bool {return std::get<1>(left) > std::get<1>(right);};
+
+            std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
+
+            for (auto& x : result_ids) {
+                queue.push(std::make_tuple(x, get_freq(x)));
+
+                // remove elements from queue to reduce memory overhead
+                // if a query will receive a lot of results
+                if (queue.size() > phrasit::max_result_size) {
+                    queue.pop();
+                }
+            }
+
+            /*
+            for (auto& x : res_map) {
+                // only use ngrams, that are in the intersection of all parts
+                if (x.second == query_parts) {
+                    queue.push(std::make_tuple(x.first, get_freq(x.first)));
+
+                    // remove elements from queue to reduce memory overhead
+                    // if a query will receive a lot of results
+                    if (queue.size() > phrasit::max_result_size) {
+                        queue.pop();
+                    }
+                }
+            }*/
+
+            // insert elements sorted to result vector, from min to max frequency
+            while (!queue.empty()) {
+                auto top = queue.top();
+                res.push_back(std::get<0>(top));
+                queue.pop();
+            }
+            // reverse result, because, most frequent should be first
+            // this approach is necessary because of the result size limitation
+            std::reverse(std::begin(res), std::end(res));
             return res;
         }
 

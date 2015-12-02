@@ -43,6 +43,8 @@ namespace phrasit {
             kvs::type _meta;
             std::ofstream _tmpfile;
 
+            phrasit::utils::MMArray<unsigned long> _index;
+            phrasit::utils::MMArray<unsigned long> _index_header;
 
          public:
             Inverted_index(const std::string& storagedir) : _max_id(0) {
@@ -58,9 +60,21 @@ namespace phrasit {
                 kvs::open(_storagedir + "/_meta", &_meta);
                 _max_id = kvs::get_ulong_or_default(_meta, _max_id_key, 0);
 
-                _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
-                _tmpfile.sync_with_stdio(false);
 
+                bool index_exists = false;
+                if (fs::exists(_storagedir + "/" + "_index")) {
+                    _index.open(_storagedir + "/" + "_index");
+                    index_exists = true;
+                }
+                if (fs::exists(_storagedir + "/" + "_index_header")) {
+                    _index_header.open(_storagedir + "/" + "_index_header");
+                    index_exists = true;
+                }
+
+                if (!index_exists) {
+                    _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
+                    _tmpfile.sync_with_stdio(false);
+                }
                 /*
                 std::cout << "keys" << std::endl;
                 leveldb::Iterator* it = _meta->NewIterator(leveldb::ReadOptions());
@@ -89,14 +103,15 @@ namespace phrasit {
             /*
             *   append ngram token with ngram id and "n" to the index
             */
-            inline bool append(const std::string& ngram_token, unsigned long ngram_id, unsigned long n) {
+            inline bool append(const std::string& ngram_token, unsigned long ngram_id, unsigned long n, unsigned long pos) {
+                phrasit::utils::check(_index.is_open() == false, "index file is there, you cannot insert new values to an existing creted index");
                 unsigned long id = kvs::get_ulong_or_default(_meta, ngram_token, _max_id);
                 if (id == _max_id) {
                     kvs::put(_meta, ngram_token, std::to_string(_max_id));
                     _max_id++;
                 }
 
-                _tmpfile << id << "\t" << ngram_id << "\t" << n << "\n";
+                _tmpfile << id << "\t" << ngram_id << "\t" << (10 * pos + n) << "\n";
 
                 return true;
             }
@@ -137,17 +152,17 @@ namespace phrasit {
                 // TODO(stg7) maybe dont use unsigned long as index value, e.g. struct type
 
                 // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
-                phrasit::utils::MMArray<unsigned long> index(_storagedir + "/" + "_index", line_count * 2 * sizeof(unsigned long));
+                _index.open(_storagedir + "/" + "_index", line_count * 2 * sizeof(unsigned long));
                 // store start positions in header file
-                phrasit::utils::MMArray<unsigned long> index_header(_storagedir + "/" + "_index_header", (_max_id + 1) * 2 * sizeof(unsigned long));
+                _index_header.open(_storagedir + "/" + "_index_header", (_max_id + 1) * 2 * sizeof(unsigned long));
 
                 char delimiter = '\t';
                 unsigned long current_id = 0;
 
                 unsigned long pos = 0;
                 unsigned long h_pos = 0;
-                index_header[h_pos++] = current_id;
-                index_header[h_pos++] = 0;
+                _index_header[h_pos++] = current_id;
+                _index_header[h_pos++] = 0;
 
 
                 phrasit::utils::Progress_bar pb(1000, "index");
@@ -159,41 +174,76 @@ namespace phrasit {
                     if (splitted_line.size() == 3) {
                         unsigned long id = std::stol(splitted_line[0]);
                         unsigned long ngram_id = std::stol(splitted_line[1]);
-                        unsigned long n = std::stol(splitted_line[2]);
+                        unsigned long n_and_pos = std::stol(splitted_line[2]);
 
                         if (id != current_id) {
-                            index_header[h_pos++] = id;
-                            index_header[h_pos++] = pos;
+                            _index_header[h_pos++] = id;
+                            _index_header[h_pos++] = pos;
                             current_id = id;
                         }
 
-                        index[pos++] = ngram_id;
-                        index[pos++] = n;
+                        _index[pos++] = ngram_id;
+                        _index[pos++] = n_and_pos;
                         pb.update();
                     }
                 }
 
                 // store dummy element at the end of header for easy accessing
-                index_header[h_pos++] = 0;
-                index_header[h_pos++] = index.size() - 1;
+                _index_header[h_pos++] = 0;
+                _index_header[h_pos++] = _index.size() - 1;
 
                 { // write validation file, for debugging
                     std::ofstream validation_file;
                     validation_file.open(_storagedir + "/_validation");
-                    for (unsigned long l = 0; l < index_header.size() - 2; l += 2) {
-                        unsigned long id = index_header[l];
-                        unsigned long pos = index_header[l + 1];
-                        //unsigned long next_id = index_header[l + 2];
-                        unsigned long next_pos = index_header[l + 3];
+                    for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
+                        unsigned long id = _index_header[l];
+                        unsigned long pos = _index_header[l + 1];
+                        //unsigned long next_id = _index_header[l + 2];
+                        unsigned long next_pos = _index_header[l + 3];
 
                         for (unsigned long j = pos; j < next_pos; j += 2) {
-                            unsigned long ngram_id = index[j];
-                            unsigned long n = index[j + 1];
-                            validation_file << id << "\t" << ngram_id << "\t" << n << "\n";
+                            unsigned long ngram_id = _index[j];
+                            unsigned long n_and_pos = _index[j + 1];
+                            validation_file << id << "\t" << ngram_id << "\t" << n_and_pos << "\n";
                         }
                     }
                 }
                 return true;
+            }
+
+            std::vector<unsigned long> get_by_key(const std::string& key, unsigned long needed_n = 0, unsigned long needed_pos = 0) {
+                phrasit::utils::check(_index.is_open() == true, "index file is closed?!");
+
+                std::vector<unsigned long> res;
+                unsigned long needed_n_and_pos = (10 * needed_pos + needed_n);
+
+                // check if key is stored
+                unsigned long key_id = kvs::get_ulong_or_default(_meta, key, _max_id);
+                if (_max_id == key_id) {
+                    return res;
+                }
+
+                // find _index position in _index_header for id
+                // TODO(stg7) to it parallel or use a sorted storing?!
+                unsigned long start_pos = 0;
+                unsigned long end_pos = 0;
+
+                for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
+                    unsigned long id = _index_header[l];
+                    if (id == key_id) { // id should be stored @ one position, therefore breaking is ok
+                        start_pos = _index_header[l + 1];
+                        end_pos = _index_header[l + 3];
+                        break;
+                    }
+                }
+                for (unsigned long j = start_pos; j < end_pos; j += 2) {
+                    unsigned long ngram_id = _index[j];
+                    unsigned long n_and_pos = _index[j + 1];
+                    if (needed_n_and_pos == 0 || needed_n_and_pos == n_and_pos) {
+                        res.emplace_back(ngram_id);
+                    }
+                }
+                return res;
             }
         };
     }

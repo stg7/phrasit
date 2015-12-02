@@ -17,6 +17,7 @@ namespace phrasit {
     static constexpr const char* exit_str = "!";
     static constexpr const char* shell_str = "\033[1;91mphrasit>>\033[0m ";
     static constexpr const int max_ngram = 5;
+    static constexpr const unsigned long max_result_size = 10000;
     static constexpr const int webserver_port = 8090;
     static constexpr const char* webserver_bindaddress = "0.0.0.0";
     static constexpr const bool debug = true;

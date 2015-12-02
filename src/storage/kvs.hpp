@@ -18,6 +18,7 @@
 
 #include "leveldb/db.h"
 
+#include "compress/string.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "consts.hpp"

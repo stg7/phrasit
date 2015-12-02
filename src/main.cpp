@@ -26,8 +26,9 @@
 #include "consts.hpp"
 
 void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
+    LOGINFO("results:");
     for (auto& res : phrasit.search(query)) {
-        std::cout << res << std::endl;
+        std::cout << phrasit.get_ngram(res) << "  : " << phrasit.get_freq(res) << std::endl;
     }
 }
 
@@ -81,7 +82,6 @@ int main(int argc, const char* argv[]) {
     LOGMSG("start phrasit");
     LOGMSG("version: " << phrasit::version);
     LOGMSG("branch: " << phrasit::branch);
-
 
     LOGMSG("using storagedir: " << storagedir);
 
@@ -155,7 +155,9 @@ int main(int argc, const char* argv[]) {
             getline(std::cin, query);
             phrasit::utils::Timer t;
 
-            print_search_results(query, phrasit);
+            if (query != phrasit::exit_str) {
+                print_search_results(query, phrasit);
+            }
 
             LOGDEBUG("needed time: " << t.time() << " ms");
         } while (query != phrasit::exit_str && !std::cin.eof());

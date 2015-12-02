@@ -46,14 +46,19 @@ namespace phrasit {
          private:
             boost::iostreams::mapped_file _file; //< read write access to memory mapped file
             T* _data; //< mapped data pointer of type T
+            bool _is_opened = false;
+
          public:
 
-            /**
-            *   open memory mapped file
-            *   \param filename
-            *   \param size if size = 0, file must be existing
-            **/
-            MMArray(const std::string filename, unsigned long size = 0) {
+            /*
+            *   create not opened mmfile
+            */
+            MMArray() {};
+
+            /*
+            *   open file filename, if size != 0 create a new file
+            */
+            void open(const std::string filename, unsigned long size = 0) {
                 namespace fs = boost::filesystem;
                 boost::iostreams::mapped_file_params  params;
                 params.path = filename;
@@ -65,11 +70,30 @@ namespace phrasit {
 
                 _file.open(params);
                 _data = (T *)_file.data();
+                _is_opened = true;
+            }
+
+            /*
+            *   close mmfile
+            */
+            void close() {
+                _file.close();
+                _data = NULL;
+            }
+
+            bool is_open() {
+                return _is_opened;
+            }
+            /*
+            *   open memory mapped file
+            *   \param filename
+            *   \param size if size = 0, file must be existing
+            */
+            MMArray(const std::string filename, unsigned long size = 0) {
+                open(filename, size);
             }
 
             ~MMArray() {
-                _file.close();
-                _data = NULL;
             }
 
             T get(const unsigned long i) const {

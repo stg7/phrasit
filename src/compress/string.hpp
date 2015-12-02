@@ -3,7 +3,7 @@
 
     \author stg7
 
-    \brief string compression based on analyzed most frequent 2,3,4 grams
+    \brief simple string compression based on analyzed most frequent 2,3,4 grams
 
     \date 01.12.2015
 
@@ -20,7 +20,8 @@
 namespace phrasit {
     namespace compress {
         namespace string {
-            std::string _comp_table[32] = {"\0","ing","in","er","re","ti","on","es","te","an","en","e ","ed","at","s ","st","al","ng","th","nt","ar","le","co","or","de","ra","ri","d ","se","io","li","ic"};
+
+            static std::string _comp_table[32] = {"\0","ing","in","er","re","ti","on","es","te","an","en","ed","at","st","al","ng","th","nt","ar","le","co","or","de","ra","ri","se","io","li","ic","is","ne","me"};
 
             inline std::string compress(const std::string& data) {
                 std::string res = "";

@@ -237,16 +237,30 @@ void string_comp() {
     }
 }
 
+void intersection_test() {
+    std::vector<int> v1 = {9,3,4,8,2,3};
+    std::vector<int> v2 = {1,2,3,8,0};
+
+    auto inter = phrasit::utils::instersection<int>(v1, v2);
+
+    for (auto& x : inter) {
+        std::cout << x << std::endl;
+    }
+    // result should be {2,3,8}
+
+}
+
 /**
     phrasit: test
 **/
 int main(int argc, const char* argv[]) {
 
+    std::cout << "start" << std::endl;
     //external_sort("./storage/_ii/_tmp");
     //rocksdb_test();
     // http_server_cppnetlib();
-    std::cout << "start" << std::endl;
-    string_comp();
+    //string_comp();
+    intersection_test();
 
     std::cout << "done" << std::endl;
     return 0;

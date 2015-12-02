@@ -20,7 +20,6 @@ namespace phrasit {
 
         /*
         *   progress bar
-        *
         */
         class Progress_bar {
          private:
@@ -35,13 +34,18 @@ namespace phrasit {
             std::string _msg;
 
          public:
-            Progress_bar(unsigned long update_count = 1,const std::string& msg=""): _wait_char(_wait_char_first), _update_count(update_count), _msg(msg) {
+            Progress_bar(unsigned long update_count = 1,const std::string& msg=""): _wait_char(_wait_char_first),
+                _update_count(update_count), _msg(msg) {
 
             }
+
             ~Progress_bar() {
                 std::cout << std::endl;
             }
 
+            /*
+            *   perform an update step and do output on stdout
+            */
             void update() {
                 if(_count %  _update_count == 0) {
                     if (_glob_count % _cols == 0) {
