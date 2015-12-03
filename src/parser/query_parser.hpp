@@ -111,6 +111,7 @@ namespace phrasit {
                     }
                 }
                 // TODO(stg7) do it in a better way without filtering in the end
+
                 // filter out queries that are too long
                 for (auto& q : tmp_result_queries) {
                     std::vector<std::string> parts = filter(split(trim(q), ' '), phrasit::notempty_filter);
@@ -123,7 +124,7 @@ namespace phrasit {
                 return res_queries;
             }
 
-            // optionset operator []
+            // optionset operator [ ]
             /*
             [ ] can be implemented in the following way:
             ```
@@ -144,7 +145,7 @@ namespace phrasit {
                 return {};
             }
 
-            // orderset
+            // orderset { }
             /*
             { } implementation:
             ```
@@ -158,7 +159,7 @@ namespace phrasit {
                     "a" "x" "z" "y" "b"
             ```
             */
-            static std::vector<std::string> orderset_optionset(std::string query) {
+            static std::vector<std::string> operator_orderset(std::string query) {
                 LOGINFO( __FUNCTION__);
                 return {};
             }
@@ -186,7 +187,7 @@ namespace phrasit {
 
                 std::vector<std::string> queries;
 
-                auto operators = {&operator_asterisk, &operator_optionset, &orderset_optionset};
+                auto operators = {&operator_asterisk, &operator_optionset, &operator_orderset};
 
                 // do parsing of query
                 for (auto& op : operators) {
