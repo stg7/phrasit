@@ -18,6 +18,7 @@
 #include <sstream>
 
 #include <boost/network/protocol/http/server.hpp>
+#include <boost/network/uri/decode.hpp>
 
 #include "utils/consthash.hpp"
 #include "utils/log.hpp"
@@ -103,10 +104,25 @@ namespace phrasit {
 
                 std::ostringstream res;
                 res << "[";
-                for (auto& r : _phrasit.search(query)) {
-                    res << "\"" << r << "\",";
+                auto& results = _phrasit.search(query);
+                if (results.size() > 0) {
+                    unsigned long i;
+                    for (i = 0; i < results.size() - 1; i++) {
+                        auto& r = results[i];
+                        res << "{ \""
+                            << _phrasit.get_ngram(r) << "\": "
+                            << _phrasit.get_freq(r)
+                            << "},";
+                    }
+
+                    auto& r = results[i];
+                    res << "{ \""
+                        << _phrasit.get_ngram(r) << "\": "
+                        << _phrasit.get_freq(r)
+                        << "}]";
+                } else {
+                    res << "]";
                 }
-                res << "\"\"" << "]";
 
                 double needed_time = t.time();
                 response << "{"
@@ -125,7 +141,9 @@ namespace phrasit {
                 std::ostringstream data;
 
                 std::map<std::string, std::string> params;
-                std::string path = parse(request.destination, params);
+
+                std::string decoded_dest = boost::network::uri::decoded(request.destination);
+                std::string path = parse(decoded_dest, params);
 
                 LOGINFO("path:" << path);
 
@@ -143,6 +161,10 @@ namespace phrasit {
                             data << "   ./stats : to get statistics about phrasit \n";
                             data << "   ./api/?query=whatever : to submit a query 'whatever' to phrasit \n";
                             data << "</pre>";
+                        }
+                        break;
+                    case c_hash("/favicon.ico"): {
+                            // TODO(stg7) return something
                         }
                         break;
                     case c_hash("/stats"): {

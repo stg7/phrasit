@@ -46,6 +46,7 @@ int main(int argc, const char* argv[]) {
         ("storagedir,d", po::value<std::string>(), "storage directory, default='storage'")
         ("queryfile,f", po::value<std::string>(), "handle queries stored in a file")
         ("import,i", "import from stdin, format: ngram tab freq")
+        ("max-res", po::value<unsigned long>(), "maximum result size")
         ("server,s", "start phrasit in server mode")
         ("opt,o", "optimize [debug]");;
 
@@ -62,6 +63,10 @@ int main(int argc, const char* argv[]) {
     if (vm.count("help") != 0) {
         std::cout << desc << std::endl;
         return -1;
+    }
+
+    if (vm.count("max-res") != 0) {
+        phrasit::max_result_size = vm["max-res"].as<unsigned long>();
     }
 
     std::string storagedir = "storage";
@@ -155,7 +160,7 @@ int main(int argc, const char* argv[]) {
             getline(std::cin, query);
             phrasit::utils::Timer t;
 
-            if (query != phrasit::exit_str) {
+            if (query != phrasit::exit_str && query != "") {
                 print_search_results(query, phrasit);
             }
 

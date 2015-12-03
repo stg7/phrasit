@@ -17,6 +17,8 @@
 #include <sstream>
 #include "boost/filesystem.hpp"
 
+
+#include "parser/query_parser.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
@@ -238,15 +240,65 @@ void string_comp() {
 }
 
 void intersection_test() {
-    std::vector<int> v1 = {9,3,4,8,2,3};
-    std::vector<int> v2 = {1,2,3,8,0};
+    {
+        std::vector<int> v1 = {9,3,4,8,2,3};
+        std::vector<int> v2 = {1,2,3,8,0};
 
-    auto inter = phrasit::utils::instersection<int>(v1, v2);
+        auto inter = phrasit::utils::_instersection<int>(v1, v2);
 
-    for (auto& x : inter) {
-        std::cout << x << std::endl;
+        for (auto& x : inter) {
+            std::cout << x << std::endl;
+        }
     }
     // result should be {2,3,8}
+
+    {
+        std::vector<int> v1 = {9,3,4,8,2,3};
+        std::vector<int> v2 = {};
+        auto inter = phrasit::utils::_instersection<int>(v1, v2);
+
+        assert(inter.size() == 0);
+    }
+}
+
+void query_parser_test() {
+    LOGINFO("query_parser_test");
+    phrasit::parser::Query_parser qp;
+
+    assert(qp.parse("").size() == 0);
+
+    auto print_query_and_check = [&qp](std::string query, bool check=false, unsigned long size=0) {
+        auto res = qp.parse(query);
+        std::cout << "query: " << query << std::endl;
+        for (auto& q : res) {
+            std::cout << "  " << q << std::endl;
+        }
+        if (check) {
+            assert(res.size() == size);
+        }
+    };
+
+    print_query_and_check("* hello *");
+    return;
+    print_query_and_check("hello *");
+    print_query_and_check("* hello");
+
+    print_query_and_check("* hello * a");
+    print_query_and_check("* hello * a *");
+    print_query_and_check("* hello * a * b");
+    print_query_and_check("* hello * a * b *");
+    print_query_and_check("hello * a * b *");
+
+    return;
+    assert(qp.parse("hello *").size() == 5);
+    assert(qp.parse("hello").size() == 1);
+
+    assert(qp.parse("hello ?").size() == 1);
+
+    // hello * -> {hello , hello ?, hello ? ?, hello ? ? ? , hello ? ? ? ?}
+
+    assert(qp.parse("* hello").size() == 5);
+
 
 }
 
@@ -260,7 +312,8 @@ int main(int argc, const char* argv[]) {
     //rocksdb_test();
     // http_server_cppnetlib();
     //string_comp();
-    intersection_test();
+    //intersection_test();
+    query_parser_test();
 
     std::cout << "done" << std::endl;
     return 0;

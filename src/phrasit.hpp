@@ -21,11 +21,12 @@
 #include <tuple>
 #include <algorithm>
 
-#include "storage/kvs.hpp"
-#include "storage/inverted_index.hpp"
+#include "consts.hpp"
+#include "parser/query_parser.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
-#include "consts.hpp"
+#include "storage/kvs.hpp"
+#include "storage/inverted_index.hpp"
 
 namespace phrasit {
 
@@ -42,6 +43,7 @@ namespace phrasit {
         std::shared_ptr<storage::Inverted_index> _index = nullptr;
 
         unsigned long _max_id;
+        parser::Query_parser _parser;
 
      public:
         Phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
@@ -83,7 +85,7 @@ namespace phrasit {
         }
 
         /*
-        *   insert ngram with frequency
+        *   insert n-gram with frequency
         */
         long insert(const std::string& ngram, const std::string& freq) {
             std::vector<std::string> parts = phrasit::utils::filter(
@@ -92,7 +94,8 @@ namespace phrasit {
             std::string cleaned_ngram = phrasit::utils::join(parts, " ");
 
             unsigned long n = parts.size();
-            phrasit::utils::check(n <= phrasit::max_ngram, "ngram size > " + std::to_string(phrasit::max_ngram));
+            phrasit::utils::check(n <= phrasit::max_ngram,
+                "n-gram size > " + std::to_string(phrasit::max_ngram));
 
             long id = get_id_by_ngram(cleaned_ngram);
             if (id == -1) {
@@ -104,29 +107,26 @@ namespace phrasit {
                 storage::kvs::put(_id_to_ngram, id_str, cleaned_ngram);
                 storage::kvs::put(_freq, id_str, freq);
 
-                // update global ngram statistic
-                long xgram_count = storage::kvs::get_ulong_or_default(_global_statistic, std::to_string(n), 0);
+                // update global n-gram statistic
+                long xgram_count = storage::kvs::get_ulong_or_default(_global_statistic,
+                    std::to_string(n), 0);
                 xgram_count++;
 
                 storage::kvs::put(_global_statistic, std::to_string(n), std::to_string(xgram_count));
 
-                //std::cout << "current id: " << id << std::endl;
                 int pos = 1;
                 for (auto& x : parts) {
-                    //std::cout << x << " __ " << std::endl;
                     _index->append(x, id, n, pos);
                     pos++;
                 }
-                //std::cout << std::endl;
             }
             return id;
         }
 
         void optimize(bool ignore_existing=false) {
             LOGINFO("optimize");
-            //close();
             _index->optimize(ignore_existing);
-            // TODO(stg7)
+
         }
 
         std::string get_ngram(const unsigned long id) {
@@ -140,67 +140,54 @@ namespace phrasit {
         }
 
         /*
-        *   handle a query and return all results as a vector
+        *   handle a query with question mark as the only operator
+        *    and return all results as a vector of n-gram ids
         */
-        const std::vector<unsigned long> search(const std::string& query) {
+        const std::vector<unsigned long> qmark_search(const std::string& query) {
             std::vector<unsigned long> res;
-
-            // TODO(stg7) add a real query parser
+            if (query == "") {
+                return res;
+            }
 
             std::vector<std::string> parts = phrasit::utils::filter(
                 phrasit::utils::split(phrasit::utils::trim(query), ' '), phrasit::notempty_filter);
 
             std::string cleaned_query = phrasit::utils::join(parts, " ");
 
-            LOGINFO("handle query: " << query);
 
-            std::map<unsigned long, unsigned long> res_map;
-
-            int pos = 1;
-            unsigned long query_parts = parts.size();
-
-            std::vector<unsigned long> result_ids;
-
-            // get all results and store it in a map, maybe TODO(stg7) use a set
-            // because this approach is an intersection of all result sets for each part
-            for (auto& x : parts) {
-                if (x == "?") {
-                    query_parts --;
-                    pos ++;
-                    continue;
-                }
-
-                auto res_for_part = _index->get_by_key(x, parts.size(), pos);
-                if (result_ids.size() == 0) {
-                    result_ids = res_for_part;
-                } else {
-                    result_ids = phrasit::utils::instersection<unsigned long>(result_ids, res_for_part);
-                }
-                pos ++;
-
-                /*
-                if (x == "?") {
-                    query_parts --;
-                    pos ++;
-                    continue;
-                }
-
-                for (auto& y : _index->get_by_key(x, parts.size(), pos)) {
-                    if (res_map.find(y) != res_map.end()) {
-                        res_map[y] ++;
-                    } else {
-                        res_map[y] = 1;
-                    }
-                }
-                pos ++;
-                */
+            unsigned long start_pos = 0;
+            while (start_pos < parts.size() && parts[start_pos] == "?") {
+                start_pos ++;
             }
 
-            // sort results based on ngram frequency
+            // query contains only ???, and will not be supported, because of iteration over
+            //  complete key set of inverted index
+            if (start_pos >= parts.size()) {
+                return res;
+            }
+
+            std::vector<unsigned long> result_ids = _index->get_by_key(parts[start_pos],
+                parts.size(), start_pos + 1);
+
+            // get all results via intersection of all result sets for each part
+
+            for (unsigned long pos = start_pos + 1; pos < parts.size(); pos++) {
+                auto& x = parts[pos];
+                if (x == "?") {
+                    continue;
+                }
+
+                auto res_for_part = _index->get_by_key(x, parts.size(), pos + 1);
+                result_ids = phrasit::utils::_instersection<unsigned long>(result_ids, res_for_part);
+            }
+
+            // sort results based on n-gram frequency
 
             typedef std::tuple<unsigned long, unsigned long> pair;
 
-            auto cmp = [](pair& left, pair& right) -> bool {return std::get<1>(left) > std::get<1>(right);};
+            auto cmp = [](pair& left, pair& right) -> bool {
+                return std::get<1>(left) > std::get<1>(right);
+            };
 
             std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
 
@@ -208,25 +195,11 @@ namespace phrasit {
                 queue.push(std::make_tuple(x, get_freq(x)));
 
                 // remove elements from queue to reduce memory overhead
-                // if a query will receive a lot of results
+                //  if a query will receive a lot of results
                 if (queue.size() > phrasit::max_result_size) {
                     queue.pop();
                 }
             }
-
-            /*
-            for (auto& x : res_map) {
-                // only use ngrams, that are in the intersection of all parts
-                if (x.second == query_parts) {
-                    queue.push(std::make_tuple(x.first, get_freq(x.first)));
-
-                    // remove elements from queue to reduce memory overhead
-                    // if a query will receive a lot of results
-                    if (queue.size() > phrasit::max_result_size) {
-                        queue.pop();
-                    }
-                }
-            }*/
 
             // insert elements sorted to result vector, from min to max frequency
             while (!queue.empty()) {
@@ -234,9 +207,31 @@ namespace phrasit {
                 res.push_back(std::get<0>(top));
                 queue.pop();
             }
-            // reverse result, because, most frequent should be first
-            // this approach is necessary because of the result size limitation
+            // reverse results, because, most frequent should be first
+            //  this approach is necessary because of the result size
+            //  limitation using the priority queue
             std::reverse(std::begin(res), std::end(res));
+            return res;
+        }
+
+        /*
+        *   handle a query and return all results as a vector
+        */
+        const std::vector<unsigned long> search(const std::string& query) {
+            if (query == "") {
+                return {};
+            }
+
+            LOGINFO("handle query: " << query);
+            std::vector<unsigned long> res;
+
+            for (auto& q : _parser.parse(query)) {
+                auto q_res = qmark_search(q);
+                res = phrasit::utils::_union<unsigned long>(res, q_res);
+            }
+
+            // TODO(stg7) sort results
+
             return res;
         }
 
@@ -252,7 +247,6 @@ namespace phrasit {
                 }
                 out << "n= " << n  << " -> " << xgram_count << std::endl;
             }
-
             out << "max_id: " << _max_id << std::endl;
         }
     };
