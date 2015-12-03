@@ -37,13 +37,47 @@ namespace phrasit {
         std::string _storagedir;
         storage::kvs::type _ngram_to_id;
         storage::kvs::type _id_to_ngram;
-        storage::kvs::type _freq;  //< maps id to ngram freqs
+        storage::kvs::type _freq;  //< maps id to n-gram frequencies
         storage::kvs::type _global_statistic;
 
         std::shared_ptr<storage::Inverted_index> _index = nullptr;
 
         unsigned long _max_id;
         parser::Query_parser _parser;
+
+        // sort results based on n-gram frequency
+        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids) {
+            std::vector<unsigned long> res;
+            typedef std::tuple<unsigned long, unsigned long> pair;
+
+            auto cmp = [](pair& left, pair& right) -> bool {
+                return std::get<1>(left) > std::get<1>(right);
+            };
+
+            std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
+
+            for (auto& x : result_ids) {
+                queue.push(std::make_tuple(x, get_freq(x)));
+
+                // remove elements from queue to reduce memory overhead
+                //  if a query will receive a lot of results
+                if (queue.size() > phrasit::max_result_size) {
+                    queue.pop();
+                }
+            }
+
+            // insert elements sorted to result vector, from min to max frequency
+            while (!queue.empty()) {
+                auto top = queue.top();
+                res.emplace_back(std::get<0>(top));
+                queue.pop();
+            }
+            // reverse results, because, most frequent should be first
+            //  this approach is necessary because of the result size
+            //  limitation using the priority queue
+            std::reverse(std::begin(res), std::end(res));
+            return res;
+        }
 
      public:
         Phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
@@ -154,7 +188,6 @@ namespace phrasit {
 
             std::string cleaned_query = phrasit::utils::join(parts, " ");
 
-
             unsigned long start_pos = 0;
             while (start_pos < parts.size() && parts[start_pos] == "?") {
                 start_pos ++;
@@ -170,7 +203,6 @@ namespace phrasit {
                 parts.size(), start_pos + 1);
 
             // get all results via intersection of all result sets for each part
-
             for (unsigned long pos = start_pos + 1; pos < parts.size(); pos++) {
                 auto& x = parts[pos];
                 if (x == "?") {
@@ -182,36 +214,7 @@ namespace phrasit {
             }
 
             // sort results based on n-gram frequency
-
-            typedef std::tuple<unsigned long, unsigned long> pair;
-
-            auto cmp = [](pair& left, pair& right) -> bool {
-                return std::get<1>(left) > std::get<1>(right);
-            };
-
-            std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
-
-            for (auto& x : result_ids) {
-                queue.push(std::make_tuple(x, get_freq(x)));
-
-                // remove elements from queue to reduce memory overhead
-                //  if a query will receive a lot of results
-                if (queue.size() > phrasit::max_result_size) {
-                    queue.pop();
-                }
-            }
-
-            // insert elements sorted to result vector, from min to max frequency
-            while (!queue.empty()) {
-                auto top = queue.top();
-                res.push_back(std::get<0>(top));
-                queue.pop();
-            }
-            // reverse results, because, most frequent should be first
-            //  this approach is necessary because of the result size
-            //  limitation using the priority queue
-            std::reverse(std::begin(res), std::end(res));
-            return res;
+            return sort_ngram_ids_by_freq(result_ids);
         }
 
         /*
@@ -230,9 +233,9 @@ namespace phrasit {
                 res = phrasit::utils::_union<unsigned long>(res, q_res);
             }
 
-            // TODO(stg7) sort results
+            // TODO(stg7) better merge sorted results, instead of new sorting!
 
-            return res;
+            return sort_ngram_ids_by_freq(res);
         }
 
         /*

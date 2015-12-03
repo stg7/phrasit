@@ -90,6 +90,7 @@ namespace phrasit {
 
                     bool has_asterisk = false;
                     unsigned long pos = 0;
+                    // TODO(stg7) there is a string find function
                     for (auto& c : current_query) {
                         if (c == '*') {
                             has_asterisk = true;
@@ -138,7 +139,7 @@ namespace phrasit {
                 get each result and sort by frequency
             ```
             */
-            static std::vector<std::string> operator_optionset(const std::string& query) {
+            static std::vector<std::string> operator_optionset(std::string query) {
                 LOGINFO( __FUNCTION__);
                 return {};
             }
@@ -157,7 +158,7 @@ namespace phrasit {
                     "a" "x" "z" "y" "b"
             ```
             */
-            static std::vector<std::string> orderset_optionset(const std::string& query) {
+            static std::vector<std::string> orderset_optionset(std::string query) {
                 LOGINFO( __FUNCTION__);
                 return {};
             }
@@ -182,7 +183,6 @@ namespace phrasit {
                     phrasit::utils::split(phrasit::utils::trim(query), ' '), phrasit::notempty_filter);
 
                 std::string cleaned_query = phrasit::utils::join(parts, " ");
-
 
                 std::vector<std::string> queries;
 
