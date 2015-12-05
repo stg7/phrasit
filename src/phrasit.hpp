@@ -48,9 +48,9 @@ namespace phrasit {
         // sort results based on n-gram frequency
         const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids) {
             std::vector<unsigned long> res;
-            typedef std::tuple<unsigned long, unsigned long> pair;
+            //typedef std::tuple<unsigned long, unsigned long> pair;
             // TODO(stg7) is it possible to remove the tuple struct and use direct the get_freq call?
-            auto cmp = [](unsigned long& left, unsigned long& right) -> bool {
+            auto cmp = [this](unsigned long& left, unsigned long& right) -> bool {
                 return get_freq(left) > get_freq(right);
             };
 
