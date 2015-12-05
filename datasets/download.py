@@ -33,10 +33,23 @@ def main(args):
 
     f.close()
 
+    finished_links = []
+    if os.path.isfile("finished.list"):
+        f = open("finished.list", "r")
+        finished_links = [x.strip() for x in f.readlines()]
+        f.close()
+
+
     i = 0
-    for l in links:
+    missing_links = sorted(list(set(links) - set(finished_links)))
+    for l in missing_links:
+        lInfo("{}/{}.".format(i, len(missing_links)))
         download(l)
-        lInfo("{}/{} done.".format(i, len(links)))
+        f = open("finished.list", "a")
+        f.write(l + "\n")
+        f.close()
+
+        lInfo("{}/{} done.".format(i, len(missing_links)))
         i += 1
     """
     cpu_count = 1 # multiprocessing.cpu_count()
