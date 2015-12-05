@@ -50,14 +50,15 @@ namespace phrasit {
             std::vector<unsigned long> res;
             typedef std::tuple<unsigned long, unsigned long> pair;
             // TODO(stg7) is it possible to remove the tuple struct and use direct the get_freq call?
-            auto cmp = [](pair& left, pair& right) -> bool {
-                return std::get<1>(left) > std::get<1>(right);
+            auto cmp = [](unsigned long& left, unsigned long& right) -> bool {
+                return get_freq(left) > get_freq(right);
             };
 
-            std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
+            //std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
+            std::priority_queue<unsigned long, std::vector<unsigned long>, decltype(cmp) > queue(cmp);
 
             for (auto& x : result_ids) {
-                queue.push(std::make_tuple(x, get_freq(x)));
+                queue.push(x);
 
                 // remove elements from queue to reduce memory overhead
                 //  if a query will receive a lot of results
@@ -69,7 +70,7 @@ namespace phrasit {
             // insert elements sorted to result vector, from min to max frequency
             while (!queue.empty()) {
                 auto top = queue.top();
-                res.emplace_back(std::get<0>(top));
+                res.emplace_back(top);
                 queue.pop();
             }
             // reverse results, because, most frequent should be first
