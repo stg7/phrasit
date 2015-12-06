@@ -175,10 +175,10 @@ namespace phrasit {
         *   handle a query with question mark as the only operator
         *    and return all results as a vector of n-gram ids
         */
-        const std::vector<unsigned long> qmark_search(const std::string& query) {
-            std::vector<unsigned long> res;
+        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results=true) {
+
             if (query == "") {
-                return res;
+                return {};
             }
 
             std::vector<std::string> parts = phrasit::utils::filter(
@@ -186,6 +186,7 @@ namespace phrasit {
 
             std::string cleaned_query = phrasit::utils::join(parts, " ");
 
+            // search for first not '?' part
             unsigned long start_pos = 0;
             while (start_pos < parts.size() && parts[start_pos] == "?") {
                 start_pos ++;
@@ -194,7 +195,7 @@ namespace phrasit {
             // query contains only ???, and will not be supported, because of iteration over
             //  complete key set of inverted index
             if (start_pos >= parts.size()) {
-                return res;
+                return {};
             }
 
             std::vector<unsigned long> result_ids = _index->get_by_key(parts[start_pos],
@@ -211,8 +212,11 @@ namespace phrasit {
                 result_ids = phrasit::utils::_instersection<unsigned long>(result_ids, res_for_part);
             }
 
-            // sort results based on n-gram frequency
-            return sort_ngram_ids_by_freq(result_ids);
+            if (sort_results) {
+                // sort results based on n-gram frequency
+                return sort_ngram_ids_by_freq(result_ids);
+            }
+            return result_ids;
         }
 
         /*
@@ -227,12 +231,9 @@ namespace phrasit {
             std::vector<unsigned long> res;
 
             for (auto& q : _parser.parse(query)) {
-                auto q_res = qmark_search(q);
+                auto q_res = qmark_search(q, false);
                 res = phrasit::utils::_union<unsigned long>(res, q_res);
             }
-
-            // TODO(stg7) better merge sorted results, instead of new sorting!
-
             return sort_ngram_ids_by_freq(res);
         }
 
