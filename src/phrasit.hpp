@@ -46,7 +46,7 @@ namespace phrasit {
         parser::Query_parser _parser;
 
         // sort results based on n-gram frequency
-        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids) {
+        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids) const {
             std::vector<unsigned long> res;
 
             auto cmp = [this](unsigned long& left, unsigned long& right) -> bool {
@@ -108,7 +108,7 @@ namespace phrasit {
             storage::kvs::close(_global_statistic);
         }
 
-        long get_id_by_ngram(const std::string& ngram) {
+        const long get_id_by_ngram(const std::string& ngram) const {
             std::string value = "";
             if (storage::kvs::get(_ngram_to_id, ngram, &value)) {
                 return std::stol(value);
@@ -161,13 +161,13 @@ namespace phrasit {
 
         }
 
-        std::string get_ngram(const unsigned long id) {
+        const std::string get_ngram(const unsigned long id) const {
             std::string ngram = "";
             storage::kvs::get(_id_to_ngram, std::to_string(id), &ngram);
             return ngram;
         }
 
-        unsigned long get_freq(const unsigned long id) {
+        const unsigned long get_freq(const unsigned long id) const {
             return storage::kvs::get_ulong_or_default(_freq, std::to_string(id), 0);
         }
 
@@ -175,7 +175,7 @@ namespace phrasit {
         *   handle a query with question mark as the only operator
         *    and return all results as a vector of n-gram ids
         */
-        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results=true) {
+        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results=true) const {
 
             if (query == "") {
                 return {};
@@ -222,7 +222,7 @@ namespace phrasit {
         /*
         *   handle a query and return all results as a vector
         */
-        const std::vector<unsigned long> search(const std::string& query) {
+        const std::vector<unsigned long> search(const std::string& query) const {
             if (query == "") {
                 return {};
             }
@@ -240,7 +240,7 @@ namespace phrasit {
         /*
         *   printout global collected statistics
         */
-        const void print_stats(std::ostream& out) {
+        const void print_stats(std::ostream& out) const {
             out << "phrasit statistics:" << std::endl;
             std::string xgram_count = "";
             for(int n = 1; n < phrasit::max_ngram + 1; n++) {

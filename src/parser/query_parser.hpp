@@ -174,7 +174,7 @@ namespace phrasit {
                 LOGINFO("destroy query parser");
             }
 
-            std::vector<std::string> parse(const std::string& query) {
+            const std::vector<std::string> parse(const std::string& query) const {
                 LOGINFO("parse query" << query);
                 if (query == "") {
                     return {};
