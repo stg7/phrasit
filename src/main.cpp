@@ -26,8 +26,9 @@
 #include "consts.hpp"
 
 void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
-    LOGINFO("results:");
-    for (auto& res : phrasit.search(query)) {
+    const auto& results = phrasit.search(query);
+    LOGINFO("got " << results.size() << " results...");
+    for (const auto& res : results) {
         std::cout << phrasit.get_ngram(res) << "  : " << phrasit.get_freq(res) << std::endl;
     }
 }

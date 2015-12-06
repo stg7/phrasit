@@ -48,18 +48,15 @@ namespace phrasit {
         // sort results based on n-gram frequency
         const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids) {
             std::vector<unsigned long> res;
-            //typedef std::tuple<unsigned long, unsigned long> pair;
-            // TODO(stg7) is it possible to remove the tuple struct and use direct the get_freq call?
+
             auto cmp = [this](unsigned long& left, unsigned long& right) -> bool {
                 return get_freq(left) > get_freq(right);
             };
 
-            //std::priority_queue<pair, std::vector<pair>, decltype(cmp) > queue(cmp);
             std::priority_queue<unsigned long, std::vector<unsigned long>, decltype(cmp) > queue(cmp);
 
             for (auto& x : result_ids) {
                 queue.push(x);
-
                 // remove elements from queue to reduce memory overhead
                 //  if a query will receive a lot of results
                 if (queue.size() > phrasit::max_result_size) {
