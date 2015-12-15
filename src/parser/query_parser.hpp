@@ -44,7 +44,8 @@ namespace phrasit {
                         const std::string middle,
                         const std::string right)> expansion) {
 
-                if (query.find(left_bracket) == std::string::npos || query.find(right_bracket) == std::string::npos) {
+                if (query.find(left_bracket) == std::string::npos ||
+                        query.find(right_bracket) == std::string::npos) {
                     return {query};
                 }
 
