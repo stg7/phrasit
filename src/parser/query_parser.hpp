@@ -18,6 +18,7 @@
 #include <map>
 #include <algorithm>
 #include <queue>
+#include <set>
 
 #include "consts.hpp"
 #include "utils/log.hpp"
@@ -27,6 +28,67 @@ namespace phrasit {
     namespace parser {
         class Query_parser {
          private:
+
+            static std::string clean_query(const std::string query) {
+                using namespace phrasit::utils;
+                std::vector<std::string> parts = filter(split(trim(query), ' '),
+                    phrasit::notempty_filter);
+                return join(parts, " ");
+            }
+
+            // generic operator expansion
+            static std::vector<std::string> operator_generic(std::string query,
+                    const std::string left_bracket, const std::string right_bracket,
+                    std::function<void (std::queue<std::string>& q, const std::string left, const std::string middle, const std::string right)> expansion) {
+
+                if (query.find(left_bracket) == std::string::npos || query.find(right_bracket) == std::string::npos) {
+                    return {query};
+                }
+
+                using namespace phrasit::utils;
+
+                std::vector<std::string> parts = filter(split(trim(query), ' '),
+                    phrasit::notempty_filter);
+
+                unsigned long count_of_open_brackets = std::count_if(parts.begin(), parts.end(),
+                    [&left_bracket](const std::string& s) {return s == left_bracket;});
+                unsigned long count_of_closed_brackets = std::count_if(parts.begin(), parts.end(),
+                    [&right_bracket](const std::string& s) {return s == right_bracket;});
+
+                // check if query is valid
+                if (count_of_closed_brackets != count_of_open_brackets) {
+                    return {};
+                }
+
+                std::vector<std::string> result_queries = {};
+
+
+                // get left, inner and right part of operator and build new queries
+
+                std::queue<std::string> queries;
+                queries.push(clean_query(query));
+
+                while (!queries.empty()) {
+                    std::string current_query = queries.front();
+                    queries.pop();
+
+                    unsigned long left_pos = current_query.find(left_bracket);
+                    unsigned long right_pos = current_query.find(right_bracket);
+
+                    if (left_pos == std::string::npos || right_pos == std::string::npos) {
+                        result_queries.emplace_back(current_query);
+                    } else {
+
+                        auto left = current_query.substr(0, left_pos);
+                        auto middle = current_query.substr(left_pos + 1, right_pos - left_pos - 1);
+                        auto right = current_query.substr(right_pos + 1);
+
+                        expansion(queries, left, middle, right);
+                    }
+                }
+
+                return result_queries;
+            }
 
             // asterisk operator *
             /*
@@ -43,87 +105,33 @@ namespace phrasit {
             ```
             */
             static std::vector<std::string> operator_asterisk(std::string query) {
-                LOGINFO( __FUNCTION__);
-                if (query.find("*") == std::string::npos) {
-                    return {query};
-                }
-                using namespace phrasit::utils;
-                // TODO(stg7) clean query : remove multiple **
-                // query = join(filter(split(trim(query), '*'), phrasit::notempty_filter), "*");
-                // ^ does not work, it removes a beginning *
+                auto asterisk_expansion = [](std::queue<std::string>& q,
+                            const std::string left,
+                            const std::string middle,
+                            const std::string right) {
 
-                std::vector<std::string> res_queries;
+                        using namespace phrasit::utils;
+                        static const std::vector<std::string> expansion_sequence =
+                            {
+                            "",
+                            "?",
+                            "? ?",
+                            "? ? ?",
+                            "? ? ? ?"
+                            };
+                        for(auto& x : expansion_sequence) {
+                            auto new_query = left + " " + x + " " + right;
 
-                std::vector<std::string> parts = filter(split(trim(query), ' '), phrasit::notempty_filter);
+                            std::vector<std::string> parts = filter(split(trim(new_query), ' '),
+                                phrasit::notempty_filter);
 
-                if (parts.size() > phrasit::max_ngram) {
-                    return {};
-                }
-
-                static const std::vector<std::string> expansion_sequence =
-                    {
-                    " ",
-                    " ? ",
-                    " ? ? ",
-                    " ? ? ? ",
-                    " ? ? ? ? "
+                            if (parts.size() <= phrasit::max_ngram) {
+                                q.push(clean_query(new_query));
+                            }
+                        }
                     };
-
-                unsigned long count_of_asterisks = std::count_if(parts.begin(), parts.end(),
-                    [](const std::string& s) {return s == "*";});
-
-                // count_of_asterisks should be lower than maximum of ngram
-                if (count_of_asterisks > phrasit::max_ngram) {
-                    return {};
-                }
-
-                std::queue<std::string> queries;
-                queries.push(query);
-
-                std::vector<std::string> tmp_result_queries;
-
-                // do query expansion, for each asterisk add all possible expasions, repeat
-                //  until there are no asterisks in the query
-                while (!queries.empty()) {
-                    auto current_query = queries.front();
-                    queries.pop();
-
-                    bool has_asterisk = false;
-                    unsigned long pos = 0;
-                    // TODO(stg7) there is a string find function
-                    for (auto& c : current_query) {
-                        if (c == '*') {
-                            has_asterisk = true;
-                            break;
-                        }
-                        pos ++;
-                    }
-                    if (!has_asterisk) {
-                        tmp_result_queries.push_back(current_query);
-                    } else {
-                        for (auto& expansion : expansion_sequence) {
-                            auto left = current_query.substr(0, pos);
-                            auto right = current_query.substr(pos + 1, current_query.size() - pos - 1);
-                            auto new_query = left + expansion + right;
-
-                            queries.push(new_query);
-                        }
-                    }
-                }
-                // TODO(stg7) do it in a better way without filtering in the end
-
-                // filter out queries that are too long
-                for (auto& q : tmp_result_queries) {
-                    std::vector<std::string> parts = filter(split(trim(q), ' '), phrasit::notempty_filter);
-
-                    if (parts.size() <= phrasit::max_ngram) {
-                        res_queries.emplace_back(join(parts, " "));
-                    }
-                }
-
-                return res_queries;
+                return operator_generic(query, "*", "*", asterisk_expansion);
             }
-
             // optionset operator [ ]
             /*
             [ ] can be implemented in the following way:
@@ -142,7 +150,19 @@ namespace phrasit {
             */
             static std::vector<std::string> operator_optionset(std::string query) {
                 LOGINFO( __FUNCTION__);
-                return {};
+                auto optionset_expansion = [](std::queue<std::string>& q,
+                            const std::string left,
+                            const std::string middle,
+                            const std::string right) {
+
+                        using namespace phrasit::utils;
+                        q.push(clean_query(left + " " + right));
+                        for (auto& x: filter(split(trim(middle), ' '), phrasit::notempty_filter)) {
+                            auto new_query = left + " " + x + " " + right;
+                            q.push(clean_query(new_query));
+                        }
+                    };
+                return operator_generic(query, "[", "]", optionset_expansion);
             }
 
             // orderset { }
@@ -161,7 +181,25 @@ namespace phrasit {
             */
             static std::vector<std::string> operator_orderset(std::string query) {
                 LOGINFO( __FUNCTION__);
-                return {};
+
+                auto orderset_expansion = [](std::queue<std::string>& q,
+                            const std::string left,
+                            const std::string middle, const std::string right) {
+
+                        using namespace phrasit::utils;
+
+                        auto middle_parts = filter(split(trim(middle), ' '), phrasit::notempty_filter);
+                        if (middle_parts.size() > phrasit::max_ngram) {
+                            return;
+                        }
+
+                        do {
+                            std::string new_query = left + " " + join(middle_parts, " ") + " " + right;
+                            q.push(clean_query(new_query));
+
+                        } while (std::next_permutation(std::begin(middle_parts), std::end(middle_parts)));
+                    };
+                return operator_generic(query, "{", "}", orderset_expansion);
             }
 
          public:
@@ -175,30 +213,52 @@ namespace phrasit {
             }
 
             const std::vector<std::string> parse(const std::string& query) const {
-                LOGINFO("parse query" << query);
+                LOGINFO("parse query: " << query);
                 if (query == "") {
                     return {};
                 }
 
-                std::vector<std::string> parts = phrasit::utils::filter(
-                    phrasit::utils::split(phrasit::utils::trim(query), ' '), phrasit::notempty_filter);
+                using namespace phrasit::utils;
 
-                std::string cleaned_query = phrasit::utils::join(parts, " ");
+                std::vector<std::string> parts = filter(split(trim(query), ' '),
+                    phrasit::notempty_filter);
 
-                std::vector<std::string> queries;
+                std::string cleaned_query = join(parts, " ");
 
-                auto operators = {&operator_asterisk, &operator_optionset, &operator_orderset};
+                std::vector<std::string> queries = {};
 
-                // do parsing of query
+                auto operators = {&operator_optionset, &operator_orderset, &operator_asterisk};
+
+                // do parsing of query, apply each operator and collect all queries in a list
+                std::queue<std::string> generated_queries;
+                generated_queries.push(cleaned_query);
+                std::queue<std::string> generated_queries_tmp;
+
                 for (auto& op : operators) {
-                    for (auto& x : op(cleaned_query)) {
-                        queries.emplace_back(x);
+                    while (!generated_queries.empty()) {
+                        auto q = generated_queries.front();
+                        generated_queries.pop();
+                        for (auto& x : op(q)) {
+                            generated_queries_tmp.push(x);
+                        }
+                    }
+
+                    while (!generated_queries_tmp.empty()) {
+                        generated_queries.push(generated_queries_tmp.front());
+                        generated_queries_tmp.pop();
                     }
                 }
 
+                while (!generated_queries.empty()) {
+                    auto x = generated_queries.front();
+                    generated_queries.pop();
+                    queries.emplace_back(x);
+                }
+
+                // TODO(stg7) use a hashmap/set to remove dupulicates
+
                 return queries;
             }
-
         };
     }
 }

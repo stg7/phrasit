@@ -155,7 +155,7 @@ namespace phrasit {
             return id;
         }
 
-        void optimize(bool ignore_existing=false) {
+        void optimize(const bool ignore_existing=false) {
             LOGINFO("optimize");
             _index->optimize(ignore_existing);
 
@@ -181,10 +181,12 @@ namespace phrasit {
                 return {};
             }
 
-            std::vector<std::string> parts = phrasit::utils::filter(
-                phrasit::utils::split(phrasit::utils::trim(query), ' '), phrasit::notempty_filter);
+            using namespace phrasit::utils;
 
-            std::string cleaned_query = phrasit::utils::join(parts, " ");
+            std::vector<std::string> parts = filter(split(trim(query), ' '),
+                phrasit::notempty_filter);
+
+            std::string cleaned_query = join(parts, " ");
 
             // search for first not '?' part
             unsigned long start_pos = 0;
@@ -192,8 +194,8 @@ namespace phrasit {
                 start_pos ++;
             }
 
-            // query contains only ???, and will not be supported, because of iteration over
-            //  complete key set of inverted index
+            // query contains only ???, and will not be supported, because of possible
+            //  iteration over complete key set of inverted index for answering this query
             if (start_pos >= parts.size()) {
                 return {};
             }
@@ -209,7 +211,7 @@ namespace phrasit {
                 }
 
                 auto res_for_part = _index->get_by_key(x, parts.size(), pos + 1);
-                result_ids = phrasit::utils::_instersection<unsigned long>(result_ids, res_for_part);
+                result_ids = _instersection<unsigned long>(result_ids, res_for_part);
             }
 
             if (sort_results) {

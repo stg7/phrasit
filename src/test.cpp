@@ -278,12 +278,18 @@ void query_parser_test() {
         }
     };
 
-    print_query_and_check("* hello *");
+    print_query_and_check("hello {a house} ");
+    print_query_and_check("* hello * a");
+
     return;
+
+    print_query_and_check("hello [a house] *");
+    print_query_and_check(" [a w house] o");
+    print_query_and_check(" [a w house] of [la lo]");
+    print_query_and_check("* hello *");
     print_query_and_check("hello *");
     print_query_and_check("* hello");
 
-    print_query_and_check("* hello * a");
     print_query_and_check("* hello * a *");
     print_query_and_check("* hello * a * b");
     print_query_and_check("* hello * a * b *");
