@@ -39,7 +39,7 @@ namespace phrasit {
             // generic operator expansion
             static std::vector<std::string> operator_generic(std::string query,
                     const std::string left_bracket, const std::string right_bracket,
-                    std::function<void (std::queue<std::string>& q,
+                    std::function<void (std::queue<std::string>& queries_queue,
                         const std::string left,
                         const std::string middle,
                         const std::string right)> expansion) {
