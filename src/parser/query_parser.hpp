@@ -63,7 +63,7 @@ namespace phrasit {
                 std::vector<std::string> result_queries = {};
 
 
-                // get left, inner and right part of operator and build new queries
+                // get left, inner and right part of operator and build new queries via expansion
 
                 std::queue<std::string> queries;
                 queries.push(clean_query(query));
