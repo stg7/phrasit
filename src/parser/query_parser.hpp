@@ -123,6 +123,7 @@ namespace phrasit {
                             "? ? ?",
                             "? ? ? ?"
                             };
+
                         for(auto& x : expansion_sequence) {
                             auto new_query = left + " " + x + " " + right;
 
