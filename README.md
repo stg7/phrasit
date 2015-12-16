@@ -8,6 +8,7 @@ You only need:
 * scons
 * g++/gcc a new version which supports c++11
 * boost
+* php/a webserver
 
 installed.
 
@@ -42,9 +43,14 @@ For downloading of all google-books-ngrams (english) you must start:
 cd datasets
 ./download.py
 ```
-and wait a long long time (the complete corpora is about ???300GB,
+and wait a long long time (the complete corpora is about ????2TB,
 with my 6k dsl connection the download needed a few months!, maybe better go to university
 with high speed internet connection).
+
+You can start and stop the download, or e.g. start downloading all 2grams with
+```
+./download.py 2gram
+```
 
 After the download was successfully, you can convert the google-ngrams to the import format of phrasit with:
 ```
@@ -75,3 +81,34 @@ cat datasets/transformed/?gram | ./phrasit -i
 ```
 
 Importing all ngrams will need a lot of time and disk-space, therefore drink a coffee.
+
+Converting to lzma
+------------------
+If you want to save disk-space you can transform all gz files to lzma using
+```
+cd datasets
+./do_parallel.py *.gz ./convert.sh
+```
+This process will also need a lot of time and will use all logical cpu cores.
+
+
+Web Part
+--------
+If you want to run the web-service you should start PhrasIt via
+```
+./phrasit -s
+```
+
+And you need to copy the web directory to a http server with php.
+If php is not available you can build a static html version using `build.py` in the `web` folder.
+
+It is important that you update the configuration file `config.json`:
+```
+var config = {
+    "server_url": "http://localhost:8090/api/"
+};
+```
+
+`server_url` must be your phrasit server with the correct port.
+
+The server can run on another host, because all request will be done using jsonp.
