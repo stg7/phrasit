@@ -1,8 +1,6 @@
 PhrasIt - a netspeak open source clone
 ======================================
 
-
-
 Build PhrasIt
 -------------
 You only need:
@@ -44,8 +42,8 @@ For downloading of all google-books-ngrams (english) you must start:
 cd datasets
 ./download.py
 ```
-and wait a long time (the complete corpora is about ???300GB,
-with my 6k dsl connection the download needed a few days!, maybe better go to university
+and wait a long long time (the complete corpora is about ???300GB,
+with my 6k dsl connection the download needed a few months!, maybe better go to university
 with high speed internet connection).
 
 After the download was successfully, you can convert the google-ngrams to the import format of phrasit with:

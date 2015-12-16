@@ -63,6 +63,25 @@ namespace phrasit {
                 return url;
             }
 
+            // based on: http://stackoverflow.com/questions/7724448/simple-json-string-escape-for-c
+            std::string escapeJsonString(const std::string& input) {
+                std::ostringstream ss;
+                for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
+                    switch (*iter) {
+                        case '\\': ss << "\\\\"; break;
+                        case '"': ss << "\\\""; break;
+                        case '/': ss << "\\/"; break;
+                        case '\b': ss << "\\b"; break;
+                        case '\f': ss << "\\f"; break;
+                        case '\n': ss << "\\n"; break;
+                        case '\r': ss << "\\r"; break;
+                        case '\t': ss << "\\t"; break;
+                        default: ss << *iter; break;
+                    }
+                }
+                return ss.str();
+            }
+
          public:
             Webserver(Phrasit& phrasit): _phrasit(phrasit) {
                 LOGINFO("create webserver");
@@ -95,8 +114,15 @@ namespace phrasit {
                 std::string query = params["query"];
                 LOGINFO("query: " << query);
 
+                unsigned long limit = 100;
+                try {
+                    limit = std::stol(params["limit"]);
+                } catch (...) {
+                    limit = 100;
+                }
+
                 if (query == "") {
-                    response << "{\"error\":\"not a valid query\"}" << std::endl;
+                    response << "{ \"error\" : \"not a valid query\" }" << std::endl;
                     return;
                 }
 
@@ -104,20 +130,20 @@ namespace phrasit {
 
                 std::ostringstream res;
                 res << "[";
-                auto& results = _phrasit.search(query);
+                auto& results = _phrasit.search(query, limit);
                 if (results.size() > 0) {
                     unsigned long i;
                     for (i = 0; i < results.size() - 1; i++) {
                         auto& r = results[i];
                         res << "{ \""
-                            << _phrasit.get_ngram(r) << "\": "
+                            << escapeJsonString(_phrasit.get_ngram(r)) << "\": "
                             << _phrasit.get_freq(r)
                             << "},";
                     }
 
                     auto& r = results[i];
                     res << "{ \""
-                        << _phrasit.get_ngram(r) << "\": "
+                        << escapeJsonString(_phrasit.get_ngram(r)) << "\": "
                         << _phrasit.get_freq(r)
                         << "}]";
                 } else {
@@ -125,11 +151,19 @@ namespace phrasit {
                 }
 
                 double needed_time = t.time();
-                response << "{"
-                    << "\"query\":\"" << query << "\",\n"
-                    << "\"result\":" << res.str() << ",\n"
-                    << "\"time\":" << needed_time
-                    << "}" << std::endl;
+                if (params["callback"] != "") {
+                    response << params["callback"] << " ({\n"
+                        << "\"query\" : \"" << query << "\",\n"
+                        << "\"result\" : " << res.str() << ",\n"
+                        << "\"time\" : " << needed_time << "\n"
+                        << "});" << std::endl;
+                } else {
+                    response << "{\n"
+                        << "\"query\" : \"" << query << "\",\n"
+                        << "\"result\" : " << res.str() << ",\n"
+                        << "\"time\" : " << needed_time << "\n"
+                        << "}" << std::endl;
+                }
             }
 
             // default operator for cppnetlib, this method will be called after a http request

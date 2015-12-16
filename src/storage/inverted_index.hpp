@@ -46,6 +46,10 @@ namespace phrasit {
             phrasit::utils::MMArray<unsigned long> _index;
             phrasit::utils::MMArray<unsigned long> _index_header;
 
+            std::vector<unsigned long> _ids;
+            std::vector<unsigned long> _pos;
+
+
          public:
             Inverted_index(const std::string& storagedir) : _max_id(0) {
                 LOGINFO("create ii");
@@ -75,18 +79,16 @@ namespace phrasit {
                     _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
                     _tmpfile.sync_with_stdio(false);
                 }
-                /*
-                std::cout << "keys" << std::endl;
-                leveldb::Iterator* it = _meta->NewIterator(leveldb::ReadOptions());
-                long i = 0;
-                for (it->SeekToFirst(); it->Valid(); it->Next()) {
-                    std::cout << it->key().ToString() << ": "  << it->value().ToString() << std::endl;
-                    i++;
-                    if (i > 100) {
-                        break;
-                    }
+
+                // copy index header content to memory, for better performance and
+                //  because of the fact, that the header is quite small
+                //  (just for each 1gram id one unsigned long for the start position)
+                for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
+                    _ids.emplace_back(_index_header[l]);
+                    _pos.emplace_back(_index_header[l + 1]);
                 }
-                */
+                // TODO(stg7) index header can be closed
+
             }
 
             ~Inverted_index() {
@@ -223,19 +225,17 @@ namespace phrasit {
                     return res;
                 }
 
-                // find _index position in _index_header for id
-                // TODO(stg7) to it parallel or use a sorted storing?!
                 unsigned long start_pos = 0;
                 unsigned long end_pos = 0;
 
-                for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
-                    unsigned long id = _index_header[l];
-                    if (id == key_id) { // id should be stored @ one position, therefore breaking is ok
-                        start_pos = _index_header[l + 1];
-                        end_pos = _index_header[l + 3];
+                for (unsigned long l = 0; l < _ids.size(); l++) {
+                    if (_ids[l] == key_id) {
+                        start_pos = _pos[l];
+                        end_pos = _pos[l+1];
                         break;
                     }
                 }
+
                 for (unsigned long j = start_pos; j < end_pos; j += 2) {
                     unsigned long ngram_id = _index[j];
                     unsigned long n_and_pos = _index[j + 1];

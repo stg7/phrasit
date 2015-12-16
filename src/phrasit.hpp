@@ -46,11 +46,19 @@ namespace phrasit {
         parser::Query_parser _parser;
 
         // sort results based on n-gram frequency
-        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids) const {
+        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids, const unsigned long limit=100) const {
+            phrasit::utils::Timer t;
+
             std::vector<unsigned long> res;
 
-            auto cmp = [this](unsigned long& left, unsigned long& right) -> bool {
-                return get_freq(left) > get_freq(right);
+            // copy frequencies to a map for better performance
+            std::map<unsigned long, unsigned long> freq_map;
+            for (auto& x : result_ids) {
+                freq_map[x] = get_freq(x);
+            }
+
+            auto cmp = [&freq_map](unsigned long& left, unsigned long& right) -> bool {
+                return freq_map[left] > freq_map[right];
             };
 
             std::priority_queue<unsigned long, std::vector<unsigned long>, decltype(cmp) > queue(cmp);
@@ -59,12 +67,14 @@ namespace phrasit {
                 queue.push(x);
                 // remove elements from queue to reduce memory overhead
                 //  if a query will receive a lot of results
-                if (queue.size() > phrasit::max_result_size) {
+
+                if (queue.size() > std::min(phrasit::max_result_size, limit)) {
                     queue.pop();
                 }
             }
 
             // insert elements sorted to result vector, from min to max frequency
+
             while (!queue.empty()) {
                 auto top = queue.top();
                 res.emplace_back(top);
@@ -74,6 +84,7 @@ namespace phrasit {
             //  this approach is necessary because of the result size
             //  limitation using the priority queue
             std::reverse(std::begin(res), std::end(res));
+            LOGDEBUG("needed time for sort: " << t.time() << " ms");
             return res;
         }
 
@@ -211,7 +222,7 @@ namespace phrasit {
                 }
 
                 auto res_for_part = _index->get_by_key(x, parts.size(), pos + 1);
-                result_ids = _instersection<unsigned long>(result_ids, res_for_part);
+                result_ids = _intersection<unsigned long>(result_ids, res_for_part);
             }
 
             if (sort_results) {
@@ -224,11 +235,11 @@ namespace phrasit {
         /*
         *   handle a query and return all results as a vector
         */
-        const std::vector<unsigned long> search(const std::string& query) const {
+        const std::vector<unsigned long> search(const std::string& query, const unsigned long limit=100) const {
             if (query == "") {
                 return {};
             }
-
+            phrasit::utils::Timer t;
             LOGINFO("handle query: " << query);
             std::vector<unsigned long> res;
 
@@ -236,7 +247,8 @@ namespace phrasit {
                 auto q_res = qmark_search(q, false);
                 res = phrasit::utils::_union<unsigned long>(res, q_res);
             }
-            return sort_ngram_ids_by_freq(res);
+            LOGDEBUG("needed time: " << t.time() << " ms");
+            return sort_ngram_ids_by_freq(res, limit);
         }
 
         /*

@@ -135,7 +135,7 @@ namespace phrasit {
         /*
         *   calculate intersection of v1 and v2
         */
-        template<typename T> std::vector<T> _instersection(std::vector<T>& v1, std::vector<T>& v2) {
+        template<typename T> std::vector<T> _intersection(std::vector<T>& v1, std::vector<T>& v2) {
             std::vector<T> v3;
             std::sort(v1.begin(), v1.end());
             std::sort(v2.begin(), v2.end());

@@ -1,0 +1,91 @@
+html, body {
+    padding: 0;
+    height:100%;
+}
+footer {
+    width:100%;
+    height:2em;
+    text-align: center;
+    margin-top:1em;
+}
+.navbar h4.navbar-text {
+    color: black;
+    height:2em;
+    margin-left: 0;
+}
+.search-field {
+    margin-top:10%;
+    height:100%;
+    text-align: center;
+}
+.navbar-text img.logo{
+    height:2em;
+    text-align: left;
+}
+img.logo {
+    margin-bottom: 1em;
+    height:5em;
+}
+
+.results {
+    margin-top:1em;
+    text-align: left;
+}
+.bg-info {
+    background-color: #ffffff;
+    margin-top:1em;
+}
+
+article em {
+    font-weight: bold;
+}
+
+.meta {
+    display: inline-block;
+}
+.meta .dropdown {
+    background: none;
+    padding: 0em;
+    border: none;
+    margin: 0em;
+    margin: 0em;
+    display: inline-block;
+}
+.meta .dropdown .btn {
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+.freq {
+    text-align: right;
+    color:#ff0000;
+}
+
+.maincontent {
+    padding-top:0em;
+}
+.rank {
+    float: right;
+    font-weight: 900;
+}
+.em {
+    font-weight: bold;
+}
+
+input[type="range" i] {
+     width:100%;
+     float: right;
+}
+
+.go {
+
+}
+
+.btn-success {
+    background-color: #3bbf91 !important;
+    background-image: linear-gradient(#3bbf91 0px, #1aaa71 100%) !important;
+    border-bottom-color: #2b9f71 !important;
+    border-left-color: #2b9f71 !important;
+    border-right-color: #2b9f71 !important;
+    border-top-color: #2b9f71 !important;
+}

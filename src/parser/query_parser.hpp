@@ -109,7 +109,7 @@ namespace phrasit {
             ```
             */
             static std::vector<std::string> operator_asterisk(std::string query) {
-                auto asterisk_expansion = [](std::queue<std::string>& q,
+                static auto asterisk_expansion = [](std::queue<std::string>& q,
                             const std::string left,
                             const std::string middle,
                             const std::string right) {
@@ -155,7 +155,7 @@ namespace phrasit {
             */
             static std::vector<std::string> operator_optionset(std::string query) {
                 LOGINFO( __FUNCTION__);
-                auto optionset_expansion = [](std::queue<std::string>& q,
+                static auto optionset_expansion = [](std::queue<std::string>& q,
                             const std::string left,
                             const std::string middle,
                             const std::string right) {
@@ -187,7 +187,7 @@ namespace phrasit {
             static std::vector<std::string> operator_orderset(std::string query) {
                 LOGINFO( __FUNCTION__);
 
-                auto orderset_expansion = [](std::queue<std::string>& q,
+                static auto orderset_expansion = [](std::queue<std::string>& q,
                             const std::string left,
                             const std::string middle, const std::string right) {
 
@@ -219,6 +219,8 @@ namespace phrasit {
 
             const std::vector<std::string> parse(const std::string& query) const {
                 LOGINFO("parse query: " << query);
+                phrasit::utils::Timer t;
+
                 if (query == "") {
                     return {};
                 }
@@ -232,7 +234,7 @@ namespace phrasit {
 
                 std::vector<std::string> queries = {};
 
-                auto operators = {&operator_optionset, &operator_orderset, &operator_asterisk};
+                auto operators = {&operator_asterisk, &operator_optionset, &operator_orderset, };
 
                 // do parsing of query, apply each operator and collect all queries in a list
                 std::queue<std::string> generated_queries;
@@ -261,6 +263,7 @@ namespace phrasit {
                 }
 
                 // TODO(stg7) use a hashmap/set to remove dupulicates
+                LOGDEBUG("needed time: " << t.time() << " ms");
 
                 return queries;
             }
