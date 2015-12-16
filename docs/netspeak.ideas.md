@@ -1,6 +1,5 @@
 netspeak reverse engineering and core concepts
 ==============================================
-[TOC]
 
 author:
 > steve göring
@@ -95,8 +94,8 @@ First of all, this implementation should only use the english dataset.
 Implementation Ideas
 --------------------
 * only implement ? operator
-* store ngrams in a key-value thing (e.g. leveldb, or multimap), to get ids for each ngram
-* use ngrams as "documents" in an inverted index (e.g. multimap)
+* store ngrams in a key-value thing (e.g. leveldb, or similiar), to get ids for each ngram
+* use ngrams as "documents" in an inverted index
     * ngram1 = "a" "b" "c" "d" "e"  is stored
     ```
         "a" -> ngram1
