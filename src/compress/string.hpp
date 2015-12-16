@@ -21,7 +21,7 @@ namespace phrasit {
     namespace compress {
         namespace string {
 
-            static std::string _comp_table[32] = {"\0","ing","in","er","re","ti","on","es","te","an","en","ed","at","st","al","ng","th","nt","ar","le","co","or","de","ra","ri","se","io","li","ic","is","ne","me"};
+            static std::string _comp_table[32] = {"\0", "ing", "in", "er", "re", "ti", "on", "es", "te", "an", "en", "ed", "at", "st", "al", "ng", "th", "nt", "ar", "le", "co", "or", "de", "ra", "ri", "se", "io", "li", "ic", "is", "ne", "me"};
 
             inline std::string compress(const std::string& data) {
                 std::string res = "";

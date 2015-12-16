@@ -16,6 +16,7 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <map>
 
 #include <boost/network/protocol/http/server.hpp>
 #include <boost/network/uri/decode.hpp>
@@ -42,18 +43,17 @@ namespace phrasit {
             *   \return path without query parameters
             */
             std::string parse(std::string& destination, std::map<std::string, std::string>& params) {
-
                 std::istringstream iss(destination);
                 std::string url;
 
-                if (!std::getline(iss, url, '?')) { // remove the URL part
+                if (!std::getline(iss, url, '?')) {  // remove the URL part
                     return "";
                 }
 
                 // store query key/value pairs in a map
                 std::string keyval, key, val;
 
-                while (std::getline(iss, keyval, '&')) { // split each term
+                while (std::getline(iss, keyval, '&')) {  // split each term
                     std::istringstream iss(keyval);
 
                     if (std::getline(std::getline(iss, key, '='), val)) {
@@ -169,7 +169,6 @@ namespace phrasit {
             // default operator for cppnetlib, this method will be called after a http request
             void operator()(boost::network::http::server<Webserver>::request const &request,
                         boost::network::http::server<Webserver>::response &response) {
-
                 using namespace phrasit::utils;
 
                 std::ostringstream data;
@@ -190,7 +189,7 @@ namespace phrasit {
                     case c_hash("/help"): {
                             // TODO(stg7) this should be readed from a file
                             data << "<pre>";
-                            data << "you can call: \n" ;
+                            data << "you can call: \n";
                             data << "   ./help : to get this screen \n";
                             data << "   ./stats : to get statistics about phrasit \n";
                             data << "   ./api/?query=whatever : to submit a query 'whatever' to phrasit \n";

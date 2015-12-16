@@ -46,7 +46,7 @@ namespace phrasit {
         parser::Query_parser _parser;
 
         // sort results based on n-gram frequency
-        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids, const unsigned long limit=100) const {
+        const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids, const unsigned long limit = 100) const {
             phrasit::utils::Timer t;
 
             std::vector<unsigned long> res;
@@ -166,10 +166,9 @@ namespace phrasit {
             return id;
         }
 
-        void optimize(const bool ignore_existing=false) {
+        void optimize(const bool ignore_existing = false) {
             LOGINFO("optimize");
             _index->optimize(ignore_existing);
-
         }
 
         const std::string get_ngram(const unsigned long id) const {
@@ -186,8 +185,7 @@ namespace phrasit {
         *   handle a query with question mark as the only operator
         *    and return all results as a vector of n-gram ids
         */
-        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results=true) const {
-
+        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results = true) const {
             if (query == "") {
                 return {};
             }
@@ -202,7 +200,7 @@ namespace phrasit {
             // search for first not '?' part
             unsigned long start_pos = 0;
             while (start_pos < parts.size() && parts[start_pos] == "?") {
-                start_pos ++;
+                start_pos++;
             }
 
             // query contains only ???, and will not be supported, because of possible
@@ -235,7 +233,7 @@ namespace phrasit {
         /*
         *   handle a query and return all results as a vector
         */
-        const std::vector<unsigned long> search(const std::string& query, const unsigned long limit=100) const {
+        const std::vector<unsigned long> search(const std::string& query, const unsigned long limit = 100) const {
             if (query == "") {
                 return {};
             }
@@ -257,7 +255,7 @@ namespace phrasit {
         const void print_stats(std::ostream& out) const {
             out << "phrasit statistics:" << std::endl;
             std::string xgram_count = "";
-            for(int n = 1; n < phrasit::max_ngram + 1; n++) {
+            for (int n = 1; n < phrasit::max_ngram + 1; n++) {
                 if (!storage::kvs::get(_global_statistic, std::to_string(n), &xgram_count)) {
                     xgram_count = "0";
                 }

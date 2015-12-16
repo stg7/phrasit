@@ -32,7 +32,7 @@ namespace phrasit {
         /*
         *   external sorting of a textfile
         */
-        inline std::string external_sort(const std::string& filename, const std::string& tmppath, const long blocksize=500000000) {
+        inline std::string external_sort(const std::string& filename, const std::string& tmppath, const long blocksize = 500000000) {
             LOGDEBUG("external sort");
             namespace fs = boost::filesystem;
 
@@ -62,7 +62,6 @@ namespace phrasit {
                     parallel_sort(lines);
 
                     std::string blockfilename = tmppath + "/" + std::to_string(block);
-                    //out.rdbuf()->pubsetbuf(0, 0);
                     out.open(blockfilename);
                     if (!out.is_open()) {
                         LOGERROR("there is something wrong with outputfile " << blockfilename);
@@ -137,7 +136,7 @@ namespace phrasit {
                 getline(block2, l2);
 
                 while (!block1.eof() && !block2.eof() && l1 != "" && l2 != "") {
-                    if(l1 < l2) {
+                    if (l1 < l2) {
                         // write l1 to result file
                         b_merged << l1 << "\n";
                         getline(block1, l1);

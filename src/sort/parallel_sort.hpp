@@ -1,17 +1,17 @@
 /**
-    \author Steve Göring
-    \contact stg7@gmx.de
+    part of phrasit
 
-    parallel sort impl
+    \author stg7
 
     \brief modified parallel sort implementation, based on https://github.com/sol-prog/Sort_data_parallel
 
+    parallel sort implementation
     description:
         https://solarianprogrammer.com/2013/02/04/sorting-data-in-parallel-cpu-gpu/
 
-    g++ params -std=c++11 -lpthread
-
     \date 30.09.2014
+
+    Copyright 2015 Steve Göring
 **/
 
 #ifndef PARALLEL_SORT_HEADER_HPP_
@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <thread>
 #include <functional>
+#include <vector>
 
 #include "utils/log.hpp"
 
@@ -28,11 +29,10 @@ namespace phrasit {
 
         template<typename T>
         inline void parallel_sort(std::vector<T>& V, long parts = -1) {
-
-            if (parts == -1) { // default case: use all aviable cpu cores
+            if (parts == -1) {  // default case: use all aviable cpu cores
                 parts = std::thread::hardware_concurrency();
             }
-            if (V.size() - parts <= 0 ) {
+            if (V.size() - parts <= 0) {
                 std::sort(std::begin(V), std::begin(V));
             }
 
@@ -59,8 +59,7 @@ namespace phrasit {
                     std::thread(
                         [](std::vector<T>& V, const long left, const long right) {
                             std::sort(std::begin(V) + left, std::begin(V) + right);
-                        }, std::ref(V), bnd[i], bnd[i + 1]
-                    ));
+                        }, std::ref(V), bnd[i], bnd[i + 1]));
             }
 
             for (auto& t : thr) {
@@ -88,8 +87,7 @@ namespace phrasit {
                             limits.emplace_back(bnd[i]);
                         }
                         limits.emplace_back(bnd[i + 2]);
-                    }
-                    else {
+                    } else {
                         limits.emplace_back(bnd[i]);
                         limits.emplace_back(bnd[i + 2]);
                     }

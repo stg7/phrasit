@@ -88,7 +88,6 @@ namespace phrasit {
                     _pos.emplace_back(_index_header[l + 1]);
                 }
                 // TODO(stg7) index header can be closed
-
             }
 
             ~Inverted_index() {
@@ -122,7 +121,7 @@ namespace phrasit {
             *   optimize index: build a memory mapped index
             *   if ignore_existing is true then an already existing index will be ignored
             */
-            inline bool optimize(bool ignore_existing=false) {
+            inline bool optimize(bool ignore_existing = false) {
                 namespace fs = boost::filesystem;
 
                 std::string tmp_filename = _storagedir + "/_tmp";
@@ -136,7 +135,7 @@ namespace phrasit {
 
                 // it tmp file is opened in append mode, don't delete tmp
                 if (fs::exists(tmp_filename)) {
-                    //fs::remove(tmp_filename);
+                    // fs::remove(tmp_filename);
                 }
 
                 fs::rename(resultfilename, _storagedir + "/" + "_sorted");
@@ -194,13 +193,12 @@ namespace phrasit {
                 _index_header[h_pos++] = 0;
                 _index_header[h_pos++] = _index.size() - 1;
 
-                { // write validation file, for debugging
+                if (phrasit::debug) {  // write validation file, for debugging
                     std::ofstream validation_file;
                     validation_file.open(_storagedir + "/_validation");
                     for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
                         unsigned long id = _index_header[l];
                         unsigned long pos = _index_header[l + 1];
-                        //unsigned long next_id = _index_header[l + 2];
                         unsigned long next_pos = _index_header[l + 3];
 
                         for (unsigned long j = pos; j < next_pos; j += 2) {

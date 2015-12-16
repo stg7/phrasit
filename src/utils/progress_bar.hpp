@@ -14,6 +14,7 @@
 #define PROGRESS_BAR_HEADER_HPP_
 
 #include <iostream>
+#include <string>
 
 namespace phrasit {
     namespace utils {
@@ -34,10 +35,10 @@ namespace phrasit {
             std::string _msg;
 
          public:
-            Progress_bar(unsigned long update_count = 1,const std::string& msg=""): _wait_char(_wait_char_first),
-                _update_count(update_count), _msg(msg) {
-
-            }
+            Progress_bar(unsigned long update_count = 1, const std::string& msg = ""):
+                _wait_char(_wait_char_first),
+                _update_count(update_count),
+                _msg(msg) { }
 
             ~Progress_bar() {
                 std::cout << std::endl;
@@ -47,7 +48,7 @@ namespace phrasit {
             *   perform an update step and do output on stdout
             */
             void update() {
-                if(_count %  _update_count == 0) {
+                if (_count %  _update_count == 0) {
                     if (_glob_count % _cols == 0) {
                         std::cout << "\r" << "\033[1;94m[" << _msg << "]\033[0m " << _glob_count / _cols << " ";
                         if (_wait_char == _wait_char_first) {

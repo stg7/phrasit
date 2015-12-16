@@ -28,7 +28,9 @@ namespace phrasit {
     namespace parser {
         class Query_parser {
          private:
-
+            /*
+            *   clean a query, remove double spaces
+            */
             static std::string clean_query(const std::string query) {
                 using namespace phrasit::utils;
                 std::vector<std::string> parts = filter(split(trim(query), ' '),
@@ -39,11 +41,11 @@ namespace phrasit {
             // generic operator expansion
             static std::vector<std::string> operator_generic(std::string query,
                     const std::string left_bracket, const std::string right_bracket,
-                    std::function<void (std::queue<std::string>& queries_queue,
+                    std::function<void(std::queue<std::string>& queries_queue,
                         const std::string left,
                         const std::string middle,
                         const std::string right)> expansion) {
-
+                // check if there are brackets in the query string
                 if (query.find(left_bracket) == std::string::npos ||
                         query.find(right_bracket) == std::string::npos) {
                     return {query};
@@ -82,7 +84,6 @@ namespace phrasit {
                     if (left_pos == std::string::npos || right_pos == std::string::npos) {
                         result_queries.emplace_back(current_query);
                     } else {
-
                         auto left = current_query.substr(0, left_pos);
                         auto middle = current_query.substr(left_pos + 1, right_pos - left_pos - 1);
                         auto right = current_query.substr(right_pos + 1);
@@ -113,10 +114,8 @@ namespace phrasit {
                             const std::string left,
                             const std::string middle,
                             const std::string right) {
-
                         using namespace phrasit::utils;
-                        static const std::vector<std::string> expansion_sequence =
-                            {
+                        static const std::vector<std::string> expansion_sequence = {
                             "",
                             "?",
                             "? ?",
@@ -124,7 +123,7 @@ namespace phrasit {
                             "? ? ? ?"
                             };
 
-                        for(auto& x : expansion_sequence) {
+                        for (auto& x : expansion_sequence) {
                             auto new_query = left + " " + x + " " + right;
 
                             std::vector<std::string> parts = filter(split(trim(new_query), ' '),
@@ -154,15 +153,14 @@ namespace phrasit {
             ```
             */
             static std::vector<std::string> operator_optionset(std::string query) {
-                LOGINFO( __FUNCTION__);
+                LOGINFO(__FUNCTION__);
                 static auto optionset_expansion = [](std::queue<std::string>& q,
                             const std::string left,
                             const std::string middle,
                             const std::string right) {
-
                         using namespace phrasit::utils;
                         q.push(clean_query(left + " " + right));
-                        for (auto& x: filter(split(trim(middle), ' '), phrasit::notempty_filter)) {
+                        for (auto& x : filter(split(trim(middle), ' '), phrasit::notempty_filter)) {
                             auto new_query = left + " " + x + " " + right;
                             q.push(clean_query(new_query));
                         }
@@ -185,12 +183,11 @@ namespace phrasit {
             ```
             */
             static std::vector<std::string> operator_orderset(std::string query) {
-                LOGINFO( __FUNCTION__);
+                LOGINFO(__FUNCTION__);
 
                 static auto orderset_expansion = [](std::queue<std::string>& q,
                             const std::string left,
                             const std::string middle, const std::string right) {
-
                         using namespace phrasit::utils;
 
                         auto middle_parts = filter(split(trim(middle), ' '), phrasit::notempty_filter);
@@ -201,7 +198,6 @@ namespace phrasit {
                         do {
                             std::string new_query = left + " " + join(middle_parts, " ") + " " + right;
                             q.push(clean_query(new_query));
-
                         } while (std::next_permutation(std::begin(middle_parts), std::end(middle_parts)));
                     };
                 return operator_generic(query, "{", "}", orderset_expansion);
@@ -210,7 +206,6 @@ namespace phrasit {
          public:
             Query_parser() {
                 LOGINFO("create query parser");
-
             }
 
             ~Query_parser() {
@@ -270,5 +265,4 @@ namespace phrasit {
         };
     }
 }
-
 #endif

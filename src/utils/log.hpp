@@ -106,7 +106,7 @@ namespace phrasit {
                 _enabled = false;
             }
 
-            std::ostream& log(int level, const char* file, int line, const char* type="") {
+            std::ostream& log(int level, const char* file, int line, const char* type = "") {
                 if (!_enabled) {
                     null_stream.str("");
                     return null_stream;

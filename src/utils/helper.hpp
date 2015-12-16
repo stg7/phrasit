@@ -60,7 +60,7 @@ namespace phrasit {
         *   \param f predicate to apply
         *   \return a new vector with values that matches the predicate `f`
         */
-        inline std::vector<std::string> filter(const std::vector<std::string> values, std::function<bool (const std::string&)> f) {
+        inline std::vector<std::string> filter(const std::vector<std::string> values, std::function<bool(const std::string&)> f) {
             std::vector<std::string> res;
             for (auto& x : values) {
                 if (f(x)) {
@@ -140,7 +140,7 @@ namespace phrasit {
             std::sort(v1.begin(), v1.end());
             std::sort(v2.begin(), v2.end());
 
-            std::set_intersection(v1.begin(),v1.end(),v2.begin(),v2.end(), std::back_inserter(v3));
+            std::set_intersection(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(v3));
 
             return v3;
         }
@@ -153,7 +153,7 @@ namespace phrasit {
             std::sort(v1.begin(), v1.end());
             std::sort(v2.begin(), v2.end());
 
-            std::set_union(v1.begin(),v1.end(),v2.begin(),v2.end(), std::back_inserter(v3));
+            std::set_union(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(v3));
 
             return v3;
         }

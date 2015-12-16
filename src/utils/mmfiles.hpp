@@ -17,7 +17,7 @@
 #include <string>
 
 #include <boost/iostreams/device/mapped_file.hpp>
-#include "boost/filesystem.hpp"
+#include <boost/filesystem.hpp>
 
 #include "utils/helper.hpp"
 
@@ -35,7 +35,7 @@ namespace phrasit {
             }
         }
 
-        template<class T=char> class MMArray; // default template parameter for MMArray is char
+        template<class T = char> class MMArray;  // default template parameter for MMArray is char
 
         /**
         *   \brief simple memory mapped file based array structure as vector replacement
@@ -44,16 +44,15 @@ namespace phrasit {
         **/
         template <class T> class MMArray {
          private:
-            boost::iostreams::mapped_file _file; //< read write access to memory mapped file
-            T* _data; //< mapped data pointer of type T
+            boost::iostreams::mapped_file _file;  //< read write access to memory mapped file
+            T* _data;  //< mapped data pointer of type T
             bool _is_opened = false;
 
          public:
-
             /*
             *   create not opened mmfile
             */
-            MMArray() {};
+            MMArray() {}
 
             /*
             *   open file filename, if size != 0 create a new file
@@ -69,7 +68,7 @@ namespace phrasit {
                 }
 
                 _file.open(params);
-                _data = (T *)_file.data();
+                _data = reinterpret_cast<T *>(_file.data());
                 _is_opened = true;
             }
 
@@ -106,15 +105,15 @@ namespace phrasit {
                 _data[i] = value;
             }
 
-            T& operator[] (const unsigned long i){
+            T& operator[] (const unsigned long i) {
                 phrasit::utils::check(i < size() && i >= 0, "[] - index is not valid");
                 return _data[i];
-            };
+            }
 
             const T& operator[] (const unsigned long i) const {
                 phrasit::utils::check(i < size() && i >= 0, "c[] - index is not valid");
                 return _data[i];
-            };
+            }
 
             size_t size() const {
                 return _file.size() / sizeof(T);
