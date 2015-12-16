@@ -16,7 +16,7 @@ Then you can start building phrasit with:
 ```
 scons
 ```
-Scons will download all needed thirdparty libs and tools (e.g. leveldb) and build it,
+Scons will download all needed thirdparty libs and tools (e.g. leveldb) and build them,
 this process should run without errors, otherwise you should run `./prepare.sh` manually for error checking.
 
 
