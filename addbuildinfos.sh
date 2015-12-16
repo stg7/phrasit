@@ -15,8 +15,8 @@ logInfo "branch: $branch"
 logInfo "version: $version"
 
 echo "// build infos -- file will be created automatically" > src/build.hpp
-echo "static constexpr const char* version=\"$version\";" >> src/build.hpp
-echo "static constexpr const char* branch=\"$branch\";" >> src/build.hpp
+echo "static constexpr const char* version = \"$version\";" >> src/build.hpp
+echo "static constexpr const char* branch = \"$branch\";" >> src/build.hpp
 
 
 
