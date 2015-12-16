@@ -19,8 +19,7 @@ scons
 Scons will download all needed thirdparty libs and tools (e.g. leveldb) and build them,
 this process should run without errors, otherwise you should run `./prepare.sh` manually for error checking.
 
-
-Test it with a simple help screen call:
+Now you can test it with a simple help screen call:
 ```
 ./phrasit -h
 ------------------------------------------------
