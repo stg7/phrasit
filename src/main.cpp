@@ -9,13 +9,14 @@
 
     Copyright 2015 Steve Göring
 **/
-#include <boost/program_options.hpp>
 #include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
-#include "boost/filesystem.hpp"
+
+#include <boost/program_options.hpp>
+#include <boost/filesystem.hpp>
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
