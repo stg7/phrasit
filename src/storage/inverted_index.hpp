@@ -73,6 +73,14 @@ namespace phrasit {
                 if (fs::exists(_storagedir + "/" + "_index_header")) {
                     _index_header.open(_storagedir + "/" + "_index_header");
                     index_exists = true;
+                    // copy index header content to memory, for better performance and
+                    //  because of the fact, that the header is quite small
+                    //  (just for each 1gram id one unsigned long for the start position)
+                    for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
+                        _ids.emplace_back(_index_header[l]);
+                        _pos.emplace_back(_index_header[l + 1]);
+                    }
+                    // TODO(stg7) index header can be closed
                 }
 
                 if (!index_exists) {
@@ -80,14 +88,6 @@ namespace phrasit {
                     _tmpfile.sync_with_stdio(false);
                 }
 
-                // copy index header content to memory, for better performance and
-                //  because of the fact, that the header is quite small
-                //  (just for each 1gram id one unsigned long for the start position)
-                for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
-                    _ids.emplace_back(_index_header[l]);
-                    _pos.emplace_back(_index_header[l + 1]);
-                }
-                // TODO(stg7) index header can be closed
             }
 
             ~Inverted_index() {
