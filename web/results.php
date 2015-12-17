@@ -34,6 +34,7 @@
   // update content
   $(document).ready(function() {
     $(".query").text(query);
+    $(".results").css('visibility','hidden');
     $("input[name=query]")[0].value = query;
 
     new_row = "<tr> <td>ngram </td>  <td>freq </td> <td>freq2 </td> </tr>";
@@ -55,15 +56,9 @@
 
             });
             $(".time").text("needed time: " + json["time"]);
+            $(".results").css('visibility','visible');
         }
     });
-
-
-    console.log(config["server_url"]);
-    /*
-    for (var i = 0; i < 10; i++) {
-        $("tbody[id=results]").append(new_row);
-    }*/
 
   });
 
@@ -75,27 +70,25 @@
     ?>
 
     <div class="maincontent">
-    <section class="container theme-showcase" role="main" style="height:80%">
+      <section class="container theme-showcase" role="main" style="height:80%">
 
-    <div class="results">
-    <?php
-        include_once('searchform.php');
-    ?>
-    <hr />
-    Search results for <em class="query">query</em>
+      <?php
+          include_once('searchform.php');
+      ?>
+      <div class="results">
+        <hr />
 
-    <?php
-      include_once('result.php');
-    ?>
-    <div>
-      <text class="time"></text>ms
-    </div>
-    </div>
+        Search results for <em class="query">query</em>
 
+        <?php
+          include_once('result.php');
+        ?>
+        <div>
+          <text class="time"></text>ms
+        </div>
+      </div>
 
-    </section>
-
-
+      </section>
     </div>
     <?php
       include_once('footer.php');
