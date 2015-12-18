@@ -12,5 +12,5 @@ function attachListener() {
 $().ready(function() {
     attachListener();
 
-}
+    }
 );
