@@ -76,9 +76,11 @@ namespace phrasit {
                     // copy index header content to memory, for better performance and
                     //  because of the fact, that the header is quite small
                     //  (just for each 1gram id one unsigned long for the start position)
+                    phrasit::utils::Progress_bar pb(1000, "read index");
                     for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
                         _ids.emplace_back(_index_header[l]);
                         _pos.emplace_back(_index_header[l + 1]);
+                        pb.update();
                     }
                     // TODO(stg7) index header can be closed
                 }
@@ -193,6 +195,9 @@ namespace phrasit {
                 _index_header[h_pos++] = 0;
                 _index_header[h_pos++] = _index.size() - 1;
 
+                // TODO(stg7) now sort each postlist for each key:
+
+
                 if (phrasit::debug) {  // write validation file, for debugging
                     std::ofstream validation_file;
                     validation_file.open(_storagedir + "/_validation");
@@ -229,7 +234,7 @@ namespace phrasit {
                 for (unsigned long l = 0; l < _ids.size(); l++) {
                     if (_ids[l] == key_id) {
                         start_pos = _pos[l];
-                        end_pos = _pos[l+1];
+                        end_pos = _pos[l + 1];
                         break;
                     }
                 }

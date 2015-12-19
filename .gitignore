@@ -11,4 +11,6 @@ tools
 libs/*
 ./storage/
 *.o
-
+web/about.html
+web/index.html
+web/results.html

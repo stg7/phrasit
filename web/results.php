@@ -39,7 +39,7 @@
 
     new_row = "<tr> <td>ngram </td>  <td>freq </td> <td>freq2 </td> </tr>";
 
-    var url = config["server_url"] + "?query=" + query;
+    var url = config["server_url"][Math.floor(Math.random() * config["server_url"].length)] + "?query=" + query;
     $.ajax({
         type: 'GET',
         url: url,
