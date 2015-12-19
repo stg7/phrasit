@@ -245,7 +245,7 @@ void intersection_test() {
         std::vector<int> v1 = {9,3,4,8,2,3};
         std::vector<int> v2 = {1,2,3,8,0};
 
-        auto inter = phrasit::utils::_instersection<int>(v1, v2);
+        auto inter = phrasit::utils::_intersection<int>(v1, v2);
 
         for (auto& x : inter) {
             std::cout << x << std::endl;
@@ -256,7 +256,7 @@ void intersection_test() {
     {
         std::vector<int> v1 = {9,3,4,8,2,3};
         std::vector<int> v2 = {};
-        auto inter = phrasit::utils::_instersection<int>(v1, v2);
+        auto inter = phrasit::utils::_intersection<int>(v1, v2);
 
         assert(inter.size() == 0);
     }
