@@ -61,6 +61,10 @@ cppnetlib() {
     logInfo "cpp-netlib download"
     wget -c "http://downloads.cpp-netlib.org/0.11.2/cpp-netlib-0.11.2-final.tar.bz2"
     tar -jxvf "cpp-netlib-0.11.2-final.tar.bz2"
+
+    export BOOST_ROOT="$(pwd)/boost/build/"
+    export BOOST_INCLUDEDIR="$(pwd)/boost/build/include"
+
     mv "cpp-netlib-0.11.2-final" "cpp-netlib"
     cd "cpp-netlib"
     mkdir build
