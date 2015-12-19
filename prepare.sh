@@ -42,7 +42,7 @@ boost() {
         return
     fi
     logInfo "boost download"
-    wget -c "http://sourceforge.net/projects/boost/files/boost/1.59.0/boost_1_59_0.tar.bz2/download"
+    wget -c "http://sourceforge.net/projects/boost/files/boost/1.60.0/boost_1_60_0.tar.bz2/download"
     mv "download" "boost_1_59_0.tar.bz2"
     tar -jxvf "boost_1_59_0.tar.bz2"
     mv "boost_1_59_0" "boost"
