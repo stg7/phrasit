@@ -23,6 +23,7 @@
 #include "consts.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/timer.hpp"
 
 namespace phrasit {
     namespace parser {
