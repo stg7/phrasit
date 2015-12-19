@@ -51,7 +51,7 @@ env = Environment(CPPPATH = ["src/", "libs/"],
 
 # include local installed libs
 libspath = 'libs/'
-libs = [] # "boost" ['tbb']
+libs = ["boost"] #  ['tbb']
 env.Append(
     LIBPATH=['.'] + [libspath + x +  "/build/lib" for x in libs],
     CPPPATH=[libspath + x + "/build/include" for x in libs]
