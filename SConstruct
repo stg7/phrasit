@@ -53,9 +53,11 @@ env = Environment(CPPPATH = ["src/", "libs/"],
 libspath = 'libs/'
 libs = ["boost"] #  ['tbb']
 
+env['CPLUS_INCLUDE_PATH'] = libspath + "boost" + "/build/include"
+
 env.Append(
-    LIBPATH=['.'] + [libspath + x +  "/build/lib" for x in libs],
-    RPATH=[libspath + x + "/build/include" for x in libs]
+    LIBPATH=['.'] + [libspath + x +  "/build/lib" for x in libs]
+    #,    RPATH=[libspath + x + "/build/include" for x in libs]
 
 #    CXXFLAGS=["-I" + libspath + x + "/build/include" for x in libs]
     #    CPPPATH=[libspath + x + "/build/include" for x in libs]
