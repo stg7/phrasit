@@ -42,9 +42,9 @@ For downloading of all google-books-ngrams (english) you must start:
 cd datasets
 ./download.py
 ```
-and wait a long long time (the complete corpora is about ????2TB,
+and wait a long long time (the complete corpora is about 2-3TB,
 with my 6k dsl connection the download needed a few months!, maybe better go to university
-with high speed internet connection).
+with a high speed internet connection).
 
 You can start and stop the download, or e.g. start downloading all 2grams with
 ```
@@ -63,15 +63,11 @@ Now you should have the following files:
     ├── download.list
     ├── download.py
     ├── googlebooks-eng-all-1gram-20120701-0.gz
-....
+    ....
     ├── sample
     ├── transform_all.sh
     └── transformed
-        ├── 1gram
-        ├── 2gram
-        ├── 3gram
-        ├── 4gram
-        └── 5gram
+        ....
 ```
 
 In `datasets/transformed/*` are all transformed ngrams, you can now easily import it with:
@@ -90,6 +86,21 @@ cd datasets
 ```
 This process will also need a lot of time and will use all logical cpu cores.
 
+Input Format
+------------
+If you don't want to use the google-book-ngram dataset or you have an own dataset you need to know
+which input format PhrasIt uses. The format is quite easy:
+```
+ngram TAB freq
+```
+Where n-gram is, e.g. "hello world", TAB is a tabulator and freq is the absolute counted frequency.
+
+At the moment, the input format is not customizable, if your data is stored in another format
+you should build a convert script, that e.g. throw all ngrams in the inport format out to stdout.
+Then you can easily build a processing pipeline like:
+```
+./myConvertScript myCoolDataset | ./phrasit -i
+```
 
 Web Part
 --------
@@ -104,10 +115,12 @@ If php is not available you can build a static html version using `build.py` in 
 It is important that you update the configuration file `config.json`:
 ```
 var config = {
-    "server_url": "http://localhost:8090/api/"
+    "server_url": ["http://localhost:8090/api/"]
 };
 ```
 
-`server_url` must be your phrasit server with the correct port.
+`server_url` must be your phrasit server with the correct port, this url must be reachable via internet,
+localhost will only work in a local development setup. You can add multiple servers in the array
+as a kind of load balancing. A server will be choosen randomly.
 
 The server can run on another host, because all request will be done using jsonp.

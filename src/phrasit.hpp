@@ -220,7 +220,7 @@ namespace phrasit {
                 }
 
                 auto res_for_part = _index->get_by_key(x, parts.size(), pos + 1);
-                result_ids = _intersection<unsigned long>(result_ids, res_for_part);
+                result_ids = _intersection<unsigned long>(result_ids, res_for_part, true);
             }
 
             if (sort_results) {
@@ -243,7 +243,7 @@ namespace phrasit {
 
             for (auto& q : _parser.parse(query)) {
                 auto q_res = qmark_search(q, false);
-                res = phrasit::utils::_union<unsigned long>(res, q_res);
+                res = phrasit::utils::_union<unsigned long>(res, q_res, true);
             }
             LOGDEBUG("needed time: " << t.time() << " ms");
             return sort_ngram_ids_by_freq(res, limit);

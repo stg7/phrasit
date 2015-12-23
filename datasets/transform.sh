@@ -1,6 +1,13 @@
 #!/bin/bash
 
-c_cat() {
+#
+#   cat with automatically detection for compressed files
+#
+#   example call:
+#       ccat filename.lzma
+#    will print to stdout the uncompressed content of the file
+#
+ccat() {
     file="$1"
     filename="$(basename $file)"
     extension="${filename##*.}"
@@ -10,6 +17,10 @@ c_cat() {
     if [ "$extension" = "gz" ]; then
         zcat "$file"
     fi
+    if [ "$extension" = "bz2" ]; then
+        bzcat "$file"
+    fi
+    cat "$file"
 }
 
 infile="$1"
@@ -19,5 +30,5 @@ mkdir -p "$outdir"
 outfile="$outdir/${filename%%.*}.lzma"
 extension="${filename##*.}"
 
-c_cat "$infile" | ../utils/transform.py | lzma -9 --stdout > "$outfile"
+ccat "$infile" | ../utils/transform.py | lzma -9 --stdout > "$outfile"
 

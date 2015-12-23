@@ -1,4 +1,22 @@
 
+function build_toc() {
+    var ToC = "<nav role='navigation' class='table-of-contents'><ul>";
+
+    $("article h3").each(function() {
+        var newLine, el, title, link;
+        el = $(this);
+        title = el.text();
+        link = "#" + el.attr("id");
+
+        newLine = "<li><a href='" + link + "'>" + title + "</a></li>";
+        ToC += newLine;
+
+    });
+
+    ToC += "</ul></nav><hr>";
+
+    $("article").prepend(ToC);
+}
 
 function attachListener() {
 

@@ -37,6 +37,8 @@ namespace phrasit {
          private:
             static constexpr const char* _max_id_key = "__max_id";  //< used as max_id key in kv-store
 
+            static constexpr int MAX_ID_WITDH_BASE_16 = 8;
+
             std::string _storagedir;
             unsigned long _max_id;
 
@@ -82,14 +84,12 @@ namespace phrasit {
                         _pos.emplace_back(_index_header[l + 1]);
                         pb.update();
                     }
-                    // TODO(stg7) index header can be closed
                 }
 
                 if (!index_exists) {
                     _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
                     _tmpfile.sync_with_stdio(false);
                 }
-
             }
 
             ~Inverted_index() {
@@ -107,14 +107,18 @@ namespace phrasit {
             *   append ngram token with ngram id and "n" to the index
             */
             inline bool append(const std::string& ngram_token, unsigned long ngram_id, unsigned long n, unsigned long pos) {
-                phrasit::utils::check(_index.is_open() == false, "index file is there, you cannot insert new values to an existing creted index");
+                phrasit::utils::check(_index.is_open() == false, "index file exists, you cannot insert new values to an existing creted index");
                 unsigned long id = kvs::get_ulong_or_default(_meta, ngram_token, _max_id);
                 if (id == _max_id) {
                     kvs::put(_meta, ngram_token, std::to_string(_max_id));
                     _max_id++;
                 }
 
-                _tmpfile << id << "\t" << ngram_id << "\t" << (10 * pos + n) << "\n";
+                // TODO(stg7) there is a better approach, not using leasing zeros for correct sorting
+                //  instead use a binary format and store triples, but external sort must be modified
+                _tmpfile << std::setw(MAX_ID_WITDH_BASE_16) << std::setfill('0') << std::hex << id << "\t"
+                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
+                    << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\n";
 
                 return true;
             }
@@ -167,7 +171,6 @@ namespace phrasit {
                 _index_header[h_pos++] = current_id;
                 _index_header[h_pos++] = 0;
 
-
                 phrasit::utils::Progress_bar pb(1000, "index");
                 while (!index_txt_file.eof()) {
                     getline(index_txt_file, line);
@@ -175,9 +178,10 @@ namespace phrasit {
                     std::vector<std::string> splitted_line = phrasit::utils::split(line, delimiter);
 
                     if (splitted_line.size() == 3) {
-                        unsigned long id = std::stol(splitted_line[0]);
-                        unsigned long ngram_id = std::stol(splitted_line[1]);
-                        unsigned long n_and_pos = std::stol(splitted_line[2]);
+
+                        unsigned long id = std::stol(splitted_line[0], nullptr, 16);
+                        unsigned long ngram_id = std::stol(splitted_line[1], nullptr, 16);
+                        unsigned long n_and_pos = std::stol(splitted_line[2], nullptr, 16);
 
                         if (id != current_id) {
                             _index_header[h_pos++] = id;
@@ -195,9 +199,6 @@ namespace phrasit {
                 _index_header[h_pos++] = 0;
                 _index_header[h_pos++] = _index.size() - 1;
 
-                // TODO(stg7) now sort each postlist for each key:
-
-
                 if (phrasit::debug) {  // write validation file, for debugging
                     std::ofstream validation_file;
                     validation_file.open(_storagedir + "/_validation");
@@ -209,9 +210,16 @@ namespace phrasit {
                         for (unsigned long j = pos; j < next_pos; j += 2) {
                             unsigned long ngram_id = _index[j];
                             unsigned long n_and_pos = _index[j + 1];
-                            validation_file << id << "\t" << ngram_id << "\t" << n_and_pos << "\n";
+                            validation_file << std::setw(MAX_ID_WITDH_BASE_16) << std::setfill('0')
+                                << std::hex << id << "\t"
+                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
+                                << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\n";
                         }
                     }
+                }
+                if (!phrasit::debug) {
+                    fs::remove(_storagedir + "/" + "_sorted");
+                    fs::remove(tmp_filename);
                 }
                 return true;
             }
@@ -228,17 +236,13 @@ namespace phrasit {
                     return res;
                 }
 
-                unsigned long start_pos = 0;
-                unsigned long end_pos = 0;
+                // perform a binary search in the header to get start end end positions of the index
+                auto header_pos = std::lower_bound(_ids.begin(), _ids.end(), key_id) - _ids.begin();
+                unsigned long start_pos = _pos[header_pos];
+                unsigned long end_pos = _pos[header_pos + 1];
 
-                for (unsigned long l = 0; l < _ids.size(); l++) {
-                    if (_ids[l] == key_id) {
-                        start_pos = _pos[l];
-                        end_pos = _pos[l + 1];
-                        break;
-                    }
-                }
-
+                // get all suitable n-grams, the resulting vector is sorted, because the index
+                //  is sorted
                 for (unsigned long j = start_pos; j < end_pos; j += 2) {
                     unsigned long ngram_id = _index[j];
                     unsigned long n_and_pos = _index[j + 1];

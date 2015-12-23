@@ -49,8 +49,7 @@ int main(int argc, const char* argv[]) {
         ("queryfile,f", po::value<std::string>(), "handle queries stored in a file")
         ("import,i", "import from stdin, format: ngram tab freq")
         ("max-res", po::value<unsigned long>(), "maximum result size")
-        ("server,s", "start phrasit in server mode")
-        ("opt,o", "optimize [debug]");;
+        ("server,s", "start phrasit in server mode");
 
     po::variables_map vm;
     try {
@@ -100,12 +99,7 @@ int main(int argc, const char* argv[]) {
         webserver.start();
         return 0;
     }
-    if (vm.count("opt") != 0) {
-        LOGMSG("optimize index: ");
 
-        phrasit.optimize(true);
-        return 0;
-    }
     if (vm.count("import") != 0) {
         LOGMSG("import from stdin: ");
         char delimiter = '\t';

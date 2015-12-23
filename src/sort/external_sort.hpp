@@ -65,7 +65,7 @@ namespace phrasit {
                     out.open(blockfilename);
                     if (!out.is_open()) {
                         LOGERROR("there is something wrong with outputfile " << blockfilename);
-                        std::perror("is open fails:");
+                        std::perror("is open failed:");
                     }
                     out.sync_with_stdio(false);
                     blockfilenames.push_front(blockfilename);
@@ -75,7 +75,7 @@ namespace phrasit {
                         out << l << "\n";
                         if (out.bad()) {
                             LOGERROR("there is something wrong with appendling line " << l);
-                            std::perror("appending line fails:");
+                            std::perror("appending line failed:");
                         }
                     }
                     out.close();
@@ -90,7 +90,7 @@ namespace phrasit {
             out.open(blockfilename);
             if (!out.is_open()) {
                 LOGERROR("there is something wrong with outputfile " << blockfilename);
-                std::perror("is open fails:");
+                std::perror("is open failed:");
             }
             out.sync_with_stdio(false);
             blockfilenames.push_front(blockfilename);
@@ -101,7 +101,7 @@ namespace phrasit {
                 out << l << "\n";
                 if (out.bad()) {
                     LOGERROR("there is something wrong with appendling line " << l);
-                    std::perror("appending line fails:");
+                    std::perror("appending line failed:");
                 }
             }
             out.close();

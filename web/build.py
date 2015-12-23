@@ -3,6 +3,9 @@ import os
 import sys
 
 def main(params):
+    """ Converts php files to static html files, if you call ./build.py clean,
+        all html files will be deleted
+    """
     if len(params) > 0 and params[0] == "clean":
         return os.system("rm -rf *.html")
 

@@ -7,8 +7,11 @@
                 ?>
             </h4>
         </a>
+
         <ul class="nav navbar-nav navbar-right">
-            <li><a href="./about.php" >about</a></li>
+            <?php
+                include_once("links.php");
+            ?>
         </ul>
     </div>
 </nav>
