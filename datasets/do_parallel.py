@@ -30,6 +30,7 @@ def main(params):
     parser = argparse.ArgumentParser(description='run a command on several files parallel', epilog="stg7 2015", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--cpu_count',type=int, default=multiprocessing.cpu_count(), help='thread/cpu count')
     parser.add_argument('--script', type=str, default="echo ", help='script for handling one file')
+    parser.add_argument('-s', dest='sortbysize', action='store_true', help='sort by size starting with smallest file')
     parser.add_argument('infile',nargs="+", type=str, help='inputfile')
     argsdict = vars(parser.parse_args())
 
@@ -37,6 +38,9 @@ def main(params):
     lInfo("running with " + str(cpu_count) + " threads")
 
     script = argsdict["script"]
+    if argsdict["sortbysize"]:
+        argsdict["infile"].sort(key=lambda x: os.path.getsize(x))
+
     files = zip(argsdict["infile"], [script for x in argsdict["infile"]])
     global files_count
     files_count = len(argsdict["infile"])
