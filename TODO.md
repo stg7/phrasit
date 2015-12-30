@@ -1,3 +1,6 @@
+* build unittests based on "test.cpp" skeleton
+* add mechanism that multiple instances of one storage folder can be started
+	or throw a message that is not "seg fault"!
 * performance improvements:
     * use multiple inverted index instances for faster answering queries,
         for each pos_and_n one inverted index
@@ -15,6 +18,6 @@
 
 DONE
 ----
-
+* add Licence GPLv3 to all files
 * SEG Fault importing just a few ngrams: missing close call for _tmp file
 * query log file: per default: storagedir/_query_log

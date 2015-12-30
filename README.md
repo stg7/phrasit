@@ -88,8 +88,8 @@ This process will also need a lot of time and will use all logical cpu cores.
 
 Input Format
 ------------
-If you don't want to use the google-book-ngram dataset or you have an own dataset you need to know
-which input format PhrasIt uses. The format is quite easy:
+If you don't want to use the google-book-ngram dataset or you have an own dataset
+then you need to know which input format PhrasIt uses. The format is quite easy:
 ```
 ngram TAB freq
 ```
