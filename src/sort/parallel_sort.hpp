@@ -6,12 +6,27 @@
     \brief modified parallel sort implementation, based on https://github.com/sol-prog/Sort_data_parallel
 
     parallel sort implementation
-    description:
+    based on the following:
         https://solarianprogrammer.com/2013/02/04/sorting-data-in-parallel-cpu-gpu/
 
     \date 30.09.2014
 
     Copyright 2015 Steve Göring
+
+    This file is part of PhrasIt.
+
+    PhrasIt is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    PhrasIt is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with PhrasIt.  If not, see <http://www.gnu.org/licenses/>.
 **/
 
 #ifndef PARALLEL_SORT_HEADER_HPP_
