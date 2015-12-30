@@ -1,4 +1,4 @@
-PhrasIt - a netspeak open source clone
+PhrasIt - an open-source netspeak clone
 ======================================
 
 Build PhrasIt
@@ -8,7 +8,7 @@ You only need:
 * scons
 * g++/gcc a new version which supports c++11
 * boost
-* php/a webserver
+* php and a webserver (for client part)
 
 installed.
 
