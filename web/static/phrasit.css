@@ -8,23 +8,21 @@ footer {
     text-align: center;
     margin-top:1em;
 }
-.navbar h4.navbar-text {
-    color: black;
-    height:2em;
-    margin-left: 0;
-}
+
 .search-field {
     margin-top:10%;
     height:100%;
     text-align: center;
 }
-.navbar-text img.logo{
-    height:2em;
-    text-align: left;
+
+.logo {
+    color:#3bbf91;
+    font-size: 4em;
+    font-family: 'Orbitron', sans-serif;
 }
-img.logo {
-    margin-bottom: 1em;
-    height:5em;
+.logo:hover {
+    text-decoration: none;
+    color:#3bbf91;
 }
 
 .results {
@@ -64,10 +62,7 @@ article em {
 .maincontent {
     padding-top:0em;
 }
-.rank {
-    float: right;
-    font-weight: 900;
-}
+
 .em {
     font-weight: bold;
 }

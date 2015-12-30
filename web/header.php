@@ -16,4 +16,6 @@
         <link rel="stylesheet" href="static/phrasit.css">
 
         <script src="static/phrasit.js"></script>
+        <link href='https://fonts.googleapis.com/css?family=Orbitron:900' rel='stylesheet' type='text/css'>
+
   </head>

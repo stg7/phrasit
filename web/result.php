@@ -5,8 +5,8 @@
                 <thead>
                     <tr>
                         <th>n-gram</th>
-                        <th>absolute frequency</th>
                         <th>relative frequency</th>
+                        <th>absolute frequency</th>
                     </tr>
                 </thead>
                 <tbody id="results">

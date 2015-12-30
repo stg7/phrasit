@@ -3,7 +3,7 @@
         placeholder="Search for Phrases" style="width:40%" required>
 
     <div class="btn-group">
-        <button type="submit" class="btn btn-success go">Go!</button>
+        <button type="submit" class="btn btn-success go"><span class="glyphicon glyphicon-search"></span></button>
         <button type="button" class="btn btn-success dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             <span class="caret"></span>
             <span class="sr-only">Toggle Dropdown</span>

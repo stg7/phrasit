@@ -34,7 +34,7 @@
 
   function get_server_url() {
       urls = shuffle(config["server_url"]);
-      // TODO(stg7): add a check that server is reachable
+      // TODO(stg7) perform a server reachable check!
       return urls[0];
   }
 
@@ -44,13 +44,13 @@
     $(".results").css('visibility','hidden');
     $("input[name=query]")[0].value = query;
 
-    new_row = "<tr> <td>ngram </td>  <td>freq </td> <td>freq2 </td> </tr>";
 
     var server_url = get_server_url();
     if (server_url == "") {
       console.log("no server reachable");
     } else {
       var url = server_url + "?query=" + query;
+      var max_value = 0;
       $.ajax({
           type: 'GET',
           url: url,
@@ -61,12 +61,24 @@
           success: function(json) {
               json["result"].forEach(function(r){
                 $.each(r, function(key, value) {
-                    var new_row = "<tr> <td>" + key +  " </td>  <td> " + value + " </td> <td>freq2 </td> </tr>";
+                    if (max_value == 0) {
+                        max_value = value;
+                    }
+                    // niceer result presentation
+                    rel_value = (100 * value / max_value).toFixed();
+                    if (rel_value < 10) {
+                        rel_value = (100 * value / max_value).toFixed(1);
+                    }
+                    if (rel_value < 1) {
+                        rel_value = (100 * value / max_value).toFixed(2);
+                    }
+                    var new_row = "<tr> <td>" + key +  " </td>  <td> " + rel_value + "%  </td> <td>" + value + "</td> </tr>";
                     $("tbody[id=results]").append(new_row);
                 });
 
               });
               $(".time").text("needed time: " + json["time"]);
+              $(".server").text("server: " + server_url);
               $(".results").css('visibility','visible');
           }
       });
@@ -95,7 +107,7 @@
           include_once('result.php');
         ?>
         <div>
-          <text class="time"></text>ms
+          <text class="time"></text>ms <br><text class="server"></text>
         </div>
       </div>
 

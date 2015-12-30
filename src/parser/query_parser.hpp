@@ -69,9 +69,7 @@ namespace phrasit {
 
                 std::vector<std::string> result_queries = {};
 
-
                 // get left, inner and right part of operator and build new queries via expansion
-
                 std::queue<std::string> queries;
                 queries.push(clean_query(query));
 
@@ -111,6 +109,7 @@ namespace phrasit {
             ```
             */
             static std::vector<std::string> operator_asterisk(std::string query) {
+                LOGINFO(__FUNCTION__);
                 static auto asterisk_expansion = [](std::queue<std::string>& q,
                             const std::string left,
                             const std::string middle,
@@ -137,6 +136,7 @@ namespace phrasit {
                     };
                 return operator_generic(query, "*", "*", asterisk_expansion);
             }
+
             // optionset operator [ ]
             /*
             [ ] can be implemented in the following way:
@@ -230,7 +230,7 @@ namespace phrasit {
 
                 std::vector<std::string> queries = {};
 
-                auto operators = {&operator_asterisk, &operator_optionset, &operator_orderset, };
+                auto operators = {&operator_asterisk, &operator_optionset, &operator_orderset};
 
                 // do parsing of query, apply each operator and collect all queries in a list
                 std::queue<std::string> generated_queries;
@@ -258,7 +258,6 @@ namespace phrasit {
                     queries.emplace_back(x);
                 }
 
-                // TODO(stg7) use a hashmap/set to remove dupulicates
                 LOGDEBUG("needed time: " << t.time() << " ms");
 
                 return queries;

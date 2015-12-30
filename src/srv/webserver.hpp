@@ -97,8 +97,9 @@ namespace phrasit {
 
                 auto now = std::chrono::system_clock::now();
                 auto now_c = std::chrono::system_clock::to_time_t(now);
+                auto timestamp = std::put_time(std::localtime(&now_c), "%c");
 
-                logfile << "{\"timestamp\": \"" << std::put_time(std::localtime(&now_c), "%c") << "\","
+                logfile << "{\"timestamp\": \"" << timestamp << "\","
                     << " \"query\": " << "\"" << escapeJsonString(query)
                     << "\", \"ipa\": \"" << ipa << "\"}\n";
 
@@ -134,7 +135,8 @@ namespace phrasit {
             *   \param params query parameters, e.g. params["query"] = "hello*"
             *   \param response stream for result response
             */
-            void query(std::map<std::string, std::string>& params, std::ostringstream& response,
+            void query(std::map<std::string, std::string>& params,
+                    std::ostringstream& response,
                     std::string ipa = "") {
                 std::string query = params["query"];
                 LOGINFO("query: " << query);
@@ -147,7 +149,13 @@ namespace phrasit {
                 }
 
                 if (query == "") {
-                    response << "{ \"error\" : \"not a valid query\" }" << std::endl;
+                    if (params["callback"] != "") {
+                        response << params["callback"] << " ({\n"
+                            << "\"error\" : \"not a valid query\""
+                            << "});" << std::endl;
+                    } else {
+                        response << "{ \"error\" : \"not a valid query\" }" << std::endl;
+                    }
                     return;
                 }
 
