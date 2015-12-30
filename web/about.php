@@ -59,8 +59,10 @@
         This web-service is not optimized for speed, it is just a demonstration of a live system.
         </p>
         <p>
-        As data-source PhrasIt uses the <a href="https://books.google.com/ngrams">google-book-ngram</a> dataset, because this dataset is free available,
+        As a data-source PhrasIt uses the <a href="https://books.google.com/ngrams">google-book-ngram</a> dataset, because this dataset is free available,
         in contrast to the google-web-ngram dataset that Netspeak uses.
+        But in general if you build your own PhrasIt you can use every suitable data-source, e.g. you can build your own dataset,
+        for more information about other datasets you should have a look at <a href="#develop" >development</a>.
         </p>
         <p>
         PhrasIt can be used as a tool to assist writers that are no native speakers (not only for English).
@@ -164,7 +166,7 @@
         </ul>
 
         </p>
-        And now you can perform a few example queries on the first configured server:
+        And now you can perform a few example queries on one of the configured server:
         <ul>
             <li><a href="" class="api">?query=hello+?</a></li>
             <li><a href="" class="api">?query=hello+*&callback=handler</a></li>

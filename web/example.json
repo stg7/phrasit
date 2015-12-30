@@ -13,18 +13,16 @@
 }
 // query "hello *" with callback
 handler (
-{
-    "query": "hello *",
-    "result": [
-        {
-            "hello . ": 115091
-        }, ...,
-        {
-            "hello ! ": 133
-        }
-    ],
-    "time": 6.499
-}
+    {
+        "query": "hello *",
+        "result": [
+            {
+                "hello . ": 115091
+            }, ...,
+            {
+                "hello ! ": 133
+            }
+        ],
+        "time": 6.499
+    }
 );
-
-

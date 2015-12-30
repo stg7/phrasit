@@ -1,6 +1,6 @@
 <form class="form-inline search" method="get" action="./results.php" >
     <input name="query" type="query" class="form-control"
-        placeholder="Search" style="width:40%" required>
+        placeholder="Search for Phrases" style="width:40%" required>
 
     <div class="btn-group">
         <button type="submit" class="btn btn-success go">Go!</button>
