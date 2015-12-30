@@ -20,6 +20,7 @@
 namespace phrasit {
     namespace compress {
         namespace string {
+            // TODO(stg7) it is not used at the moment, maybe remove it
 
             static std::string _comp_table[32] = {"\0", "ing", "in", "er", "re", "ti", "on", "es", "te", "an", "en", "ed", "at", "st", "al", "ng", "th", "nt", "ar", "le", "co", "or", "de", "ra", "ri", "se", "io", "li", "ic", "is", "ne", "me"};
 

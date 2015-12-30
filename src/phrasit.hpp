@@ -51,7 +51,7 @@ namespace phrasit {
 
             std::vector<unsigned long> res;
 
-            // copy frequencies to a map for better performance
+            // copy frequencies to a map for faster accesses to n-gram frequencies during sort
             std::map<unsigned long, unsigned long> freq_map;
             for (auto& x : result_ids) {
                 freq_map[x] = get_freq(x);
@@ -66,15 +66,13 @@ namespace phrasit {
             for (auto& x : result_ids) {
                 queue.push(x);
                 // remove elements from queue to reduce memory overhead
-                //  if a query will receive a lot of results
-
+                //  when a query will receive a lot of results
                 if (queue.size() > std::min(phrasit::max_result_size, limit)) {
                     queue.pop();
                 }
             }
 
             // insert elements sorted to result vector, from min to max frequency
-
             while (!queue.empty()) {
                 auto top = queue.top();
                 res.emplace_back(top);
@@ -241,6 +239,7 @@ namespace phrasit {
             LOGINFO("handle query: " << query);
             std::vector<unsigned long> res;
 
+            // TODO(stg7): multiple queries can be handled parallel
             for (auto& q : _parser.parse(query)) {
                 auto q_res = qmark_search(q, false);
                 res = phrasit::utils::_union<unsigned long>(res, q_res, true);

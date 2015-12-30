@@ -37,7 +37,7 @@
 #define LOGDEBUG(msg) LOGEX(ldebug, "DEBUG", msg)
 
 
-// LOG makro
+// LOG macro
 #define LOG(level, msg) {                                                    \
     phrasit::utils::Log::getInstance().log(level, FILENAME, __LINE__)        \
         << msg                                                               \

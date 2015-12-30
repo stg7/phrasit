@@ -40,6 +40,14 @@ namespace phrasit {
             }
 
             // generic operator expansion
+            /*
+            *   apply generic operator on a query
+            *    an operator need to have a left_bracket and a right_bracket, otherwise
+            *    nothing will happen
+            *    for each bracket pair an 'expansion' function will be performed, because
+            *    all operators can be transformed to queries using questionmarks via
+            *    a simple expansion.
+            */
             static std::vector<std::string> operator_generic(std::string query,
                     const std::string left_bracket, const std::string right_bracket,
                     std::function<void(std::queue<std::string>& queries_queue,

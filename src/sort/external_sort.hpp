@@ -107,7 +107,7 @@ namespace phrasit {
             out.close();
             lines.clear();
 
-            // now we can merge each block in a step, let us start from the end
+            // now we can merge each block stepwise, let us start from the last block
             block++;
             std::ifstream block1;
             std::ifstream block2;

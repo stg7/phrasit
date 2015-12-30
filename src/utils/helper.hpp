@@ -135,7 +135,7 @@ namespace phrasit {
         /*
         *   calculate intersection of v1 and v2
         */
-        template<typename T> std::vector<T> _intersection(std::vector<T>& v1, std::vector<T>& v2, const bool sorted=false) {
+        template<typename T> std::vector<T> _intersection(std::vector<T>& v1, std::vector<T>& v2, const bool sorted = false) {
             std::vector<T> v3;
             if (!sorted) {
                 std::sort(v1.begin(), v1.end());
@@ -149,7 +149,7 @@ namespace phrasit {
         /*
         *   calculate union of v1 and v2
         */
-        template<typename T> std::vector<T> _union(std::vector<T>& v1, std::vector<T>& v2, const bool sorted=false) {
+        template<typename T> std::vector<T> _union(std::vector<T>& v1, std::vector<T>& v2, const bool sorted = false) {
             std::vector<T> v3;
             if (!sorted) {
                 std::sort(v1.begin(), v1.end());
