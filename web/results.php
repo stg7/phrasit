@@ -31,6 +31,13 @@
     include_once("config.json");
   ?>
 
+
+  function get_server_url() {
+      urls = shuffle(config["server_url"]);
+      // TODO(stg7): add a check that server is reachable
+      return urls[0];
+  }
+
   // update content
   $(document).ready(function() {
     $(".query").text(query);
@@ -39,27 +46,31 @@
 
     new_row = "<tr> <td>ngram </td>  <td>freq </td> <td>freq2 </td> </tr>";
 
-    var url = config["server_url"][Math.floor(Math.random() * config["server_url"].length)] + "?query=" + query;
-    $.ajax({
-        type: 'GET',
-        url: url,
-        jsonpCallback: 'callback',
-        async: true,
-        contentType: "application/json",
-        dataType: 'jsonp',
-        success: function(json) {
-            json["result"].forEach(function(r){
-              $.each(r, function(key, value) {
-                  var new_row = "<tr> <td>" + key +  " </td>  <td> " + value + " </td> <td>freq2 </td> </tr>";
-                  $("tbody[id=results]").append(new_row);
+    var server_url = get_server_url();
+    if (server_url == "") {
+      console.log("no server reachable");
+    } else {
+      var url = server_url + "?query=" + query;
+      $.ajax({
+          type: 'GET',
+          url: url,
+          jsonpCallback: 'callback',
+          async: true,
+          contentType: "application/json",
+          dataType: 'jsonp',
+          success: function(json) {
+              json["result"].forEach(function(r){
+                $.each(r, function(key, value) {
+                    var new_row = "<tr> <td>" + key +  " </td>  <td> " + value + " </td> <td>freq2 </td> </tr>";
+                    $("tbody[id=results]").append(new_row);
+                });
+
               });
-
-            });
-            $(".time").text("needed time: " + json["time"]);
-            $(".results").css('visibility','visible');
-        }
-    });
-
+              $(".time").text("needed time: " + json["time"]);
+              $(".results").css('visibility','visible');
+          }
+      });
+    }
   });
 
   </script>

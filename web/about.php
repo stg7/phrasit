@@ -173,7 +173,9 @@
         General every api call will return a json formatted result, if you specify a callback
         function, then you will get a jsonp result with callback.
 <pre>
-
+<?php
+  include_once("example.json");
+?>
 </pre>
 
         <h3 id="develop">Development</h3>

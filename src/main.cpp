@@ -95,7 +95,7 @@ int main(int argc, const char* argv[]) {
 
     if (vm.count("server") != 0) {
         LOGMSG("server mode: ");
-        phrasit::srv::Webserver webserver(phrasit);
+        phrasit::srv::Webserver webserver(phrasit, storagedir);
         webserver.start();
         return 0;
     }

@@ -137,7 +137,7 @@ namespace phrasit {
             std::string cleaned_ngram = phrasit::utils::join(parts, " ");
 
             unsigned long n = parts.size();
-            phrasit::utils::check(n <= phrasit::max_ngram,
+            utils::check(n <= phrasit::max_ngram,
                 "n-gram size > " + std::to_string(phrasit::max_ngram));
 
             long id = get_id_by_ngram(cleaned_ngram);

@@ -72,6 +72,7 @@ namespace phrasit {
                     _index.open(_storagedir + "/" + "_index");
                     index_exists = true;
                 }
+
                 if (fs::exists(_storagedir + "/" + "_index_header")) {
                     _index_header.open(_storagedir + "/" + "_index_header");
                     index_exists = true;
@@ -108,15 +109,17 @@ namespace phrasit {
             */
             inline bool append(const std::string& ngram_token, unsigned long ngram_id, unsigned long n, unsigned long pos) {
                 phrasit::utils::check(_index.is_open() == false, "index file exists, you cannot insert new values to an existing creted index");
+
                 unsigned long id = kvs::get_ulong_or_default(_meta, ngram_token, _max_id);
                 if (id == _max_id) {
                     kvs::put(_meta, ngram_token, std::to_string(_max_id));
                     _max_id++;
                 }
 
-                // TODO(stg7) there is a better approach, not using leasing zeros for correct sorting
+                // TODO(stg7) there is a better approach, not using leading zeros for correct sorting
                 //  instead use a binary format and store triples, but external sort must be modified
-                _tmpfile << std::setw(MAX_ID_WITDH_BASE_16) << std::setfill('0') << std::hex << id << "\t"
+                _tmpfile << std::setw(MAX_ID_WITDH_BASE_16)
+                    << std::setfill('0') << std::hex << id << "\t"
                     << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
                     << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\n";
 
@@ -137,9 +140,13 @@ namespace phrasit {
                     return false;
                 }
 
+                if (_tmpfile.is_open()) {
+                    _tmpfile.close();
+                }
+
                 std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
 
-                // it tmp file is opened in append mode, don't delete tmp
+                // if tmp file is opened in append mode, don't delete tmp
                 if (fs::exists(tmp_filename)) {
                     // fs::remove(tmp_filename);
                 }
@@ -210,8 +217,8 @@ namespace phrasit {
                         for (unsigned long j = pos; j < next_pos; j += 2) {
                             unsigned long ngram_id = _index[j];
                             unsigned long n_and_pos = _index[j + 1];
-                            validation_file << std::setw(MAX_ID_WITDH_BASE_16) << std::setfill('0')
-                                << std::hex << id << "\t"
+                            validation_file << std::setw(MAX_ID_WITDH_BASE_16)
+                                << std::setfill('0') << std::hex << id << "\t"
                                 << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
                                 << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\n";
                         }
@@ -236,7 +243,7 @@ namespace phrasit {
                     return res;
                 }
 
-                // perform a binary search in the header to get start end end positions of the index
+                // perform a binary search in the header to get start and end positions of the index
                 auto header_pos = std::lower_bound(_ids.begin(), _ids.end(), key_id) - _ids.begin();
                 unsigned long start_pos = _pos[header_pos];
                 unsigned long end_pos = _pos[header_pos + 1];

@@ -16,6 +16,8 @@
 #include <string>
 #include <iostream>
 #include <sstream>
+#include <fstream>
+#include <chrono>
 #include <map>
 
 #include <boost/network/protocol/http/server.hpp>
@@ -35,6 +37,7 @@ namespace phrasit {
         class Webserver {
          private:
             Phrasit& _phrasit;
+            std::string _query_log_filename;
 
             /*
             *   parse url in params and path parts based on: http://stackoverflow.com/questions/28268236/parse-http-request-without-using-regexp
@@ -64,6 +67,9 @@ namespace phrasit {
             }
 
             // based on: http://stackoverflow.com/questions/7724448/simple-json-string-escape-for-c
+            /*
+            *   escape a string as json
+            */
             std::string escapeJsonString(const std::string& input) {
                 std::ostringstream ss;
                 for (auto iter = input.cbegin(); iter != input.cend(); iter++) {
@@ -82,9 +88,27 @@ namespace phrasit {
                 return ss.str();
             }
 
+            /*
+            *   write a submitted query to the query log file, store ip adress, time and date
+            */
+            void log_query(const std::string& query, const std::string& ipa="0.0.0.0") {
+                std::ofstream logfile;
+                logfile.open(_query_log_filename, std::ofstream::out | std::ofstream::app);
+
+                auto now = std::chrono::system_clock::now();
+                auto now_c = std::chrono::system_clock::to_time_t(now);
+
+                logfile << "{\"timestamp\": \"" << std::put_time(std::localtime(&now_c), "%c") << "\","
+                    << " \"query\": " << "\"" << escapeJsonString(query)
+                    << "\", \"ipa\": \"" << ipa << "\"}\n";
+
+                logfile.close();
+            }
+
          public:
-            Webserver(Phrasit& phrasit): _phrasit(phrasit) {
-                LOGINFO("create webserver");
+            Webserver(Phrasit& phrasit, const std::string& storagedir): _phrasit(phrasit) {
+                _query_log_filename = storagedir + "/_query_log";
+                LOGINFO("create webserver: query log file: " << _query_log_filename);
             }
 
             ~Webserver() {
@@ -110,7 +134,8 @@ namespace phrasit {
             *   \param params query parameters, e.g. params["query"] = "hello*"
             *   \param response stream for result response
             */
-            void query(std::map<std::string, std::string>& params, std::ostringstream& response) {
+            void query(std::map<std::string, std::string>& params, std::ostringstream& response,
+                    std::string ipa = "") {
                 std::string query = params["query"];
                 LOGINFO("query: " << query);
 
@@ -126,6 +151,7 @@ namespace phrasit {
                     return;
                 }
 
+                log_query(query, ipa);
                 phrasit::utils::Timer t;
 
                 std::ostringstream res;
@@ -177,13 +203,14 @@ namespace phrasit {
 
                 std::string decoded_dest = boost::network::uri::decoded(request.destination);
                 std::string path = parse(decoded_dest, params);
+                boost::network::http::server<Webserver>::server::string_type ipa = source(request);
 
                 LOGINFO("path:" << path);
 
                 // based on path do the action:
                 switch (r_hash(path)) {
                     case c_hash("/api/"): {
-                            query(params, data);
+                            query(params, data, ipa);
                         }
                         break;
                     case c_hash("/help"): {
