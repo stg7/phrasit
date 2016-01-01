@@ -30,12 +30,15 @@ ccat() {
     extension="${filename##*.}"
     if [ "$extension" = "lzma" ]; then
         lzcat "$file"
+        return
     fi
     if [ "$extension" = "gz" ]; then
         zcat "$file"
+        return
     fi
     if [ "$extension" = "bz2" ]; then
         bzcat "$file"
+        return
     fi
     cat "$file"
 }
