@@ -54,7 +54,7 @@ You can start and stop the download, or e.g. start downloading all 2grams with
 After the download was successfully, you can convert the google-ngrams to the import format of phrasit with:
 ```
 cd datasets
-./transform_all.sh
+./do_parallel.py *.gz -s --script ./transform.sh
 ```
 
 Now you should have the following files:
@@ -65,24 +65,23 @@ Now you should have the following files:
     ├── googlebooks-eng-all-1gram-20120701-0.gz
     ....
     ├── sample
-    ├── transform_all.sh
     └── transformed
         ....
 ```
 
 In `datasets/transformed/*` are all transformed ngrams, you can now easily import it with:
 ```
-cat datasets/transformed/?gram | ./phrasit -i
+lzcat datasets/transformed/?gram | ./phrasit -i
 ```
 
 Importing all ngrams will need a lot of time and disk-space, therefore drink a coffee.
 
 Converting to lzma
 ------------------
-If you want to save disk-space you can transform all gz files to lzma using
+If you want to save disk-space you can transform all downloaded gz files to lzma using
 ```
 cd datasets
-./do_parallel.py *.gz ./convert.sh
+./do_parallel.py *.gz -s --script ./convert.sh
 ```
 This process will also need a lot of time and will use all logical cpu cores.
 
@@ -93,7 +92,8 @@ then you need to know which input format PhrasIt uses. The format is quite easy:
 ```
 ngram TAB freq
 ```
-Where n-gram is, e.g. "hello world", TAB is a tabulator and freq is the absolute counted frequency.
+Where `n-gram` is, e.g. "hello world", `TAB` is a tabulator and `freq` is the
+absolute counted frequency.
 
 At the moment, the input format is not customizable, if your data is stored in another format
 you should build a convert script, that e.g. throw all ngrams in the inport format out to stdout.
@@ -119,8 +119,8 @@ var config = {
 };
 ```
 
-`server_url` must be your phrasit server with the correct port, this url must be reachable via internet,
+`server_url` must be your PhrasIt server with the correct port, this url must be reachable via internet,
 localhost will only work in a local development setup. You can add multiple servers in the array
-as a kind of load balancing. A server will be choosen randomly.
+as a kind of load balancing. A server will be choosen randomly for each request.
 
 The server can run on another host, because all request will be done using jsonp.

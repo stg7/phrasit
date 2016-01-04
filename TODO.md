@@ -1,3 +1,7 @@
+* faster import:
+    * 1 thread reads from stdin and collect lines in vector, if "full"
+    * another thread imports to phrasit
+
 * build unittests based on "test.cpp" skeleton
 * add mechanism that multiple instances of one storage folder can be started
 	or throw a message that is not "seg fault"!
