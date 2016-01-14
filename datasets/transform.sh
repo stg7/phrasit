@@ -48,7 +48,22 @@ filename="$(basename $infile)"
 outdir="$(dirname $1)/transformed"
 mkdir -p "$outdir"
 outfile="$outdir/${filename%%.*}.lzma"
+lockfile="$outfile.lock"
 extension="${filename##*.}"
 
-ccat "$infile" | ../utils/transform.py | lzma -9 --stdout > "$outfile"
+python_int="python"
+# try to use pypy3 as interpreter, because pypy3 is faster
+if [ "$(which pypy3 2>/dev/null)" != "" ]; then
+    python_int="pypy3"
+fi
+
+# check if output file is already completed
+if [ -f "$outfile" ] &&  [ ! -f "$lockfile" ]; then
+    echo "done"
+    exit 0
+fi
+
+touch "$lockfile"
+ccat "$infile" | "$python_int" ../utils/transform.py | lzma -9 --stdout > "$outfile"
+rm -rf "$lockfile"
 

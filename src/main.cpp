@@ -30,6 +30,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
