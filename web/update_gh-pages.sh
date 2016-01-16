@@ -1,6 +1,8 @@
 #!/bin/bash
 rm -rf gh-pages
 
+./build.py
+
 git clone -b gh-pages git@github.com:stg7/phrasit.git gh-pages
 
 cp -R static gh-pages/
