@@ -1,4 +1,4 @@
-[PhrasIt - an open-source netspeak clone](http://stg7.github.io/phrasit/])
+[PhrasIt - an open-source netspeak clone](http://stg7.github.io/phrasit/)
 ======================================
 > steve göring
 
