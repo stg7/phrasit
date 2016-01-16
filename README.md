@@ -1,5 +1,8 @@
-PhrasIt - an open-source netspeak clone
+[PhrasIt - an open-source netspeak clone](http://stg7.github.io/phrasit/])
 ======================================
+> steve göring
+
+PhrasIt is an open source clone of [netspeak](http://www.netspeak.org/).
 
 Build PhrasIt
 -------------

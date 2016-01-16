@@ -59,7 +59,7 @@ int main(int argc, const char* argv[]) {
     namespace fs = boost::filesystem;
 
     // declare the supported options.
-    po::options_description desc("phraseit - an opensource netspeak clone\n\nSteve Göring 2015\nParameter");
+    po::options_description desc("phraseit - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
     desc.add_options()
         ("help,h", "produce help message")
         ("storagedir,d", po::value<std::string>(), "storage directory, default='storage'")
