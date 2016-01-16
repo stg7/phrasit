@@ -7,7 +7,7 @@ You only need:
 
 * scons
 * g++/gcc a new version which supports c++11
-* boost
+* boost 1.60
 * php and a webserver (for client part)
 
 installed.
