@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="author" content="Steve Göring">
+   <head>
+    <title>PhrasIt</title>
+
+        <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+
+        <link rel="stylesheet" href="static/phrasit.css">
+
+        <script src="static/phrasit.js"></script>
+        <link href='https://fonts.googleapis.com/css?family=Orbitron:900' rel='stylesheet' type='text/css'>
+
+  </head>
+  <script type="text/javascript">
+  var config = {
+    "server_url": ["http://localhost:8090/api/"]
+};
+  function add_server_address() {
+      // create list of servers
+      for(var i = 0; i < config["server_url"].length; i++) {
+          var server = "<li><a href=\"" + config["server_url"][i] + "\" > " + config["server_url"][i] + "</a></li>";
+          console.log(server);
+          $(".server-instances").append(server);
+      }
+
+      // update link to first server with defined query
+      $(".api").each(function() {
+          el = $(this);
+          el.prop("href", config["server_url"][0] + el.text());
+      });
+
+  }
+
+  $().ready(function() {
+      build_toc();
+      add_server_address();
+  });
+
+  </script>
+  <body>
+    <nav class="navbar">
+    <div class="container">
+
+        <a href="./index.html" class="logo">PhrasIt</a>
+
+        <ul class="nav navbar-nav navbar-right">
+                <li><a href="http://github.com/stg7/phrasit" ><img src="https://assets-cdn.github.com/images/modules/logos_page/GitHub-Mark.png" style="height:1.5em" /></a></li>
+    <li><a href="./about.html" >about</a></li>        </ul>
+    </div>
+</nav>
+
+    <div class="maincontent">
+    <section class="container theme-showcase" role="main" style="height:80%">
+
+        <div class="results">
+        <article>
+        <h2 id="about">About</h2>
+        <p>
+        PhrasIt is an open source clone of <a href="http://www.netspeak.org/">Netspeak</a>
+        developed for experiments (other datasets, other operators, larger ngrams, ...), where a local installed 'writing lookup' service is needed.
+        All this possible extensions cannot be done with Netspeak, because it is just a webservice for the google-web-ngram dataset and
+        no source code is available.
+        In the last years there were no visible development changes or improvements for Netspeak.
+        The idea for PhrasIt is to create a similar system, so that changes and new ideas can easily be implemented.
+        E.g. you can build your own service using a german ngram dataset, or build a PhrasIt instance using scientific papers as source.
+        </p>
+        <div class="alert alert-success" role="alert">Languages are diverse, so even tools for languages should it be!</div>
+        <p>
+        This web-service is not optimized for speed, it is just a demonstration of a live system.
+        </p>
+        <p>
+        As a data-source PhrasIt uses the <a href="https://books.google.com/ngrams">google-book-ngram</a> dataset, because this dataset is free available,
+        in contrast to the google-web-ngram dataset that Netspeak uses.
+        But in general if you build your own PhrasIt you can use every suitable data-source, e.g. you can build your own dataset,
+        for more information about other datasets you should have a look at <a href="#develop" >development</a>.
+        </p>
+        <p>
+        PhrasIt can be used as a tool to assist writers that are no native speakers (not only for English).
+        E.g. if you write an English article or scientific paper and you are not sure with the ordering of a few words, you can use
+        PhrasIt for order checking, or if you are not sure which word fits as best in the context.
+        </p>
+        <h3 id="query-operators">Query Operators</h3>
+        <p>
+        It is possible to submit different kinds of queries to PhrasIt. All operators will be summarized in the following table.
+        <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                    <th>Query operator</th>
+                    <th>Description</th>
+                    <th>Example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>QMARK, ?</td>
+                  <td>Look for n-grams that match query where ? can be every word.</td>
+                  <td><pre>hello ?</pre> <pre>? world</pre> for both you should get 'hello world' as result </td>
+                </tr>
+                <tr>
+                  <td>ASTERISK, *</td>
+                  <td>Look for n-grams that match query where * can be many words (e.g. from no word up to 4 words).</td>
+                  <td><pre>hello *</pre> <pre>* world</pre> both will hopefully return 'hello world', 'hello my world' </td>
+                </tr>
+                <tr>
+                  <td>OPTIONSET, []</td>
+                  <td>Get n-grams that match query where all words in [] where checked.</td>
+                  <td><pre>hello [world, what]</pre> will return 'hello world' as best matching candidate </td>
+                </tr>
+                <tr>
+                  <td>ORDERSET, {}</td>
+                  <td>Check ordering of words that are in {}.</td>
+                  <td><pre>{world, hello}</pre> should generate 'hello world' as best matching candidate </td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+
+        </p>
+        <h3 id="complex-example">Complex Examples</h3>
+        <p>
+        All operators can be combined and used in complex constructed queries.
+        <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                    <th>Query</th>
+                    <th>Results</th>
+                    <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><pre>world outside [of, in] science fiction</pre></td>
+                  <td><a href="./results.html?query=world+outside+%5Bof%2C+in%5D+science+fiction">query</a></td>
+                  <td>you are not sure which word is correct</td>
+                </tr>
+                <tr>
+                  <td><pre>humans ? intelligent</pre></td>
+                  <td><a href="./results.html?query=humans+%3F+intelligent">query</a></td>
+                  <td>you are not sure which word fits best</td>
+                </tr>
+                <tr>
+                  <td><pre>{a, time, ago, long} in</pre></td>
+                  <td><a href="./results.html?query=%7Ba%2C+time%2C+ago%2C+long%7D+in">query</a></td>
+                  <td>you don't know the ordering</td>
+                </tr>
+                <tr>
+                  <td><pre>a long *</pre></td>
+                  <td><a href="./results.html?query=a+long+%2A">query</a></td>
+                  <td>what will be the next most used words in this context</td>
+                </tr>
+                <tr>
+                  <td><pre>a * [in,of] ? </pre></td>
+                  <td><a href="./results.html?query=a+%2A+%5Bin%2Cof%5D+%3F+">query</a></td>
+                  <td>a combined query</td>
+                </tr>
+                <tr>
+                  <td><pre>{it,do} * not </pre></td>
+                  <td><a href="./results.html?query=%7Bit%2Cdo%7D+%2A+not">query</a></td>
+                  <td>another combined query</td>
+                </tr>
+              </tbody>
+            </table>
+        </div>
+        </p>
+
+        <h3 id="api">Using the API</h3>
+        <p>
+        If you want to use the PhrasIt web-service in another application you can perform
+        API calls directly to a running PhrasIt server instance.
+        </p>
+        <p>
+        Configured server instances are:
+        <ul class="server-instances">
+        </ul>
+
+        </p>
+        And now you can perform a few example queries on one of the configured server:
+        <ul>
+            <li><a href="" class="api">?query=hello+?</a></li>
+            <li><a href="" class="api">?query=hello+*&callback=handler</a></li>
+
+        </ul>
+        General every api call will return a json formatted result, if you specify a callback
+        function, then you will get a jsonp result with callback.
+<pre>
+// query "hello ?" without callback
+{
+    "query": "hello ?",
+    "result": [
+        {
+            "hello . ": 115091
+        }, ...,
+        {
+            "hello everybody ": 131
+        }
+    ],
+    "time": 32.769
+}
+// query "hello *" with callback
+handler (
+    {
+        "query": "hello *",
+        "result": [
+            {
+                "hello . ": 115091
+            }, ...,
+            {
+                "hello ! ": 133
+            }
+        ],
+        "time": 6.499
+    }
+);</pre>
+
+        <h3 id="develop">Development</h3>
+        <p>
+        For development and setting up a local PhrasIt server please look at
+        the <a href="http://github.com/stg7/phrasit">github project page</a>.
+        </p>
+        </article>
+        </div>
+
+    </section>
+    </div>
+            <footer>
+      &copy; stg7 2016 - <a href="https://github.com/stg7" >Steve Göring</a>
+    </footer>
+
+  </body>
+
+</html>
+
+
