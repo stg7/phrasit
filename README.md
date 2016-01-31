@@ -74,7 +74,7 @@ Now you should have the following files:
 
 In `datasets/transformed/*` are all transformed ngrams, you can now easily import it with:
 ```
-lzcat datasets/transformed/?gram | ./phrasit -i
+lzcat datasets/transformed/*.lzma | ./phrasit -i
 ```
 
 Importing all ngrams will need a lot of time and disk-space, therefore drink a coffee.

@@ -3,7 +3,7 @@
 
     \author stg7
 
-    \brief unittest module for sorting components
+    \brief unittest module for query parser components
 
     \date 31.01.2016
 
@@ -13,7 +13,6 @@
 #include <vector>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 
 #include "utils/log.hpp"
 #include "parser/query_parser.hpp"

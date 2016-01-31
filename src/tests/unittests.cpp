@@ -31,4 +31,6 @@
 // include every test suite
 //#include "storage_test.cpp"
 //#include "sort_test.cpp"
-#include "parser_test.cpp"
+//#include "parser_test.cpp"
+//#include "compress_test.cpp"
+#include "utils_test.cpp"

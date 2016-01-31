@@ -139,10 +139,11 @@ sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/mai
 #AlwaysBuild(test_alias)
 
 
-phrasit = env.Program('phrasit', ["src/main.cpp"] + list(sources)) # + libs)
-test = env.Program('test', ["src/test.cpp"] + list(sources))# + libs)
+phrasit = env.Program('phrasit', ["src/main.cpp"] + list(sources))
+test = env.Program('test', ["src/test.cpp"] + list(sources))
+unittest = env.Program('unittest', ["src/tests/unittests.cpp"] + list(sources))
 
-Default(phrasit, test)
+Default(phrasit, test, unittest)
 #env.ParseConfig('/usr/bin/python3-config --includes --libs')
 #env.Append(LIBS=['boost_python3'])
 

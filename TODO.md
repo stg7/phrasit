@@ -3,6 +3,7 @@
     * another thread imports to phrasit
 
 * build unittests based on "test.cpp" skeleton
+* python3 binding
 * add mechanism that multiple instances of one storage folder can be started
 	or throw a message that is not "seg fault"!
 * performance improvements:
