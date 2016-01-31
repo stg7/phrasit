@@ -97,7 +97,7 @@ for lib in needed_libs:
         print "Unable to find lib: " + lib + ". Exiting."
         exit(-1)
 
-needed_headers = ['boost/program_options.hpp', 'boost/filesystem.hpp'] # , 'boost/test/unit_test.hpp''tbb/tbb.h',
+needed_headers = ['boost/program_options.hpp', 'boost/filesystem.hpp', 'boost/test/unit_test.hpp'] # , '''tbb/tbb.h',
 for header in needed_headers:
     if not conf.CheckCXXHeader(header):
         print "Unable to find header: " + header + ". Exiting."
