@@ -24,3 +24,9 @@
     You should have received a copy of the GNU General Public License
     along with PhrasIt.  If not, see <http://www.gnu.org/licenses/>.
 **/
+#define BOOST_TEST_DYN_LINK
+#define BOOST_AUTO_TEST_MAIN  // Build main function
+#include <boost/test/unit_test.hpp>
+
+// include every test suite
+#include "storage_test.cpp"
