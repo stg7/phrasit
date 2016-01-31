@@ -62,9 +62,11 @@ BOOST_AUTO_TEST_CASE(KVS_Test) {
     LOGINFO("reopen store and check if values are accessible");
 
     {
-        phrasit::storage::kvs::open("tmp/_test", &store);
+        phrasit::storage::kvs::open(testdb, &store);
         unsigned long res = phrasit::storage::kvs::get_ulong_or_default(store, "10", 400);
         BOOST_CHECK(res == 10);
+        phrasit::storage::kvs::close(store);
+
     }
     LOGINFO("KVS module ok.");
 }
