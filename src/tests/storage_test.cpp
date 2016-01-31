@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(KVS_Test) {
     LOGINFO("KVS module ok.");
 }
 
-BOOST_AUTO_TEST_CASE(II_Test) {
+BOOST_AUTO_TEST_CASE(Inverted_Index_Test) {
     LOGINFO("test inverted index");
 
     namespace fs = boost::filesystem;
@@ -83,6 +83,7 @@ BOOST_AUTO_TEST_CASE(II_Test) {
 
     fs::create_directory(testdb);
 
+    LOGINFO("store some elements");
     {
         phrasit::storage::Inverted_index index(testdb);
 
@@ -95,16 +96,16 @@ BOOST_AUTO_TEST_CASE(II_Test) {
 
         index.optimize();
     }
+
+    LOGINFO("access elements");
     {
         phrasit::storage::Inverted_index index(testdb);
         for (unsigned long i = 0; i < 100; i++) {
-            for (auto x : index.get_by_key(std::to_string(i))) {
-                LOGINFO(x);
-            }
+            BOOST_CHECK(index.get_by_key(std::to_string(i)).size() != 0);
         }
     }
 
-
-    LOGINFO("II module ok.");
+    LOGINFO("inverted index module ok.");
 }
+
 BOOST_AUTO_TEST_SUITE_END()

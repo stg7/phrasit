@@ -30,3 +30,4 @@
 
 // include every test suite
 #include "storage_test.cpp"
+#include "sort_test.cpp"
