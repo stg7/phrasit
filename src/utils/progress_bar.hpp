@@ -7,7 +7,7 @@
 
     \date 21.11.2015
 
-    Copyright 2015 Steve Göring
+    Copyright 2016 Steve Göring
 
     This file is part of PhrasIt.
 
