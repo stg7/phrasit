@@ -97,9 +97,9 @@ namespace phrasit {
         inline std::string join(const std::vector<std::string> values, const std::string& connector) {
             std::string res = "";
 
-            for (auto it = values.begin(); it != values.end(); it++) {
-                res += *it;
-                if (it != values.end()) {
+            for (size_t i = 0; i < values.size(); i++) {
+                res += values[i];
+                if (i != values.size() - 1) {
                     res += connector;
                 }
             }
@@ -114,12 +114,12 @@ namespace phrasit {
         */
         inline std::string trim(const std::string& s) {
             std::string::const_iterator it = s.begin();
-            while (it != s.end() && isspace(*it)) {
+            while (it != s.end() && *it == ' ') {
                 it++;
             }
 
             std::string::const_reverse_iterator rit = s.rbegin();
-            while (rit.base() != it && isspace(*rit)) {
+            while (rit.base() != it && *rit == ' ') {
                 rit++;
             }
 
@@ -172,6 +172,8 @@ namespace phrasit {
             }
 
             std::set_union(v1.begin(), v1.end(), v2.begin(), v2.end(), std::back_inserter(v3));
+            // TODO(stg7) its somehow ugly
+            v3.erase(std::unique(v3.begin(), v3.end()), v3.end());
 
             return v3;
         }

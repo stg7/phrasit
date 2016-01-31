@@ -15,3 +15,8 @@ web/about.html
 web/index.html
 web/results.html
 web/gh-pages/
+unittest
+test
+storage/
+tmp/
+datasets/finished.list
