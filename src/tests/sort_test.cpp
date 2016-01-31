@@ -11,6 +11,13 @@
 **/
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <random>
+#include <functional> // for std::function
+#include <algorithm>  // for std::generate_n
+#include <stdlib.h>  // for system call
 
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
@@ -36,29 +43,77 @@ BOOST_AUTO_TEST_CASE(Parallel_Sort_Test) {
 
     phrasit::sort::parallel_sort(strings);
 
-    for(auto x: strings_copy) {
-        LOGINFO(x);
+    BOOST_CHECK(strings_copy[0] != strings[0]);
+
+    std::sort(strings_copy.begin(), strings_copy.end());
+
+    for(size_t i = 0; i < strings_copy.size(); i++) {
+        BOOST_CHECK(strings_copy[i] == strings[i]);
     }
 
     LOGINFO("parallel sort module ok.");
 }
 
+std::string random_string(size_t length) {
+    auto randchar = []() -> char {
+        const char charset[] =
+        "abcdefghijklmnopqrstuvwxyz"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "0123456789";
+        const size_t max_index = (sizeof(charset) - 1);
+        return charset[ rand() % max_index ];
+    };
+    std::string str(length,0);
+    std::generate_n(str.begin(), length, randchar);
+    return str;
+}
+
 BOOST_AUTO_TEST_CASE(External_Sort_Test) {
     LOGINFO("test external sort");
-    /*
+
     namespace fs = boost::filesystem;
-    std::string testdb = "tmp/_test_ii";
+    std::string testfile = "tmp/_test_ext_sort";
     if (!fs::exists("tmp")) {
         fs::create_directory("tmp");
     }
-    if (fs::exists(testdb)) {
-        fs::remove_all(testdb);
+    if (fs::exists(testfile)) {
+        fs::remove(testfile);
     }
 
-    fs::create_directory(testdb); */
+    LOGINFO("create a file for sorting");
+    std::vector<std::string> values;
+    {
+        std::ofstream tmp_file;
+        tmp_file.open (testfile);
+        for (unsigned long i = 0; i < 10000000; i++) {
+            std::string value = random_string(rand() % 30);
+            if (value != "") {
+                tmp_file << value << "\n";
+                values.emplace_back(value);
+            }
+        }
+        tmp_file.close();
+    }
 
+    std::sort(values.begin(), values.end());
 
-
+    LOGINFO("sort it and perform check");
+    std::string tmppath = "tmp";
+    std::string res = phrasit::sort::external_sort(testfile, tmppath, 30000000);
+    // TODO(stg7): there is an empty line bug, if a file has a empty line somewhere
+    //  external sort will remove this line, this behavior is not correct in the sense of sorting
+    //  a file, but for the index creation it is ok
+    {
+        std::ifstream sorted_file(res);
+        std::string line;
+        unsigned long i = 0;
+        while (std::getline(sorted_file, line)) {
+            BOOST_CHECK(line == values[i]);
+            i++;
+        }
+    }
+    fs::remove(res);
+    fs::remove(testfile);
     LOGINFO("external sort module ok.");
 }
 

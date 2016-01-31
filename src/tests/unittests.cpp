@@ -29,5 +29,6 @@
 #include <boost/test/unit_test.hpp>
 
 // include every test suite
-#include "storage_test.cpp"
-#include "sort_test.cpp"
+//#include "storage_test.cpp"
+//#include "sort_test.cpp"
+#include "parser_test.cpp"

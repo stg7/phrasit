@@ -100,6 +100,7 @@ namespace phrasit {
                         _pos.emplace_back(_index_header[l + 1]);
                         pb.update();
                     }
+                    _pos.emplace_back(_index.size() - 1);  //< add dummy positionat the end
                 }
 
                 if (!index_exists) {
@@ -219,7 +220,7 @@ namespace phrasit {
 
                 // store dummy element at the end of header for easy accessing
                 _index_header[h_pos++] = 0;
-                _index_header[h_pos++] = _index.size() - 2;
+                _index_header[h_pos++] = _index.size() - 1;
 
                 if (phrasit::debug) {  // write validation file, for debugging
                     std::ofstream validation_file;

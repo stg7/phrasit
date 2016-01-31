@@ -138,6 +138,10 @@ namespace phrasit {
                             const std::string middle,
                             const std::string right) {
                         using namespace phrasit::utils;
+
+                        static constexpr const auto notempty_and_ignore_asterisk_filter =
+                             [](const std::string& x){return x != "" && x != "*";};
+
                         static const std::vector<std::string> expansion_sequence = {
                             "",
                             "?",
@@ -150,7 +154,7 @@ namespace phrasit {
                             auto new_query = left + " " + x + " " + right;
 
                             std::vector<std::string> parts = filter(split(trim(new_query), ' '),
-                                phrasit::notempty_filter);
+                                notempty_and_ignore_asterisk_filter);
 
                             if (parts.size() <= phrasit::max_ngram) {
                                 q.push(clean_query(new_query));
