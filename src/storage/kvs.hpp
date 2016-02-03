@@ -72,6 +72,17 @@ namespace phrasit {
                 leveldb::DB::Open(options, path, db);
             }
 
+            template<typename DB> unsigned long count_of_keys(DB db) {
+                leveldb::Iterator* it = db->NewIterator(leveldb::ReadOptions());
+                unsigned long count = 0;
+                for (it->SeekToFirst(); it->Valid(); it->Next()) {
+                    count++;
+                }
+                assert(it->status().ok());  // Check for any errors found during the scan
+                delete it;
+                return count;
+            }
+
             template<typename DB> inline void close(DB db) {
                 delete db;
                 db = nullptr;

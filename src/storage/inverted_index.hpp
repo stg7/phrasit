@@ -66,6 +66,19 @@ namespace phrasit {
             std::vector<unsigned long> _ids;
             std::vector<unsigned long> _pos;
 
+            /*
+            *
+            */
+            void fill_header_vectors() {
+                phrasit::utils::Progress_bar pb(1000, "read index");
+
+                for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
+                    _ids.emplace_back(_index_header[l]);
+                    _pos.emplace_back(_index_header[l + 1]);
+                    pb.update();
+                }
+                _pos.emplace_back(_index.size() - 1);  //< add dummy positionat the end
+            }
 
          public:
             Inverted_index(const std::string& storagedir) : _max_id(0) {
@@ -81,6 +94,15 @@ namespace phrasit {
                 kvs::open(_storagedir + "/_meta", &_meta);
                 _max_id = kvs::get_ulong_or_default(_meta, _max_id_key, 0);
 
+                // try to restore max id count
+                if (_max_id == 0) {
+                    _max_id = kvs::count_of_keys(_meta) - 1;
+                    if (_max_id < 0) {
+                        _max_id = 0;
+                    }
+                }
+
+                LOGINFO("initialize ii with max_id: " << _max_id);
 
                 bool index_exists = false;
                 if (fs::exists(_storagedir + "/" + "_index")) {
@@ -94,13 +116,7 @@ namespace phrasit {
                     // copy index header content to memory, for better performance and
                     //  because of the fact, that the header is quite small
                     //  (just for each 1gram id one unsigned long for the start position)
-                    phrasit::utils::Progress_bar pb(1000, "read index");
-                    for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
-                        _ids.emplace_back(_index_header[l]);
-                        _pos.emplace_back(_index_header[l + 1]);
-                        pb.update();
-                    }
-                    _pos.emplace_back(_index.size() - 1);  //< add dummy positionat the end
+                    fill_header_vectors();
                 }
 
                 if (!index_exists) {
@@ -242,8 +258,10 @@ namespace phrasit {
                 }
                 if (!phrasit::debug) {
                     fs::remove(_storagedir + "/" + "_sorted");
-                    fs::remove(tmp_filename);
+                    //fs::remove(tmp_filename); // don't delete tmp file, for later appending mode
                 }
+
+                fill_header_vectors();
                 return true;
             }
 

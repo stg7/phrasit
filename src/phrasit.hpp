@@ -78,11 +78,16 @@ namespace phrasit {
 
             std::priority_queue<unsigned long, std::vector<unsigned long>, decltype(cmp) > queue(cmp);
 
+            unsigned long min_freq = 0;
             for (auto& x : result_ids) {
-                queue.push(x);
+                if (freq_map[x] > min_freq) {
+                    queue.push(x);
+                }
+
                 // remove elements from queue to reduce memory overhead
                 //  when a query will receive a lot of results
                 if (queue.size() > std::min(phrasit::max_result_size, limit)) {
+                    min_freq = freq_map[queue.top()];
                     queue.pop();
                 }
             }
@@ -101,6 +106,10 @@ namespace phrasit {
             return res;
         }
 
+        inline void update_max_key() {
+            storage::kvs::put(_ngram_to_id, _max_id_key, std::to_string(_max_id));
+        }
+
      public:
         Phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
             LOGINFO("create store");
@@ -112,6 +121,14 @@ namespace phrasit {
             storage::kvs::open(_storagedir + "/_global_statistic", &_global_statistic);
 
             _max_id = storage::kvs::get_ulong_or_default(_ngram_to_id, _max_id_key, 0);
+            // try to restore max id count
+            if (_max_id == 0) {
+                LOGINFO("restore max_id");
+                _max_id = storage::kvs::count_of_keys(_ngram_to_id) - 1;
+                if (_max_id < 0) {
+                    _max_id = 0;
+                }
+            }
 
             LOGINFO("initialize store with max_id: " << _max_id);
         }
@@ -124,7 +141,7 @@ namespace phrasit {
         }
 
         inline void close() {
-            storage::kvs::put(_ngram_to_id, _max_id_key, std::to_string(_max_id));
+            update_max_key();
 
             storage::kvs::close(_ngram_to_id);
             storage::kvs::close(_id_to_ngram);
@@ -169,6 +186,7 @@ namespace phrasit {
                 xgram_count++;
 
                 storage::kvs::put(_global_statistic, std::to_string(n), std::to_string(xgram_count));
+                update_max_key();
 
                 int pos = 1;
                 for (auto& x : parts) {

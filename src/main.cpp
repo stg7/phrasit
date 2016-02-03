@@ -59,12 +59,13 @@ int main(int argc, const char* argv[]) {
     namespace fs = boost::filesystem;
 
     // declare the supported options.
-    po::options_description desc("phraseit - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
+    po::options_description desc("phrasit - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
     desc.add_options()
         ("help,h", "produce help message")
         ("storagedir,d", po::value<std::string>(), "storage directory, default='storage'")
         ("queryfile,f", po::value<std::string>(), "handle queries stored in a file")
         ("import,i", "import from stdin, format: ngram tab freq")
+        ("optimize,o", "optimize index (e.g. if import failed with optimisation)")
         ("max-res", po::value<unsigned long>(), "maximum result size")
         ("server,s", "start phrasit in server mode");
 
@@ -148,6 +149,12 @@ int main(int argc, const char* argv[]) {
         LOGDEBUG("needed time: " << t.time() << " ms");
         LOGMSG("successfully imported " << ngram_count << " ngrams");
         return 0;
+    } else {
+        if (vm.count("optimize") != 0) {
+            LOGMSG("optimize index");
+            phrasit.optimize();
+            LOGMSG("successfully optimized index");
+        }
     }
 
     if (queryfilename != "") {

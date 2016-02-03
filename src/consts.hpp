@@ -36,7 +36,7 @@ namespace phrasit {
     static constexpr const int max_ngram = 5;
     static constexpr const int webserver_port = 8090;
     static constexpr const char* webserver_bindaddress = "0.0.0.0";
-    static constexpr const bool debug = true;
+    static constexpr const bool debug = false;
     static constexpr const auto notempty_filter = [](const std::string& x){return x != "";};
 
     /*

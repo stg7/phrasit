@@ -1,3 +1,4 @@
+* change leveldb blocksize to something that is more than 2MB
 * faster import:
     * 1 thread reads from stdin and collect lines in vector, if "full"
     * another thread imports to phrasit
