@@ -96,10 +96,7 @@ namespace phrasit {
 
                 // try to restore max id count
                 if (_max_id == 0) {
-                    _max_id = kvs::count_of_keys(_meta) - 1;
-                    if (_max_id < 0) {
-                        _max_id = 0;
-                    }
+                    _max_id = kvs::count_of_keys(_meta);
                 }
 
                 LOGINFO("initialize ii with max_id: " << _max_id);
