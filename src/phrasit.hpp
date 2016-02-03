@@ -124,10 +124,7 @@ namespace phrasit {
             // try to restore max id count
             if (_max_id == 0) {
                 LOGINFO("restore max_id");
-                _max_id = storage::kvs::count_of_keys(_ngram_to_id) - 1;
-                if (_max_id < 0) {
-                    _max_id = 0;
-                }
+                _max_id = storage::kvs::count_of_keys(_ngram_to_id);
             }
 
             LOGINFO("initialize store with max_id: " << _max_id);

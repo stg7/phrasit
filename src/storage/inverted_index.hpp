@@ -96,10 +96,7 @@ namespace phrasit {
 
                 // try to restore max id count
                 if (_max_id == 0) {
-                    _max_id = kvs::count_of_keys(_meta) - 1;
-                    if (_max_id < 0) {
-                        _max_id = 0;
-                    }
+                    _max_id = kvs::count_of_keys(_meta);
                 }
 
                 LOGINFO("initialize ii with max_id: " << _max_id);
@@ -152,8 +149,8 @@ namespace phrasit {
                 //  instead use a binary format and store triples, but external sort must be modified
                 _tmpfile << std::setw(MAX_ID_WITDH_BASE_16)
                     << std::setfill('0') << std::hex << id << "\t"
-                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
-                    << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\n";
+                    << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\t"
+                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\n";
 
                 return true;
             }
@@ -251,8 +248,8 @@ namespace phrasit {
                             unsigned long n_and_pos = _index[j + 1];
                             validation_file << std::setw(MAX_ID_WITDH_BASE_16)
                                 << std::setfill('0') << std::hex << id << "\t"
-                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
-                                << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\n";
+                                << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\t"
+                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\n";
                         }
                     }
                 }
