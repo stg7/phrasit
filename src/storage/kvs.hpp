@@ -36,6 +36,7 @@
 #include "compress/string.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/mmfiles.hpp"
 #include "consts.hpp"
 
 namespace phrasit {
@@ -66,8 +67,12 @@ namespace phrasit {
 
             template<typename P, typename DB> inline void open(P path, DB db) {
                 leveldb::Options options;
-                options.write_buffer_size = 100 * 1024 * 1024;  // 100 MB
+                options.write_buffer_size = utils::size::mb(400);
                 options.max_open_files = 100;
+                options.block_size = 4000 * 10;
+                /*
+                options.block_restart_interval = 16 * 10;
+                */
                 options.create_if_missing = true;
                 leveldb::DB::Open(options, path, db);
             }

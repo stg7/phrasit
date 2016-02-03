@@ -216,8 +216,8 @@ namespace phrasit {
                     if (splitted_line.size() == 3) {
 
                         unsigned long id = std::stol(splitted_line[0], nullptr, 16);
-                        unsigned long ngram_id = std::stol(splitted_line[1], nullptr, 16);
-                        unsigned long n_and_pos = std::stol(splitted_line[2], nullptr, 16);
+                        unsigned long n_and_pos = std::stol(splitted_line[1], nullptr, 16);
+                        unsigned long ngram_id = std::stol(splitted_line[2], nullptr, 16);
 
                         if (id != current_id) {
                             _index_header[h_pos++] = id;
@@ -225,8 +225,8 @@ namespace phrasit {
                             current_id = id;
                         }
 
-                        _index[pos++] = ngram_id;
                         _index[pos++] = n_and_pos;
+                        _index[pos++] = ngram_id;
                         pb.update();
                     }
                 }
@@ -244,8 +244,8 @@ namespace phrasit {
                         unsigned long next_pos = _index_header[l + 3];
 
                         for (unsigned long j = pos; j < next_pos; j += 2) {
-                            unsigned long ngram_id = _index[j];
-                            unsigned long n_and_pos = _index[j + 1];
+                            unsigned long n_and_pos = _index[j];
+                            unsigned long ngram_id = _index[j + 1];
                             validation_file << std::setw(MAX_ID_WITDH_BASE_16)
                                 << std::setfill('0') << std::hex << id << "\t"
                                 << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\t"
@@ -282,8 +282,8 @@ namespace phrasit {
                 // get all suitable n-grams, the resulting vector is sorted, because the index
                 //  is sorted
                 for (unsigned long j = start_pos; j < end_pos; j += 2) {
-                    unsigned long ngram_id = _index[j];
-                    unsigned long n_and_pos = _index[j + 1];
+                    unsigned long n_and_pos = _index[j];
+                    unsigned long ngram_id = _index[j + 1];
                     if (needed_n_and_pos == 0 || needed_n_and_pos == n_and_pos) {
                         res.emplace_back(ngram_id);
                     }
