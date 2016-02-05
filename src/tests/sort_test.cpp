@@ -23,6 +23,7 @@
 #include <boost/filesystem.hpp>
 
 #include "utils/log.hpp"
+#include "utils/timer.hpp"
 #include "sort/parallel_sort.hpp"
 #include "sort/external_sort.hpp"
 
@@ -98,9 +99,10 @@ BOOST_AUTO_TEST_CASE(External_Sort_Test) {
     std::sort(values.begin(), values.end());
 
     LOGINFO("sort it and perform check");
+    phrasit::utils::Timer t;
     std::string tmppath = "tmp";
     std::string res = phrasit::sort::external_sort(testfile, tmppath, 30000000);
-    // TODO(stg7): there is an empty line bug, if a file has a empty line somewhere
+    // TODO(stg7): there is an empty line bug, if a file has an empty line somewhere
     //  external sort will remove this line, this behavior is not correct in the sense of sorting
     //  a file, but for the index creation it is ok
     {
@@ -112,6 +114,8 @@ BOOST_AUTO_TEST_CASE(External_Sort_Test) {
             i++;
         }
     }
+    LOGINFO("needed time: " << t.time());
+
     fs::remove(res);
     fs::remove(testfile);
     LOGINFO("external sort module ok.");

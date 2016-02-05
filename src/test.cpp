@@ -24,12 +24,13 @@
     You should have received a copy of the GNU General Public License
     along with PhrasIt.  If not, see <http://www.gnu.org/licenses/>.
 **/
+/*
 #include <iostream>
 #include <vector>
 #include <string>
 #include <fstream>
 #include <sstream>
-
+/*
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -323,6 +324,29 @@ void query_parser_test() {
 
 
 }
+*/
+
+#include "compress/file.hpp"
+
+int gzip_write(const std::string& filename) {
+
+    phrasit::compress::File<phrasit::compress::mode::write> out(filename);
+    out.writeLine("hello world");
+
+    return 0;
+}
+
+
+int gzip_read(const std::string& filename) {
+
+    phrasit::compress::File<phrasit::compress::mode::read> in(filename);
+
+    for (std::string str; in.readLine(str); ) {
+        std::cout << str << "\n";
+    }
+
+    return 0;
+}
 
 /**
     phrasit: test
@@ -335,7 +359,10 @@ int main(int argc, const char* argv[]) {
     // http_server_cppnetlib();
     //string_comp();
     //intersection_test();
-    query_parser_test();
+    //query_parser_test();
+    std::string filename = "hello.gz";
+    gzip_write(filename);
+    gzip_read(filename);
 
     std::cout << "done" << std::endl;
     return 0;
