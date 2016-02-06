@@ -38,6 +38,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include "compress/file.hpp"
 #include "sort/parallel_sort.hpp"
 #include "utils/log.hpp"
 
@@ -52,149 +53,116 @@ namespace phrasit {
             namespace fs = boost::filesystem;
 
             // read file line by line and store it in blockfiles that are sorted
-            std::ifstream file(filename);
-            std::string line = "";
+            compress::File<compress::mode::read> file(filename);
+
             std::vector<std::string> lines;
             long block = 0;
 
             LOGDEBUG("split files");
             std::deque<std::string> blockfilenames;
             long readed_bytes = 0;
-            std::ofstream out;
 
-            while (!file.eof()) {
-                getline(file, line);
-                if (line == "") {
-                    continue;
+            auto write_to_outfile = [&]() {
+                LOGDEBUG("parallel sort");
+                parallel_sort(lines);
+                std::string blockfilename = tmppath + "/" + std::to_string(block) + ".gz";
+                compress::File<compress::mode::write> out;
+
+                out.open(blockfilename);
+
+                if (!out.is_open()) {
+                    LOGERROR("there is something wrong with outputfile " << blockfilename);
+                    std::perror("is open failed:");
                 }
+
+                blockfilenames.push_front(blockfilename);
+                for (auto& l : lines) {
+                    out.writeLine(l);
+                }
+                out.close();
+                lines.clear();
+            };
+
+            for(std::string line = ""; file.readLine(line); ) {
                 lines.emplace_back(line);
                 readed_bytes += line.length();
-
                 if (readed_bytes >= blocksize) {
                     readed_bytes = 0;
-                    LOGDEBUG("parallel sort");
-
-                    parallel_sort(lines);
-
-                    std::string blockfilename = tmppath + "/" + std::to_string(block);
-                    out.open(blockfilename);
-                    if (!out.is_open()) {
-                        LOGERROR("there is something wrong with outputfile " << blockfilename);
-                        std::perror("is open failed:");
-                    }
-                    out.sync_with_stdio(false);
-                    blockfilenames.push_front(blockfilename);
-
-                    LOGDEBUG("write sorted lines to file: " << blockfilename);
-                    for (auto& l : lines) {
-                        out << l << "\n";
-                        if (out.bad()) {
-                            LOGERROR("there is something wrong with appendling line " << l);
-                            std::perror("appending line failed:");
-                        }
-                    }
-                    out.close();
-                    lines.clear();
+                    write_to_outfile();
                     block++;
                 }
             }
 
-            block++;
             // handle remaining lines
-            std::string blockfilename = tmppath + "/" + std::to_string(block);
-            out.open(blockfilename);
-            if (!out.is_open()) {
-                LOGERROR("there is something wrong with outputfile " << blockfilename);
-                std::perror("is open failed:");
-            }
-            out.sync_with_stdio(false);
-            blockfilenames.push_front(blockfilename);
-
-            LOGDEBUG("parallel sort");
-            parallel_sort(lines);
-            for (auto& l : lines) {
-                out << l << "\n";
-                if (out.bad()) {
-                    LOGERROR("there is something wrong with appendling line " << l);
-                    std::perror("appending line failed:");
-                }
-            }
-            out.close();
-            lines.clear();
+            write_to_outfile();
 
             // now we can merge each block stepwise, let us start from the last block
             block++;
-            std::ifstream block1;
-            std::ifstream block2;
-            std::ofstream b_merged;
+            compress::File<compress::mode::read> left;
+            compress::File<compress::mode::read> right;
+            compress::File<compress::mode::write> merged;
+
 
             while (blockfilenames.size() > 1) {
-                std::string b1 = blockfilenames.back();
+                std::string left_filename = blockfilenames.back();
                 blockfilenames.pop_back();
-                std::string b2 = blockfilenames.back();
+                std::string right_filename = blockfilenames.back();
                 blockfilenames.pop_back();
-                LOGDEBUG("merging blocks: " << b1 << " " << b2 << " to " << block);
 
-                block1.open(b1);
-                block2.open(b2);
+                std::string merged_filename = tmppath + "/" + std::to_string(block) + ".gz";
+                LOGDEBUG("merging blocks: " << left_filename << " "
+                    << right_filename << " to " << merged_filename);
 
-                std::string bm = tmppath + "/" + std::to_string(block);
+                left.open(left_filename);
+                right.open(right_filename);
+
+                blockfilenames.push_front(merged_filename);
                 block++;
-
-                blockfilenames.push_front(bm);
 
                 std::string l1 = "";
                 std::string l2 = "";
-                b_merged.open(bm);
-                b_merged.sync_with_stdio(false);
-                getline(block1, l1);
-                getline(block2, l2);
+                merged.open(merged_filename);
 
-                while (!block1.eof() && !block2.eof() && l1 != "" && l2 != "") {
+                bool r1 = left.readLine(l1);
+                bool r2 = right.readLine(l2);
+                while (r1 && r2) {
                     if (l1 < l2) {
-                        // write l1 to result file
-                        b_merged << l1 << "\n";
-                        getline(block1, l1);
+                        merged.writeLine(l1);
+                        r1 = left.readLine(l1);
                     } else {
-                        // write l2 to result file
-                        b_merged << l2 << "\n";
-                        getline(block2, l2);
+                        merged.writeLine(l2);
+                        r2 = right.readLine(l2);
                     }
                 }
-                while (!block1.eof()) {
-                    if (l1 != "") {
-                        // write l1 to result file
-                        b_merged << l1 << "\n";
-                    }
-                    getline(block1, l1);
+
+                while (r1) {
+                    merged.writeLine(l1);
+                    r1 = left.readLine(l1);
                 }
+
                 if (l1 != "") {
-                    // write l1 to result file
-                    b_merged << l1 << "\n";
+                    merged.writeLine(l1);
                 }
-                while (!block2.eof()) {
-                    if (l2 != "") {
-                        // write l2 to result file
-                        b_merged << l2 << "\n";
-                    }
-                    getline(block2, l2);
+
+                while (r2) {
+                    merged.writeLine(l2);
+                    r2 = right.readLine(l2);
                 }
                 if (l2 != "") {
-                    // write l2 to result file
-                    b_merged << l2 << "\n";
+                    merged.writeLine(l2);
                 }
 
-                b_merged.close();
-                block1.close();
-                block2.close();
+                merged.close();
+                left.close();
+                right.close();
 
                 // tidy up temporary files
-                LOGDEBUG("delete files: " << b1 << " " << b2);
-                if (fs::exists(b1)) {
-                    fs::remove(b1);
+                LOGDEBUG("delete files: " << left_filename << " " << right_filename);
+                if (fs::exists(left_filename)) {
+                    fs::remove(left_filename);
                 }
-                if (fs::exists(b2)) {
-                    fs::remove(b2);
+                if (fs::exists(right_filename)) {
+                    fs::remove(right_filename);
                 }
             }
 

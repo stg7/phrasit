@@ -5,6 +5,7 @@
 
     * use gzip files for external sort and _tmp, _sorted
         * [INFO ] sort_test.cpp@117      :  needed time: 37598.8  external sort, without gzip
+        * [INFO ] sort_test.cpp@128      :  needed time: 196050  with gzip
 
     * store start pos for each n_gram_and_pos in separate file,
         -> n_gram_and_pos must not be stored

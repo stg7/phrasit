@@ -33,10 +33,12 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 
 #include <boost/filesystem.hpp>
 
+#include "compress/file.hpp"
 #include "sort/external_sort.hpp"
 #include "storage/kvs.hpp"
 #include "utils/log.hpp"
@@ -54,11 +56,14 @@ namespace phrasit {
 
             static constexpr int MAX_ID_WITDH_BASE_16 = 8;
 
+            static constexpr const char* _tmp_filename = "/_tmp.gz";
+
             std::string _storagedir;
             unsigned long _max_id;
 
             kvs::type _meta;
-            std::ofstream _tmpfile;
+
+            compress::File<compress::mode::write> _tmpfile;
 
             phrasit::utils::MMArray<unsigned long> _index;
             phrasit::utils::MMArray<unsigned long> _index_header;
@@ -117,8 +122,7 @@ namespace phrasit {
                 }
 
                 if (!index_exists) {
-                    _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
-                    _tmpfile.sync_with_stdio(false);
+                    _tmpfile.open(_storagedir + _tmp_filename);
                 }
             }
 
@@ -147,11 +151,13 @@ namespace phrasit {
 
                 // TODO(stg7) there is a better approach, not using leading zeros for correct sorting
                 //  instead use a binary format and store triples, but external sort must be modified
-                _tmpfile << std::setw(MAX_ID_WITDH_BASE_16)
+                std::ostringstream line;
+                line << std::setw(MAX_ID_WITDH_BASE_16)
                     << std::setfill('0') << std::hex << id << "\t"
                     << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\t"
-                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\n";
+                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id;
 
+                _tmpfile.writeLine(line.str());
                 return true;
             }
 
@@ -162,7 +168,7 @@ namespace phrasit {
             inline bool optimize(bool ignore_existing = false) {
                 namespace fs = boost::filesystem;
 
-                std::string tmp_filename = _storagedir + "/_tmp";
+                std::string tmp_filename = _storagedir + _tmp_filename;
 
                 if (!fs::exists(tmp_filename) && !ignore_existing) {
                     LOGERROR("index is optimized, or something is wrong with file: " << tmp_filename);

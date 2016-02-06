@@ -22,6 +22,7 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/filesystem.hpp>
 
+#include "compress/file.hpp"
 #include "utils/log.hpp"
 #include "utils/timer.hpp"
 #include "sort/parallel_sort.hpp"
@@ -73,7 +74,7 @@ BOOST_AUTO_TEST_CASE(External_Sort_Test) {
     LOGINFO("test external sort");
 
     namespace fs = boost::filesystem;
-    std::string testfile = "tmp/_test_ext_sort";
+    std::string testfile = "tmp/_test_ext_sort.gz";
     if (!fs::exists("tmp")) {
         fs::create_directory("tmp");
     }
@@ -84,12 +85,12 @@ BOOST_AUTO_TEST_CASE(External_Sort_Test) {
     LOGINFO("create a file for sorting");
     std::vector<std::string> values;
     {
-        std::ofstream tmp_file;
-        tmp_file.open (testfile);
+        phrasit::compress::File<phrasit::compress::mode::write> tmp_file(testfile);
+
         for (unsigned long i = 0; i < 10000000; i++) {
             std::string value = random_string(rand() % 30);
             if (value != "") {
-                tmp_file << value << "\n";
+                tmp_file.writeLine(value);
                 values.emplace_back(value);
             }
         }
@@ -106,6 +107,15 @@ BOOST_AUTO_TEST_CASE(External_Sort_Test) {
     //  external sort will remove this line, this behavior is not correct in the sense of sorting
     //  a file, but for the index creation it is ok
     {
+
+        phrasit::compress::File<phrasit::compress::mode::read> file(res);
+        unsigned long i = 0;
+        for (std::string line = ""; file.readLine(line); ) {
+            BOOST_CHECK(line == values[i]);
+            i++;
+        }
+        BOOST_CHECK(i > 0);
+        /*
         std::ifstream sorted_file(res);
         std::string line;
         unsigned long i = 0;
@@ -113,6 +123,7 @@ BOOST_AUTO_TEST_CASE(External_Sort_Test) {
             BOOST_CHECK(line == values[i]);
             i++;
         }
+        */
     }
     LOGINFO("needed time: " << t.time());
 

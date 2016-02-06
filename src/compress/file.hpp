@@ -57,17 +57,36 @@ namespace phrasit {
             std::ofstream _file;
 
          public:
+            File() { }
+
             File(const std::string& filename) {
+                open(filename);
+            }
+
+            void open(const std::string& filename) {
                 _file.open(filename, std::ios_base::out | std::ios_base::binary);
+                _file.sync_with_stdio(false);
                 _out.push(boost::iostreams::gzip_compressor(
                     boost::iostreams::gzip_params(
-                        boost::iostreams::gzip::best_compression)));
+                        boost::iostreams::gzip::best_speed)));
+                    // best_compression is just a bit better but needs double time
                 _out.push(_file);
             }
 
             ~File() {
-                boost::iostreams::close(_out);
-                _file.close();
+                close();
+            }
+
+            inline bool is_open() {
+                return _file.is_open();
+            }
+
+            inline void close() {
+                if (is_open()) {
+                    _out.reset();
+                    boost::iostreams::close(_out);
+                    _file.close();
+                }
             }
 
             inline void writeLine(const std::string& l) {
@@ -82,15 +101,33 @@ namespace phrasit {
             std::ifstream _file;
 
          public:
+            File() { }
+
             File(const std::string& filename) {
+                open(filename);
+            }
+
+            void open(const std::string& filename) {
                 _file.open(filename, std::ios_base::in | std::ios_base::binary);
+                _file.sync_with_stdio(false);
                 _in.push(boost::iostreams::gzip_decompressor());
                 _in.push(_file);
             }
 
             ~File() {
-                boost::iostreams::close(_in);
-                _file.close();
+                close();
+            }
+
+            inline bool is_open() {
+                return _file.is_open();
+            }
+
+            inline void close() {
+                if (is_open()) {
+                    _in.reset();
+                    boost::iostreams::close(_in);
+                    _file.close();
+                }
             }
 
             inline bool readLine(std::string& str) {
