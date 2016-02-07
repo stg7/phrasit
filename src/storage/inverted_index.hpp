@@ -43,6 +43,7 @@
 #include "storage/kvs.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/mem.hpp"
 #include "utils/progress_bar.hpp"
 #include "utils/mmfiles.hpp"
 #include "consts.hpp"
@@ -179,24 +180,30 @@ namespace phrasit {
                     _tmpfile.close();
                 }
 
-                std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
+
+
+                long blocksize = utils::memory::get_free() * 1024 / 4;
+
+                LOGINFO("using an estimated blocksize of " << utils::size::to_mb(blocksize) << " mb");
+
+                std::string resultfilename = sort::external_sort(tmp_filename, _storagedir, blocksize);
 
                 // if tmp file is opened in append mode, don't delete tmp
                 if (fs::exists(tmp_filename)) {
                     // fs::remove(tmp_filename);
                 }
 
-                fs::rename(resultfilename, _storagedir + "/" + "_sorted");
-                resultfilename = _storagedir + "/" + "_sorted";
+                fs::rename(resultfilename, _storagedir + "/" + "_sorted.gz");
+                resultfilename = _storagedir + "/" + "_sorted.gz";
                 LOGINFO("sorted file " << resultfilename);
 
                 LOGINFO("build index");
 
-                std::ifstream index_txt_file(resultfilename);
+                unsigned long line_count = phrasit::utils::count_lines_compressed(resultfilename);
 
-                std::string line = "";
-                unsigned long line_count = phrasit::utils::count_lines(resultfilename);
                 LOGINFO("count of lines: " << line_count);
+
+                compress::File<compress::mode::read> index_txt_file(resultfilename);
 
                 // TODO(stg7) maybe dont use unsigned long as index value, e.g. struct type
 
@@ -214,8 +221,8 @@ namespace phrasit {
                 _index_header[h_pos++] = 0;
 
                 phrasit::utils::Progress_bar pb(1000, "index");
-                while (!index_txt_file.eof()) {
-                    getline(index_txt_file, line);
+
+                for(std::string line = ""; index_txt_file.readLine(line);) {
 
                     std::vector<std::string> splitted_line = phrasit::utils::split(line, delimiter);
 
@@ -242,8 +249,9 @@ namespace phrasit {
                 _index_header[h_pos++] = _index.size() - 1;
 
                 if (phrasit::debug) {  // write validation file, for debugging
-                    std::ofstream validation_file;
-                    validation_file.open(_storagedir + "/_validation");
+                    compress::File<compress::mode::write> validation_file;
+
+                    validation_file.open(_storagedir + "/_validation.gz");
                     for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
                         unsigned long id = _index_header[l];
                         unsigned long pos = _index_header[l + 1];
@@ -252,15 +260,18 @@ namespace phrasit {
                         for (unsigned long j = pos; j < next_pos; j += 2) {
                             unsigned long n_and_pos = _index[j];
                             unsigned long ngram_id = _index[j + 1];
-                            validation_file << std::setw(MAX_ID_WITDH_BASE_16)
+                            std::ostringstream v_line;
+                            v_line << std::setw(MAX_ID_WITDH_BASE_16)
                                 << std::setfill('0') << std::hex << id << "\t"
                                 << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\t"
-                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\n";
+                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id;
+
+                            validation_file.writeLine(v_line.str());
                         }
                     }
                 }
                 if (!phrasit::debug) {
-                    fs::remove(_storagedir + "/" + "_sorted");
+                    fs::remove(resultfilename);
                     //fs::remove(tmp_filename); // don't delete tmp file, for later appending mode
                 }
 

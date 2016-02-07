@@ -64,7 +64,7 @@ namespace phrasit {
             }
 
             void open(const std::string& filename) {
-                _file.open(filename, std::ios_base::out | std::ios_base::binary);
+                _file.open(filename, std::ios_base::app | std::ios_base::binary);
                 _file.sync_with_stdio(false);
                 _out.push(boost::iostreams::gzip_compressor(
                     boost::iostreams::gzip_params(

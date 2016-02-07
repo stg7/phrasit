@@ -39,14 +39,20 @@
 namespace phrasit {
     namespace utils {
         namespace size {
-            constexpr unsigned long kb(unsigned long bytes) {
-                return bytes * 1024;
+            constexpr unsigned long to_kb(unsigned long bytes) {
+                return bytes / 1024;
             }
-            constexpr unsigned long mb(unsigned long bytes) {
-                return kb(bytes) * 1024;
+            constexpr unsigned long to_mb(unsigned long bytes) {
+                return to_kb(bytes) / 1024;
             }
-            constexpr unsigned long gb(unsigned long bytes) {
-                return mb(bytes) * 1024;
+            constexpr unsigned long kb(unsigned long kbytes) {
+                return kbytes * 1024;
+            }
+            constexpr unsigned long mb(unsigned long mbytes) {
+                return kb(mbytes) * 1024;
+            }
+            constexpr unsigned long gb(unsigned long gbytes) {
+                return mb(gbytes) * 1024;
             }
         }
 
