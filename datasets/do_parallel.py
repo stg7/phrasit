@@ -60,7 +60,13 @@ def main(params):
     if argsdict["sortbysize"]:
         argsdict["infile"].sort(key=lambda x: os.path.getsize(x))
 
-    files = zip(argsdict["infile"], [script for x in argsdict["infile"]])
+    resorted_files = []
+    for i in range(cpu_count):
+        resorted_files += [argsdict["infile"][x] for x in range(0, len(argsdict["infile"])) if x % cpu_count == i]
+
+
+    files = zip(resorted_files, [script for x in resorted_files])
+
     global files_count
     files_count = len(argsdict["infile"])
     pool = Pool(processes=cpu_count)
