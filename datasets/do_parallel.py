@@ -46,7 +46,7 @@ def do_it(params):
     lInfo("{}/{}".format(files_done, files_count))
 
 def main(params):
-    parser = argparse.ArgumentParser(description='run a command on several files parallel', epilog="stg7 2015", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='run a command on several files parallel', epilog="stg7 2016", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--cpu_count',type=int, default=multiprocessing.cpu_count(), help='thread/cpu count')
     parser.add_argument('--script', type=str, default="echo ", help='script for handling one file')
     parser.add_argument('-s', dest='sortbysize', action='store_true', help='sort by size starting with smallest file')
