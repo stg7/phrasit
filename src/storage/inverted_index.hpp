@@ -67,6 +67,7 @@ namespace phrasit {
             compress::File<compress::mode::write> _tmpfile;
 
             phrasit::utils::MMArray<unsigned long> _index;
+            phrasit::utils::MMArray<unsigned char> _index_n_and_pos;
             phrasit::utils::MMArray<unsigned long> _index_header;
 
             std::vector<unsigned long> _ids;
@@ -110,6 +111,10 @@ namespace phrasit {
                 bool index_exists = false;
                 if (fs::exists(_storagedir + "/" + "_index")) {
                     _index.open(_storagedir + "/" + "_index");
+                    index_exists = true;
+                }
+                if (fs::exists(_storagedir + "/" + "_index_n_and_pos")) {
+                    _index_n_and_pos.open(_storagedir + "/" + "_index_n_and_pos");
                     index_exists = true;
                 }
 
@@ -208,7 +213,8 @@ namespace phrasit {
                 // TODO(stg7) maybe dont use unsigned long as index value, e.g. struct type
 
                 // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
-                _index.open(_storagedir + "/" + "_index", line_count * 2 * sizeof(unsigned long));
+                _index.open(_storagedir + "/" + "_index", line_count * sizeof(unsigned long));
+                _index_n_and_pos.open(_storagedir + "/" + "_index_n_and_pos", line_count * sizeof(unsigned char));
                 // store start positions in header file
                 _index_header.open(_storagedir + "/" + "_index_header", (_max_id + 1) * 2 * sizeof(unsigned long));
 
@@ -238,8 +244,9 @@ namespace phrasit {
                             current_id = id;
                         }
 
-                        _index[pos++] = n_and_pos;
-                        _index[pos++] = ngram_id;
+                        _index_n_and_pos[pos] = n_and_pos; // TODO(stg7) n_and_pos should be uchar
+                        _index[pos] = ngram_id;
+                        pos ++;
                         pb.update();
                     }
                 }
@@ -257,9 +264,9 @@ namespace phrasit {
                         unsigned long pos = _index_header[l + 1];
                         unsigned long next_pos = _index_header[l + 3];
 
-                        for (unsigned long j = pos; j < next_pos; j += 2) {
-                            unsigned long n_and_pos = _index[j];
-                            unsigned long ngram_id = _index[j + 1];
+                        for (unsigned long j = pos; j < next_pos; j ++) {
+                            unsigned long n_and_pos = _index_n_and_pos[j];
+                            unsigned long ngram_id = _index[j];
                             std::ostringstream v_line;
                             v_line << std::setw(MAX_ID_WITDH_BASE_16)
                                 << std::setfill('0') << std::hex << id << "\t"
@@ -296,14 +303,26 @@ namespace phrasit {
                 unsigned long start_pos = _pos[header_pos];
                 unsigned long end_pos = _pos[header_pos + 1];
 
+                if (needed_n_and_pos != 0) {
+                    bool found_n_and_pos = false;
+                    for (unsigned long j = start_pos; j < end_pos; j ++) {
+                        unsigned long n_and_pos = _index_n_and_pos[j];
+                        if (needed_n_and_pos == n_and_pos) {
+                            start_pos = j;
+                            found_n_and_pos = true;
+                        } else {
+                            if (found_n_and_pos) {
+                                end_pos = j - 1;
+                                break;
+                            }
+                        }
+                    }
+                }
                 // get all suitable n-grams, the resulting vector is sorted, because the index
                 //  is sorted
-                for (unsigned long j = start_pos; j < end_pos; j += 2) {
-                    unsigned long n_and_pos = _index[j];
-                    unsigned long ngram_id = _index[j + 1];
-                    if (needed_n_and_pos == 0 || needed_n_and_pos == n_and_pos) {
-                        res.emplace_back(ngram_id);
-                    }
+                for (unsigned long j = start_pos; j < end_pos; j ++) {
+                    unsigned long ngram_id = _index[j];
+                    res.emplace_back(ngram_id);
                 }
                 return res;
             }
