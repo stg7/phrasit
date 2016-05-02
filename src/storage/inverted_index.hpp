@@ -235,7 +235,7 @@ namespace phrasit {
                     if (splitted_line.size() == 3) {
 
                         unsigned long id = std::stol(splitted_line[0], nullptr, 16);
-                        unsigned long n_and_pos = std::stol(splitted_line[1], nullptr, 16);
+                        unsigned char n_and_pos = std::stoi(splitted_line[1], nullptr, 16);
                         unsigned long ngram_id = std::stol(splitted_line[2], nullptr, 16);
 
                         if (id != current_id) {
@@ -244,7 +244,7 @@ namespace phrasit {
                             current_id = id;
                         }
 
-                        _index_n_and_pos[pos] = n_and_pos; // TODO(stg7) n_and_pos should be uchar
+                        _index_n_and_pos[pos] = n_and_pos;
                         _index[pos] = ngram_id;
                         pos ++;
                         pb.update();
@@ -290,7 +290,7 @@ namespace phrasit {
                 phrasit::utils::check(_index.is_open() == true, "index file is closed?!");
 
                 std::vector<unsigned long> res;
-                unsigned long needed_n_and_pos = (10 * needed_pos + needed_n);
+                unsigned char needed_n_and_pos = (char) (10 * needed_pos + needed_n);
 
                 // check if key is stored
                 unsigned long key_id = kvs::get_ulong_or_default(_meta, key, _max_id);
@@ -303,26 +303,15 @@ namespace phrasit {
                 unsigned long start_pos = _pos[header_pos];
                 unsigned long end_pos = _pos[header_pos + 1];
 
-                if (needed_n_and_pos != 0) {
-                    bool found_n_and_pos = false;
-                    for (unsigned long j = start_pos; j < end_pos; j ++) {
-                        unsigned long n_and_pos = _index_n_and_pos[j];
-                        if (needed_n_and_pos == n_and_pos) {
-                            start_pos = j;
-                            found_n_and_pos = true;
-                        } else {
-                            if (found_n_and_pos) {
-                                end_pos = j - 1;
-                                break;
-                            }
-                        }
-                    }
-                }
+
                 // get all suitable n-grams, the resulting vector is sorted, because the index
                 //  is sorted
                 for (unsigned long j = start_pos; j < end_pos; j ++) {
-                    unsigned long ngram_id = _index[j];
-                    res.emplace_back(ngram_id);
+                    unsigned char n_and_pos = _index_n_and_pos[j];
+                    if (needed_n_and_pos == 0 || n_and_pos == needed_n_and_pos) {
+                        unsigned long ngram_id = _index[j];
+                        res.emplace_back(ngram_id);
+                    }
                 }
                 return res;
             }
