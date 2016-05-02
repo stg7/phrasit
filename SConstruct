@@ -66,8 +66,9 @@ env = Environment(CPPPATH = ["src/", "libs/"],
 
 # include local installed libs
 libspath = 'libs/'
-libs = ["boost"] #  ['tbb']
+libs = ["boost"]
 
+# TODO: unify this
 env.Append(
     LIBPATH=['.'] + [libspath + x +  "/build/lib" for x in libs],
     CPPPATH=[libspath + x + "/build/include" for x in libs]
@@ -82,28 +83,49 @@ env.Append(
 # leveldb
 env.Append(
     CPPPATH = [libspath + "leveldb/include/"],
-    LIBPATH = [libspath + 'leveldb/']
+    LIBPATH = [libspath + 'leveldb/out-shared/']
 )
 
-env.Append(LINKFLAGS=['-Wl,--rpath,' + libspath + 'leveldb/', '-Wl,--rpath,' + libspath + 'boost/build/lib', '-pthread'])
+env.Append(LINKFLAGS=['-pthread',
+        '-Wl,--rpath,' + libspath + 'leveldb/out-shared',
+        '-Wl,--rpath,' + libspath + 'boost/build/lib',
+        ])
 
 env.Decider('MD5')
 
 conf = Configure(env)
 
-needed_libs = ['leveldb', 'boost_unit_test_framework', 'boost_program_options', 'boost_system', 'boost_filesystem', 'boost_iostreams'] # ,'tbb'
+needed_libs = [
+    'leveldb',
+    'boost_unit_test_framework',
+    'boost_program_options',
+    'boost_system',
+    'boost_filesystem',
+    'boost_iostreams'] # ,'tbb'
+
 for lib in needed_libs:
     if not conf.CheckLib(lib, language="c++"):
         print "Unable to find lib: " + lib + ". Exiting."
         exit(-1)
 
-needed_headers = ['boost/program_options.hpp', 'boost/filesystem.hpp', 'boost/test/unit_test.hpp'] # , '''tbb/tbb.h',
+# TODO: do it automatically
+needed_headers = [
+    "leveldb/db.h",
+    'boost/program_options.hpp',
+    'boost/filesystem.hpp',
+    'boost/iostreams/device/mapped_file.hpp',
+    'boost/iostreams/filter/gzip.hpp',
+    'boost/iostreams/filtering_stream.hpp',
+    'boost/network/protocol/http/server.hpp',
+    'boost/network/uri/decode.hpp',
+    'boost/test/unit_test.hpp'] # , '''tbb/tbb.h',
+
 for header in needed_headers:
     if not conf.CheckCXXHeader(header):
         print "Unable to find header: " + header + ". Exiting."
         sys.exit(-1)
 
-
+# TODO: maybe c++14?
 env.Append(CXXFLAGS=['-std=c++11'])
 
 # if you call scons debug=1 debug build is activated
@@ -132,11 +154,6 @@ sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/mai
 
 # check code conventions and build programm
 #env.StyleCheck("conventions", ["src/main.cpp"] + list(sources) + list(header) + list(testcases))
-
-# build unittests
-#unittests = env.Program('unittest', ["src/tests/unittests.cpp"] + list(sources) + libs)
-#test_alias = Alias('test', [unittests], unittests[0].path)
-#AlwaysBuild(test_alias)
 
 
 phrasit = env.Program('phrasit', ["src/main.cpp"] + list(sources))

@@ -286,7 +286,10 @@ namespace phrasit {
                 }
 
                 LOGDEBUG("needed time: " << t.time() << " ms");
-
+                LOGDEBUG("generated queries:");
+                for (auto& q: queries) {
+                    LOGDEBUG(q);
+                }
                 return queries;
             }
         };

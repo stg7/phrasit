@@ -46,7 +46,7 @@ def do_it(params):
     lInfo("{}/{}".format(files_done, files_count))
 
 def main(params):
-    parser = argparse.ArgumentParser(description='run a command on several files parallel', epilog="stg7 2015", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='run a command on several files parallel', epilog="stg7 2016", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--cpu_count',type=int, default=multiprocessing.cpu_count(), help='thread/cpu count')
     parser.add_argument('--script', type=str, default="echo ", help='script for handling one file')
     parser.add_argument('-s', dest='sortbysize', action='store_true', help='sort by size starting with smallest file')
@@ -60,7 +60,13 @@ def main(params):
     if argsdict["sortbysize"]:
         argsdict["infile"].sort(key=lambda x: os.path.getsize(x))
 
-    files = zip(argsdict["infile"], [script for x in argsdict["infile"]])
+    resorted_files = []
+    for i in range(cpu_count):
+        resorted_files += [argsdict["infile"][x] for x in range(0, len(argsdict["infile"])) if x % cpu_count == i]
+
+
+    files = zip(resorted_files, [script for x in resorted_files])
+
     global files_count
     files_count = len(argsdict["infile"])
     pool = Pool(processes=cpu_count)

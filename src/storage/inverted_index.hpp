@@ -33,14 +33,17 @@
 #include <map>
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <algorithm>
 
 #include <boost/filesystem.hpp>
 
+#include "compress/file.hpp"
 #include "sort/external_sort.hpp"
 #include "storage/kvs.hpp"
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
+#include "utils/mem.hpp"
 #include "utils/progress_bar.hpp"
 #include "utils/mmfiles.hpp"
 #include "consts.hpp"
@@ -54,13 +57,17 @@ namespace phrasit {
 
             static constexpr int MAX_ID_WITDH_BASE_16 = 8;
 
+            static constexpr const char* _tmp_filename = "/_tmp.gz";
+
             std::string _storagedir;
             unsigned long _max_id;
 
             kvs::type _meta;
-            std::ofstream _tmpfile;
+
+            compress::File<compress::mode::write> _tmpfile;
 
             phrasit::utils::MMArray<unsigned long> _index;
+            phrasit::utils::MMArray<unsigned char> _index_n_and_pos;
             phrasit::utils::MMArray<unsigned long> _index_header;
 
             std::vector<unsigned long> _ids;
@@ -106,6 +113,10 @@ namespace phrasit {
                     _index.open(_storagedir + "/" + "_index");
                     index_exists = true;
                 }
+                if (fs::exists(_storagedir + "/" + "_index_n_and_pos")) {
+                    _index_n_and_pos.open(_storagedir + "/" + "_index_n_and_pos");
+                    index_exists = true;
+                }
 
                 if (fs::exists(_storagedir + "/" + "_index_header")) {
                     _index_header.open(_storagedir + "/" + "_index_header");
@@ -117,8 +128,7 @@ namespace phrasit {
                 }
 
                 if (!index_exists) {
-                    _tmpfile.open(_storagedir + "/_tmp", std::ofstream::out | std::ofstream::app);
-                    _tmpfile.sync_with_stdio(false);
+                    _tmpfile.open(_storagedir + _tmp_filename);
                 }
             }
 
@@ -147,11 +157,13 @@ namespace phrasit {
 
                 // TODO(stg7) there is a better approach, not using leading zeros for correct sorting
                 //  instead use a binary format and store triples, but external sort must be modified
-                _tmpfile << std::setw(MAX_ID_WITDH_BASE_16)
+                std::ostringstream line;
+                line << std::setw(MAX_ID_WITDH_BASE_16)
                     << std::setfill('0') << std::hex << id << "\t"
-                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
-                    << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\n";
+                    << std::setw(2) << std::setfill('0') << std::hex << (10 * pos + n) << "\t"
+                    << std::setw(16) << std::setfill('0') << std::hex << ngram_id;
 
+                _tmpfile.writeLine(line.str());
                 return true;
             }
 
@@ -162,7 +174,7 @@ namespace phrasit {
             inline bool optimize(bool ignore_existing = false) {
                 namespace fs = boost::filesystem;
 
-                std::string tmp_filename = _storagedir + "/_tmp";
+                std::string tmp_filename = _storagedir + _tmp_filename;
 
                 if (!fs::exists(tmp_filename) && !ignore_existing) {
                     LOGERROR("index is optimized, or something is wrong with file: " << tmp_filename);
@@ -173,29 +185,36 @@ namespace phrasit {
                     _tmpfile.close();
                 }
 
-                std::string resultfilename = sort::external_sort(tmp_filename, _storagedir);
+
+
+                long blocksize = utils::memory::get_free() * 1024 / 4;
+
+                LOGINFO("using an estimated blocksize of " << utils::size::to_mb(blocksize) << " mb");
+
+                std::string resultfilename = sort::external_sort(tmp_filename, _storagedir, blocksize);
 
                 // if tmp file is opened in append mode, don't delete tmp
                 if (fs::exists(tmp_filename)) {
                     // fs::remove(tmp_filename);
                 }
 
-                fs::rename(resultfilename, _storagedir + "/" + "_sorted");
-                resultfilename = _storagedir + "/" + "_sorted";
+                fs::rename(resultfilename, _storagedir + "/" + "_sorted.gz");
+                resultfilename = _storagedir + "/" + "_sorted.gz";
                 LOGINFO("sorted file " << resultfilename);
 
                 LOGINFO("build index");
 
-                std::ifstream index_txt_file(resultfilename);
+                unsigned long line_count = phrasit::utils::count_lines_compressed(resultfilename);
 
-                std::string line = "";
-                unsigned long line_count = phrasit::utils::count_lines(resultfilename);
                 LOGINFO("count of lines: " << line_count);
+
+                compress::File<compress::mode::read> index_txt_file(resultfilename);
 
                 // TODO(stg7) maybe dont use unsigned long as index value, e.g. struct type
 
                 // store values in binary format using mmfiles -> size = count_of_lines(resultfilename) * 3 * size_of(ulong)
-                _index.open(_storagedir + "/" + "_index", line_count * 2 * sizeof(unsigned long));
+                _index.open(_storagedir + "/" + "_index", line_count * sizeof(unsigned long));
+                _index_n_and_pos.open(_storagedir + "/" + "_index_n_and_pos", line_count * sizeof(unsigned char));
                 // store start positions in header file
                 _index_header.open(_storagedir + "/" + "_index_header", (_max_id + 1) * 2 * sizeof(unsigned long));
 
@@ -208,16 +227,16 @@ namespace phrasit {
                 _index_header[h_pos++] = 0;
 
                 phrasit::utils::Progress_bar pb(1000, "index");
-                while (!index_txt_file.eof()) {
-                    getline(index_txt_file, line);
+
+                for(std::string line = ""; index_txt_file.readLine(line);) {
 
                     std::vector<std::string> splitted_line = phrasit::utils::split(line, delimiter);
 
                     if (splitted_line.size() == 3) {
 
                         unsigned long id = std::stol(splitted_line[0], nullptr, 16);
-                        unsigned long ngram_id = std::stol(splitted_line[1], nullptr, 16);
-                        unsigned long n_and_pos = std::stol(splitted_line[2], nullptr, 16);
+                        unsigned char n_and_pos = std::stoi(splitted_line[1], nullptr, 16);
+                        unsigned long ngram_id = std::stol(splitted_line[2], nullptr, 16);
 
                         if (id != current_id) {
                             _index_header[h_pos++] = id;
@@ -225,8 +244,9 @@ namespace phrasit {
                             current_id = id;
                         }
 
-                        _index[pos++] = ngram_id;
-                        _index[pos++] = n_and_pos;
+                        _index_n_and_pos[pos] = n_and_pos;
+                        _index[pos] = ngram_id;
+                        pos ++;
                         pb.update();
                     }
                 }
@@ -236,25 +256,29 @@ namespace phrasit {
                 _index_header[h_pos++] = _index.size() - 1;
 
                 if (phrasit::debug) {  // write validation file, for debugging
-                    std::ofstream validation_file;
-                    validation_file.open(_storagedir + "/_validation");
+                    compress::File<compress::mode::write> validation_file;
+
+                    validation_file.open(_storagedir + "/_validation.gz");
                     for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
                         unsigned long id = _index_header[l];
                         unsigned long pos = _index_header[l + 1];
                         unsigned long next_pos = _index_header[l + 3];
 
-                        for (unsigned long j = pos; j < next_pos; j += 2) {
+                        for (unsigned long j = pos; j < next_pos; j ++) {
+                            unsigned long n_and_pos = _index_n_and_pos[j];
                             unsigned long ngram_id = _index[j];
-                            unsigned long n_and_pos = _index[j + 1];
-                            validation_file << std::setw(MAX_ID_WITDH_BASE_16)
+                            std::ostringstream v_line;
+                            v_line << std::setw(MAX_ID_WITDH_BASE_16)
                                 << std::setfill('0') << std::hex << id << "\t"
-                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id << "\t"
-                                << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\n";
+                                << std::setw(2) << std::setfill('0') << std::hex << n_and_pos << "\t"
+                                << std::setw(16) << std::setfill('0') << std::hex << ngram_id;
+
+                            validation_file.writeLine(v_line.str());
                         }
                     }
                 }
                 if (!phrasit::debug) {
-                    fs::remove(_storagedir + "/" + "_sorted");
+                    fs::remove(resultfilename);
                     //fs::remove(tmp_filename); // don't delete tmp file, for later appending mode
                 }
 
@@ -266,7 +290,7 @@ namespace phrasit {
                 phrasit::utils::check(_index.is_open() == true, "index file is closed?!");
 
                 std::vector<unsigned long> res;
-                unsigned long needed_n_and_pos = (10 * needed_pos + needed_n);
+                unsigned char needed_n_and_pos = (char) (10 * needed_pos + needed_n);
 
                 // check if key is stored
                 unsigned long key_id = kvs::get_ulong_or_default(_meta, key, _max_id);
@@ -281,10 +305,10 @@ namespace phrasit {
 
                 // get all suitable n-grams, the resulting vector is sorted, because the index
                 //  is sorted
-                for (unsigned long j = start_pos; j < end_pos; j += 2) {
-                    unsigned long ngram_id = _index[j];
-                    unsigned long n_and_pos = _index[j + 1];
-                    if (needed_n_and_pos == 0 || needed_n_and_pos == n_and_pos) {
+                for (unsigned long j = start_pos; j < end_pos; j ++) {
+                    unsigned char n_and_pos = _index_n_and_pos[j];
+                    if (needed_n_and_pos == 0 || n_and_pos == needed_n_and_pos) {
+                        unsigned long ngram_id = _index[j];
                         res.emplace_back(ngram_id);
                     }
                 }

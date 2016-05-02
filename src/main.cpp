@@ -154,6 +154,7 @@ int main(int argc, const char* argv[]) {
             LOGMSG("optimize index");
             phrasit.optimize();
             LOGMSG("successfully optimized index");
+            return 0;
         }
     }
 

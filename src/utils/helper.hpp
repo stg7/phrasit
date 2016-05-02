@@ -3,7 +3,7 @@
 
     \author stg7
 
-    \brief logging module
+    \brief helper module
 
     \date 13.11.2015
 
@@ -36,6 +36,7 @@
 #include <algorithm>
 
 #include "consts.hpp"
+#include "compress/file.hpp"
 #include "utils/log.hpp"
 
 namespace phrasit {
@@ -52,6 +53,22 @@ namespace phrasit {
             std::size_t count = std::count_if(std::istreambuf_iterator<char>(file),
                 std::istreambuf_iterator<char>(),
                 [](char c) {return c == '\n';});
+            return count;
+        }
+
+        /*
+        *   count lines of a compressed file
+        *   \param filename name of file
+        *   \return count of lines
+        */
+        inline std::size_t count_lines_compressed(const std::string& filename) {
+
+            compress::File<compress::mode::read> file(filename);
+            std::size_t count = 0;
+            for(std::string l = ""; file.readLine(l);) {
+                count ++;
+            }
+            file.close();
             return count;
         }
 
