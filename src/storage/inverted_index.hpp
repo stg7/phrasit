@@ -303,7 +303,6 @@ namespace phrasit {
                 unsigned long start_pos = _pos[header_pos];
                 unsigned long end_pos = _pos[header_pos + 1];
 
-
                 // get all suitable n-grams, the resulting vector is sorted, because the index
                 //  is sorted
                 for (unsigned long j = start_pos; j < end_pos; j ++) {
