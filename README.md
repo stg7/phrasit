@@ -102,7 +102,7 @@ You can use e.g. [Ngram Extractor](https://github.com/stg7/ngram-extractor)
 to create an own dataset.
 
 At the moment, the input format is not customizable, if your data is stored in another format
-you should build a convert script, that e.g. throw all ngrams in the inport format out to stdout.
+you should build a convert script, that e.g. throw all ngrams in the input format out to stdout.
 Then you can easily build a processing pipeline like:
 ```
 ./myConvertScript myCoolDataset | ./phrasit -i
