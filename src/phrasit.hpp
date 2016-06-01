@@ -67,31 +67,13 @@ namespace phrasit {
 
             std::vector<unsigned long> res;
 
-            unsigned long min_freq = std::numeric_limits<unsigned long>::max();
             // copy frequencies to a map for faster accesses to n-gram frequencies during sort
             std::map<unsigned long, unsigned long> freq_map;
-            unsigned long i = 0;
-            /*for (auto& x : result_ids) { */
-            // find out minimum frequency of first results
-            for (; i < std::min(phrasit::max_result_size, limit) && i < result_ids.size(); i++) {
-                auto x = result_ids[i];
+
+            for (auto& x : result_ids) {
                 auto freq = get_freq(x);
                 freq_map[x] = freq;
-
-                if (freq < min_freq) {
-                    min_freq = freq;
-                }
-
             }
-            // store only frequency values that are >= min_freq
-            for (; i < result_ids.size(); i++) {
-                auto x = result_ids[i];
-                auto freq = get_freq(x);
-                if (freq >= min_freq) {
-                    freq_map[x] = freq;
-                }
-            }
-
 
             auto cmp = [&freq_map](unsigned long& left, unsigned long& right) -> bool {
                 return freq_map[left] > freq_map[right];
@@ -99,6 +81,7 @@ namespace phrasit {
 
             std::priority_queue<unsigned long, std::vector<unsigned long>, decltype(cmp) > queue(cmp);
 
+            unsigned long min_freq = 0;
             for (auto& x : result_ids) {
                 if (freq_map[x] > min_freq) {
                     queue.push(x);
