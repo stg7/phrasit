@@ -12,9 +12,9 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <experimental/filesystem>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 
 #include "utils/consthash.hpp"
 #include "utils/helper.hpp"
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(Helper_Test) {
 BOOST_AUTO_TEST_CASE(Mmfiles_Test) {
     LOGINFO("test mmfiles");
 
-    namespace fs = boost::filesystem;
+    namespace fs = std::experimental::filesystem;
     std::string testfile = "tmp/_test_mmf";
     if (!fs::exists("tmp")) {
         fs::create_directory("tmp");

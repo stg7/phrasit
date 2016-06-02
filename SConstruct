@@ -96,12 +96,13 @@ env.Decider('MD5')
 conf = Configure(env)
 
 needed_libs = [
+    'stdc++fs',
     'leveldb',
     'boost_unit_test_framework',
     'boost_program_options',
     'boost_system',
-    'boost_filesystem',
     'boost_iostreams'] # ,'tbb'
+    #'boost_filesystem',
 
 for lib in needed_libs:
     if not conf.CheckLib(lib, language="c++"):
@@ -112,13 +113,13 @@ for lib in needed_libs:
 needed_headers = [
     "leveldb/db.h",
     'boost/program_options.hpp',
-    'boost/filesystem.hpp',
     'boost/iostreams/device/mapped_file.hpp',
     'boost/iostreams/filter/gzip.hpp',
     'boost/iostreams/filtering_stream.hpp',
     'boost/network/protocol/http/server.hpp',
     'boost/network/uri/decode.hpp',
     'boost/test/unit_test.hpp'] # , '''tbb/tbb.h',
+    #'boost/filesystem.hpp',
 
 for header in needed_headers:
     if not conf.CheckCXXHeader(header):

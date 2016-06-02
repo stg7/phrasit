@@ -233,6 +233,7 @@ namespace phrasit {
                 // based on path do the action:
                 switch (r_hash(path)) {
                     case c_hash("/api/"): {
+                            // todo(stg7) run query processing in seperate thread
                             query(params, data, ipa);
                         }
                         break;

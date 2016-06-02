@@ -33,10 +33,9 @@
 #include <iostream>
 #include <fstream>
 #include <deque>
+#include <experimental/filesystem>
 
 #include <cstdio>
-
-#include <boost/filesystem.hpp>
 
 #include "compress/file.hpp"
 #include "sort/parallel_sort.hpp"
@@ -50,7 +49,7 @@ namespace phrasit {
         */
         inline std::string external_sort(const std::string& filename, const std::string& tmppath, const long blocksize = 500000000) {
             LOGDEBUG("external sort");
-            namespace fs = boost::filesystem;
+            namespace fs = std::experimental::filesystem;
 
             // read file line by line and store it in blockfiles that are sorted
             compress::File<compress::mode::read> file(filename);

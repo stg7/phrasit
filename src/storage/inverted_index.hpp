@@ -35,8 +35,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
-
-#include <boost/filesystem.hpp>
+#include <experimental/filesystem>
 
 #include "compress/file.hpp"
 #include "sort/external_sort.hpp"
@@ -91,7 +90,7 @@ namespace phrasit {
             Inverted_index(const std::string& storagedir) : _max_id(0) {
                 LOGINFO("create ii");
                 _storagedir = storagedir + "/_ii";
-                namespace fs = boost::filesystem;
+                namespace fs = std::experimental::filesystem;
 
                 if (!fs::exists(_storagedir)) {
                     LOGMSG("create storagedir for ii: " << _storagedir);
@@ -172,7 +171,7 @@ namespace phrasit {
             *   if ignore_existing is true then an already existing index will be ignored
             */
             inline bool optimize(bool ignore_existing = false) {
-                namespace fs = boost::filesystem;
+                namespace fs = std::experimental::filesystem;
 
                 std::string tmp_filename = _storagedir + _tmp_filename;
 

@@ -1,14 +1,8 @@
-* ideas:
-    * think of storing ngram->id id->ngram things
-        ngram -> id could be: hash(ngram) -> id, with using id -> ngram a == check can be performed
-        * for hash use: haesni or something else
+* run web query processing in seperate thread
+* think of storing ngram->id id->ngram things
+    ngram -> id could be: hash(ngram) -> id, with using id -> ngram a == check can be performed
+    * for hash use: haesni or something else
 
-    * use gzip files for external sort and _tmp, _sorted
-        * [INFO ] sort_test.cpp@117      :  needed time: 37598.8  external sort, without gzip
-        * [INFO ] sort_test.cpp@128      :  needed time: 99727.5 with gzip fast
-
-    * store start pos for each n_gram_and_pos in separate file,
-        -> n_gram_and_pos must not be stored
 
 * faster import:
     * 1 thread reads from stdin and collect lines in vector, if "full"
@@ -32,6 +26,14 @@
 
 DONE
 ----
+* replace boost::filesystem with stl filesystem
+* just store n_gram_and_pos in seperate file instead of:
+    * store start pos for each n_gram_and_pos in separate file,
+        -> n_gram_and_pos must not be stored
+
+* use gzip files for external sort and _tmp, _sorted
+    * [INFO ] sort_test.cpp@117      :  needed time: 37598.8  external sort, without gzip
+    * [INFO ] sort_test.cpp@128      :  needed time: 99727.5 with gzip fast
 * build unittests based on "test.cpp" skeleton
 * add Licence GPLv3 to all files
 * SEG Fault importing just a few ngrams: missing close call for _tmp file

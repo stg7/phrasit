@@ -18,9 +18,9 @@
 #include <functional> // for std::function
 #include <algorithm>  // for std::generate_n
 #include <stdlib.h>  // for system call
+#include <experimental/filesystem>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 
 #include "compress/file.hpp"
 #include "utils/log.hpp"
@@ -73,7 +73,7 @@ std::string random_string(size_t length) {
 BOOST_AUTO_TEST_CASE(External_Sort_Test) {
     LOGINFO("test external sort");
 
-    namespace fs = boost::filesystem;
+    namespace fs = std::experimental::filesystem;
     std::string testfile = "tmp/_test_ext_sort.gz";
     if (!fs::exists("tmp")) {
         fs::create_directory("tmp");

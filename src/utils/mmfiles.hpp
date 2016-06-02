@@ -30,9 +30,9 @@
 
 #include <iostream>
 #include <string>
+#include <experimental/filesystem>
 
 #include <boost/iostreams/device/mapped_file.hpp>
-#include <boost/filesystem.hpp>
 
 #include "utils/helper.hpp"
 
@@ -79,7 +79,7 @@ namespace phrasit {
             *   open file 'filename', if size != 0 create a new file
             */
             void open(const std::string filename, unsigned long size = 0) {
-                namespace fs = boost::filesystem;
+                namespace fs = std::experimental::filesystem;
                 boost::iostreams::mapped_file_params  params;
                 params.path = filename;
                 params.mode = (std::ios_base::out | std::ios_base::in);

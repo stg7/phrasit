@@ -10,9 +10,9 @@
     Copyright 2016 Steve Göring
 **/
 #include <string>
+#include <experimental/filesystem>
 
 #include <boost/test/unit_test.hpp>
-#include <boost/filesystem.hpp>
 
 #include "utils/log.hpp"
 #include "storage/kvs.hpp"
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_SUITE(Positronic_Storage_Test)
 BOOST_AUTO_TEST_CASE(KVS_Test) {
     LOGINFO("test key value store");
 
-    namespace fs = boost::filesystem;
+    namespace fs = std::experimental::filesystem;
     std::string testdb = "tmp/_test_kvs";
     if (!fs::exists("tmp")) {
         fs::create_directory("tmp");
@@ -74,7 +74,7 @@ BOOST_AUTO_TEST_CASE(KVS_Test) {
 BOOST_AUTO_TEST_CASE(Inverted_Index_Test) {
     LOGINFO("test inverted index");
 
-    namespace fs = boost::filesystem;
+    namespace fs = std::experimental::filesystem;
     std::string testdb = "tmp/_test_ii";
     if (!fs::exists("tmp")) {
         fs::create_directory("tmp");

@@ -31,9 +31,9 @@
 #include <fstream>
 #include <sstream>
 #include <thread>
+#include <experimental/filesystem>
 
 #include <boost/program_options.hpp>
-#include <boost/filesystem.hpp>
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
@@ -56,7 +56,7 @@ void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
 **/
 int main(int argc, const char* argv[]) {
     namespace po = boost::program_options;
-    namespace fs = boost::filesystem;
+    namespace fs = std::experimental::filesystem;
 
     // declare the supported options.
     po::options_description desc("phrasit - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
