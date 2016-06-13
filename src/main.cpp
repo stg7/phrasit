@@ -33,12 +33,14 @@
 #include <thread>
 #include <experimental/filesystem>
 
+
 #include <boost/program_options.hpp>
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
 #include "utils/timer.hpp"
 #include "utils/progress_bar.hpp"
+#include "utils/signal.hpp"
 #include "srv/webserver.hpp"
 #include "phrasit.hpp"
 #include "consts.hpp"
@@ -173,6 +175,8 @@ int main(int argc, const char* argv[]) {
     } else {
         LOGMSG("run interactive mode ");
 
+        phrasit::utils::signal_init();
+
         std::string query = "";
         do {
             std::cout << "please enter your query, ("
@@ -186,7 +190,7 @@ int main(int argc, const char* argv[]) {
             }
 
             LOGDEBUG("needed time: " << t.time() << " ms");
-        } while (query != phrasit::exit_str && !std::cin.eof());
+        } while (query != phrasit::exit_str && !std::cin.eof() && !phrasit::utils::control_c_pressed());
 
         std::cout << std::endl;
     }

@@ -3,7 +3,7 @@
 
     \author stg7
 
-    \brief caching module
+    \brief caching module, LRU/LFR strategy
 
     \date 13.06.2016
 
@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <functional>
 #include <map>
 #include <experimental/filesystem>
 
@@ -44,18 +45,61 @@ namespace phrasit {
         class Cache {
          private:
             unsigned long _size = 0;
+            bool _initialized = false;
+            bool _disabled = true;
+            std::string _storagedir;
             std::map<K, unsigned long> _counts;
             std::map<K, V> _store;
 
          public:
 
             Cache(const unsigned long size): _size(size) {
-                LOGINFO("create cache with " << size << " stored elemens");
+                LOGINFO("create cache with " << size << " stored elements");
             }
             Cache(): Cache(1000) {
             }
             ~Cache() {
                 LOGINFO("delete cache");
+                if (!_initialized) {
+                    return;
+                }
+                // store values in seperate files
+                for (auto& k: _counts) {
+                    LOGINFO(k.first << " -> " << k.second);
+                }
+
+            }
+
+            void init(const std::string& storagebasedir, std::function<V (K)> do_query) {
+                namespace fs = std::experimental::filesystem;
+                _storagedir = storagebasedir + "/_cache";
+                _initialized = true;
+                if (!fs::exists(_storagedir)) {
+                    fs::create_directory(_storagedir);
+                    return;
+                }
+                std::vector<unsigned long> counts;
+                std::ifstream counts_file(_storagedir + "/_counts");
+
+                for (std::string line = ""; getline(counts_file, line);) {
+                    counts.emplace_back(std::stoul(line));
+                }
+                counts_file.close();
+
+                std::vector<std::string> keys;
+                std::ifstream keys_file(_storagedir + "/_keys");
+
+                for (std::string line = ""; getline(keys_file, line);) {
+                    keys.emplace_back(line);
+                }
+                keys_file.close();
+
+                utils::check(keys.size() == counts.size(), "size of counts and keys file does not match, fix it!");
+                for(unsigned long i = 0; i < keys.size(); i++) {
+                    _counts[keys[i]] = counts[i];
+                    _store[keys[i]] = do_query(keys[i]);
+                }
+                _disabled = false;
             }
 
             V get(K key) {
@@ -65,6 +109,9 @@ namespace phrasit {
             }
 
             const bool has(K key) const {
+                if (_disabled) {
+                    return false;
+                }
                 return _counts.find(key) != _counts.end();
             }
 
@@ -73,8 +120,29 @@ namespace phrasit {
                 if (has(key)) {
                     return false;
                 }
-                // TODO(stg7) add some magic
-                //  so only insert size elements, then remove element with low count
+
+                // if cache is full, do some cache cleaning
+                if (_counts.size() == _size) {
+                    LOGINFO("cleanup cache");
+                    unsigned long min = _counts.begin()->second;
+                    for(auto& x: _counts) {
+                        if (x.second < min) {
+                            min = x.second;
+                        }
+                    }
+                    std::vector<K> to_delete;
+                    for(auto& x: _counts) {
+                        if (x.second <= min) {
+                            to_delete.emplace_back(x.first);
+                        }
+                    }
+
+                    for(auto& d: to_delete) {
+                        _counts.erase(d);
+                        _store.erase(d);
+                    }
+
+                }
                 _counts[key] = 0;
                 _store[key] = value;
                 return true;

@@ -117,6 +117,7 @@ namespace phrasit {
      public:
         Phrasit(const std::string& storagedir): _storagedir(storagedir), _max_id(0) {
             LOGINFO("create store");
+
             _index = std::shared_ptr<storage::Inverted_index>(new storage::Inverted_index(_storagedir));
 
             storage::kvs::open(_storagedir + "/_ngram_to_id", &_ngram_to_id);
@@ -132,6 +133,12 @@ namespace phrasit {
             }
 
             LOGINFO("initialize store with max_id: " << _max_id);
+            _cache.init(storagedir, [&](std::string key){
+                        auto tmp = utils::split(key, '|');
+                        std::string query = tmp[0];
+                        return search(query, std::stoul(tmp[1]));;
+                    }
+                );
         }
 
         ~Phrasit() {
@@ -162,8 +169,8 @@ namespace phrasit {
         *   insert n-gram with frequency
         */
         long insert(const std::string& ngram, const std::string& freq) {
-            std::vector<std::string> parts = phrasit::utils::filter(
-                phrasit::utils::split(phrasit::utils::trim(ngram), ' '), phrasit::notempty_filter);
+            std::vector<std::string> parts = utils::filter(
+                utils::split(utils::trim(ngram), ' '), notempty_filter);
 
             std::string cleaned_ngram = phrasit::utils::join(parts, " ");
 
@@ -228,7 +235,7 @@ namespace phrasit {
                 phrasit::notempty_filter);
 
             std::string cleaned_query = join(parts, " ");
-            std::string cache_key = cleaned_query + std::to_string(phrasit::max_result_size) + std::to_string(sort_results);
+            std::string cache_key = cleaned_query + "|" + std::to_string(phrasit::max_result_size) + "|" + std::to_string(sort_results);
 
             if (_cache.has(cache_key)) {
                 return _cache.get(cache_key);
@@ -282,12 +289,20 @@ namespace phrasit {
             std::vector<unsigned long> res;
 
             // TODO(stg7): multiple queries can be handled parallel
-            for (auto& q : _parser.parse(query)) {
+            auto parser_res = _parser.parse(query);
+
+            std::string cache_key =  query + "|" + std::to_string(phrasit::max_result_size);
+            if (_cache.has(cache_key)) {
+                return _cache.get(cache_key);
+            }
+            for (auto& q : parser_res) {
                 auto q_res = qmark_search(q, false);
                 res = phrasit::utils::_union<unsigned long>(res, q_res, true);
             }
             LOGDEBUG("needed time: " << t.time() << " ms");
-            return sort_ngram_ids_by_freq(res, limit);
+            auto sorted_res = sort_ngram_ids_by_freq(res, limit);
+            _cache.put(cache_key, sorted_res);
+            return sorted_res;
         }
 
         /*
