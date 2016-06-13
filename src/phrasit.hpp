@@ -46,6 +46,45 @@
 
 namespace phrasit {
 
+    template<typename T> inline T quick_select(std::vector<T> list, unsigned long left, unsigned long right, unsigned long k) {
+        // based on: https://en.wikipedia.org/wiki/Quickselect
+        if (left == right) {
+            return list[left];
+        }
+
+        unsigned long pivot = left + (right - left) / 2;
+        const auto partition = [&list](unsigned long left, unsigned long right, unsigned long pivot) -> unsigned long {
+            T pivotValue = list[pivot];
+            list[pivot] = list[right];
+            list[right] = pivotValue;
+
+            unsigned long store_index = left;
+
+            for (unsigned long i = left; i < right; i++) {
+                if (list[i] < pivotValue) {
+                    T tmp = list[store_index];
+                    list[store_index] = list[i];
+                    list[i] = tmp;
+                    store_index ++;
+                }
+            }
+            T tmp = list[right];
+            list[right] = list[store_index];
+            list[store_index] = tmp;
+
+            return store_index;
+        };
+
+        pivot = partition(left, right, pivot);
+        if (k == pivot) {
+            return list[pivot];
+        }
+        if (k < pivot) {
+            return quick_select(list, left, pivot - 1, k);
+        }
+        return quick_select(list, pivot + 1, right, k);
+    }
+
     class Phrasit {
      private:
         static constexpr const char* _max_id_key = "__max_id";
@@ -65,15 +104,39 @@ namespace phrasit {
         const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids, const unsigned long limit = 100) const {
             phrasit::utils::Timer t;
 
-            std::vector<unsigned long> res;
+            std::vector<unsigned long> res(std::min(phrasit::max_result_size, limit));
 
-            // copy frequencies to a map for faster accesses to n-gram frequencies during sort
-            std::map<unsigned long, unsigned long> freq_map;
+            // get frequencies of all n-grams and select top-limit ones
 
-            for (auto& x : result_ids) {
-                auto freq = get_freq(x);
-                freq_map[x] = freq;
+            std::vector<std::tuple<unsigned long, unsigned long>> freqs_vec;
+            std::vector<unsigned long> freqs(result_ids.size());
+
+            for (unsigned long i = 0; i < result_ids.size(); i++) {
+                auto& x = result_ids[i];
+                freqs[i] = get_freq(x);
             }
+            // perform quick select, to get a lower frequency bound
+            unsigned long minfreq = quick_select<unsigned long>(freqs, 0, freqs.size(), res.size());
+
+
+            for (unsigned long i = 0; i < result_ids.size(); i++) {
+                auto& x = result_ids[i];
+                auto freq = get_freq(x);
+                if (freq >= minfreq) {
+                    freqs_vec.emplace_back(std::make_tuple(x ,freq));
+                }
+            }
+
+            std::sort(freqs_vec.begin(), freqs_vec.end(),
+                [](const auto& a, const auto& b) -> bool {
+                    return  std::get<1>(a) > std::get<1>(b);
+                });
+
+            for(unsigned long i = 0; i < std::min(phrasit::max_result_size, limit); i++) {
+                auto& x = freqs_vec[i];
+                res[i] = std::get<0>(x);
+            }
+            /*
 
             auto cmp = [&freq_map](unsigned long& left, unsigned long& right) -> bool {
                 return freq_map[left] > freq_map[right];
@@ -105,6 +168,7 @@ namespace phrasit {
             //  this approach is necessary because of the result size
             //  limitation using the priority queue
             std::reverse(std::begin(res), std::end(res));
+            */
             LOGDEBUG("needed time for sort: " << t.time() << " ms");
             return res;
         }

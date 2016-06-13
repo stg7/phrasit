@@ -3,6 +3,9 @@ performance: a *
     needed time: 162067 ms
     (bottleneck: sorting)
 
+    with first sort all freqs as tuple:
+        140556 ms
+
 
 * run web query processing in seperate thread
 * think of storing ngram->id id->ngram things
