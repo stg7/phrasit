@@ -40,50 +40,12 @@
 #include "consts.hpp"
 #include "parser/query_parser.hpp"
 #include "utils/log.hpp"
+#include "utils/algos.hpp"
 #include "utils/helper.hpp"
 #include "storage/kvs.hpp"
 #include "storage/inverted_index.hpp"
 
 namespace phrasit {
-
-    template<typename T> inline T quick_select(std::vector<T>& list, unsigned long left, unsigned long right, unsigned long k) {
-        // based on: https://en.wikipedia.org/wiki/Quickselect
-        if (left == right) {
-            return list[left];
-        }
-
-        unsigned long pivot = left + (right - left) / 2;
-        const auto partition = [&list](unsigned long left, unsigned long right, unsigned long pivot) -> unsigned long {
-            T pivotValue = list[pivot];
-            list[pivot] = list[right];
-            list[right] = pivotValue;
-
-            unsigned long store_index = left;
-
-            for (unsigned long i = left; i < right; i++) {
-                if (list[i] < pivotValue) {
-                    T tmp = list[store_index];
-                    list[store_index] = list[i];
-                    list[i] = tmp;
-                    store_index ++;
-                }
-            }
-            T tmp = list[right];
-            list[right] = list[store_index];
-            list[store_index] = tmp;
-
-            return store_index;
-        };
-
-        pivot = partition(left, right, pivot);
-        if (k == pivot) {
-            return list[pivot];
-        }
-        if (k < pivot) {
-            return quick_select(list, left, pivot - 1, k);
-        }
-        return quick_select(list, pivot + 1, right, k);
-    }
 
     class Phrasit {
      private:
@@ -116,7 +78,7 @@ namespace phrasit {
                 freqs[i] = get_freq(x);
             }
             // perform quick select, to get a lower frequency bound
-            unsigned long minfreq = quick_select<unsigned long>(freqs, 0, freqs.size() - 1, res.size());
+            unsigned long minfreq = utils::quick_select<unsigned long>(freqs, 0, freqs.size() - 1, res.size());
 
 
             for (unsigned long i = 0; i < result_ids.size(); i++) {
