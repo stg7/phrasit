@@ -46,7 +46,7 @@
 
 namespace phrasit {
 
-    template<typename T> inline T quick_select(std::vector<T> list, unsigned long left, unsigned long right, unsigned long k) {
+    template<typename T> inline T quick_select(std::vector<T>& list, unsigned long left, unsigned long right, unsigned long k) {
         // based on: https://en.wikipedia.org/wiki/Quickselect
         if (left == right) {
             return list[left];
@@ -116,7 +116,7 @@ namespace phrasit {
                 freqs[i] = get_freq(x);
             }
             // perform quick select, to get a lower frequency bound
-            unsigned long minfreq = quick_select<unsigned long>(freqs, 0, freqs.size(), res.size());
+            unsigned long minfreq = quick_select<unsigned long>(freqs, 0, freqs.size() - 1, res.size());
 
 
             for (unsigned long i = 0; i < result_ids.size(); i++) {

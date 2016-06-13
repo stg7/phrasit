@@ -5,7 +5,8 @@ performance: a *
 
     with first sort all freqs as tuple:
         140556 ms
-
+    with quickselect:
+        241762 ms -> bad
 
 * run web query processing in seperate thread
 * think of storing ngram->id id->ngram things
