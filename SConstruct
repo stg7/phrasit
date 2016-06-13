@@ -102,7 +102,6 @@ needed_libs = [
     'boost_program_options',
     'boost_system',
     'boost_iostreams'] # ,'tbb'
-    #'boost_filesystem',
 
 for lib in needed_libs:
     if not conf.CheckLib(lib, language="c++"):
@@ -119,7 +118,6 @@ needed_headers = [
     'boost/network/protocol/http/server.hpp',
     'boost/network/uri/decode.hpp',
     'boost/test/unit_test.hpp'] # , '''tbb/tbb.h',
-    #'boost/filesystem.hpp',
 
 for header in needed_headers:
     if not conf.CheckCXXHeader(header):
@@ -127,7 +125,7 @@ for header in needed_headers:
         sys.exit(-1)
 
 # TODO: maybe c++14?
-env.Append(CXXFLAGS=['-std=c++11'])
+env.Append(CXXFLAGS=['-std=c++14'])
 
 # if you call scons debug=1 debug build is activated
 if ARGUMENTS.get('debug', 0) != 0:
