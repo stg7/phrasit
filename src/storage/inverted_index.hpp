@@ -304,14 +304,43 @@ namespace phrasit {
 
                 // get all suitable n-grams, the resulting vector is sorted, because the index
                 //  is sorted
+                if (needed_n_and_pos == 0) {
+                    for (unsigned long j = start_pos; j < end_pos; j ++) {
+                        unsigned long ngram_id = _index[j];
+                        res.emplace_back(ngram_id);
+                    }
+                    return res;
+                }
+
+                // perform a binary search for startpos of needed_n_gram
+                auto bin_search = [&](unsigned long start_pos, unsigned long end_pos, unsigned char needed_n_and_pos) -> unsigned long {
+                    unsigned long left = start_pos;
+                    unsigned long right = end_pos;
+                    while (left <= right) {
+                        unsigned long mid = left + (right - left) / 2;
+                        unsigned char n_and_pos = _index_n_and_pos[mid];
+                        if (n_and_pos == needed_n_and_pos) {
+                            return left;
+                        }
+                        if (n_and_pos > needed_n_and_pos) {
+                            right = mid - 1;
+                        } else {
+                            left = mid + 1;
+                        }
+                    }
+                    return start_pos;
+                };
+
+                start_pos = bin_search(start_pos, end_pos - 1, needed_n_and_pos);
                 for (unsigned long j = start_pos; j < end_pos; j ++) {
                     unsigned char n_and_pos = _index_n_and_pos[j];
-                    if (needed_n_and_pos == 0 || n_and_pos == needed_n_and_pos) {
+                    if (n_and_pos == needed_n_and_pos) {
                         unsigned long ngram_id = _index[j];
                         res.emplace_back(ngram_id);
                     }
                 }
                 return res;
+
             }
         };
     }

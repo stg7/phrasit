@@ -31,6 +31,7 @@
 #include <vector>
 #include <functional>
 #include <algorithm>
+#include <random>
 
 #include "consts.hpp"
 #include "utils/log.hpp"
@@ -38,14 +39,16 @@
 namespace phrasit {
     namespace utils {
 
-        template<typename T> inline T quick_select(std::vector<T>& list, unsigned long left, unsigned long right, unsigned long k) {
+        template<typename T> inline T quick_select_rek(std::vector<T>& list, unsigned long left, unsigned long right, unsigned long k) {
             // based on: https://en.wikipedia.org/wiki/Quickselect
             if (left == right) {
                 return list[left];
             }
+            std::default_random_engine generator;
+            std::uniform_int_distribution<unsigned long> distribution(left, right);
 
-            unsigned long pivot = left + (right - left) / 2;
-            const auto partition = [&list](unsigned long left, unsigned long right, unsigned long pivot) -> unsigned long {
+            unsigned long pivot = distribution(generator);
+            static const auto partition = [&list](unsigned long left, unsigned long right, unsigned long pivot) -> unsigned long {
                 T pivotValue = list[pivot];
                 list[pivot] = list[right];
                 list[right] = pivotValue;
@@ -72,9 +75,56 @@ namespace phrasit {
                 return list[pivot];
             }
             if (k < pivot) {
-                return quick_select(list, left, pivot - 1, k);
+                return quick_select_rek(list, left, pivot - 1, k);
             }
-            return quick_select(list, pivot + 1, right, k);
+            return quick_select_rek(list, pivot + 1, right, k);
+        }
+
+        template<typename T> inline T quick_select_iterativ(std::vector<T> list, unsigned long left, unsigned long right, unsigned long k) {
+            // based on: https://en.wikipedia.org/wiki/Quickselect
+            static const auto partition = [&list](unsigned long left, unsigned long right, unsigned long pivot) -> unsigned long {
+                T pivotValue = list[pivot];
+                list[pivot] = list[right];
+                list[right] = pivotValue;
+
+                unsigned long store_index = left;
+
+                for (unsigned long i = left; i < right; i++) {
+                    if (list[i] < pivotValue) {
+                        T tmp = list[store_index];
+                        list[store_index] = list[i];
+                        list[i] = tmp;
+                        store_index ++;
+                    }
+                }
+                T tmp = list[right];
+                list[right] = list[store_index];
+                list[store_index] = tmp;
+
+                return store_index;
+            };
+
+            while (left != right) {
+
+                std::default_random_engine generator;
+                std::uniform_int_distribution<unsigned long> distribution(left, right);
+
+                unsigned long pivot = distribution(generator);
+
+                pivot = partition(left, right, pivot);
+                if (k == pivot) {
+                    return list[pivot];
+                }
+                if (k < pivot) {
+                    right = pivot - 1;
+                } else {
+                    left = pivot + 1;
+                }
+            }
+            return list[left];
+        }
+        template<typename T> inline T quick_select(std::vector<T> list, unsigned long left, unsigned long right, unsigned long k) {
+            return quick_select_iterativ<T>(list, left, right, k);
         }
     }
 }

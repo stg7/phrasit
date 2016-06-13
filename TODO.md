@@ -4,9 +4,10 @@ performance: a *
     (bottleneck: sorting)
 
     with first sort all freqs as tuple:
-        140556 ms
+        140556 ms   238s
     with quickselect:
-        241762 ms -> bad
+        247805 ms -> bad
+            135 s
 
 * run web query processing in seperate thread
 * think of storing ngram->id id->ngram things

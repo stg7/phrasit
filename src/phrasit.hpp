@@ -44,6 +44,7 @@
 #include "utils/helper.hpp"
 #include "storage/kvs.hpp"
 #include "storage/inverted_index.hpp"
+#include "storage/cache.hpp"
 
 namespace phrasit {
 
@@ -56,6 +57,7 @@ namespace phrasit {
         storage::kvs::type _id_to_ngram;
         storage::kvs::type _freq;  //< maps id to n-gram frequencies
         storage::kvs::type _global_statistic;
+        storage::Cache<std::string, std::vector<unsigned long>> _cache;
 
         std::shared_ptr<storage::Inverted_index> _index = nullptr;
 
@@ -65,72 +67,45 @@ namespace phrasit {
         // sort results based on n-gram frequency
         const inline std::vector<unsigned long> sort_ngram_ids_by_freq(const std::vector<unsigned long>& result_ids, const unsigned long limit = 100) const {
             phrasit::utils::Timer t;
-
-            std::vector<unsigned long> res(std::min(phrasit::max_result_size, limit));
+            unsigned long res_size = std::min(phrasit::max_result_size, limit);
+            if (result_ids.size() < res_size) {
+                res_size = static_cast<unsigned long>(result_ids.size());
+            }
+            std::vector<unsigned long> res(res_size);
 
             // get frequencies of all n-grams and select top-limit ones
 
             std::vector<std::tuple<unsigned long, unsigned long>> freqs_vec;
             std::vector<unsigned long> freqs(result_ids.size());
-
+            LOGDEBUG("res size:" << result_ids.size());
             for (unsigned long i = 0; i < result_ids.size(); i++) {
                 auto& x = result_ids[i];
                 freqs[i] = get_freq(x);
             }
             // perform quick select, to get a lower frequency bound
-            unsigned long minfreq = utils::quick_select<unsigned long>(freqs, 0, freqs.size() - 1, res.size());
 
+            unsigned long k = freqs.size() - res.size();
+            unsigned long minfreq = utils::quick_select<unsigned long>(freqs, 0, freqs.size() - 1, k);
 
             for (unsigned long i = 0; i < result_ids.size(); i++) {
                 auto& x = result_ids[i];
-                auto freq = get_freq(x);
+                auto freq = freqs[i];
                 if (freq >= minfreq) {
                     freqs_vec.emplace_back(std::make_tuple(x ,freq));
                 }
             }
 
+            // TODO(stg7): perform parallel sorting
             std::sort(freqs_vec.begin(), freqs_vec.end(),
                 [](const auto& a, const auto& b) -> bool {
                     return  std::get<1>(a) > std::get<1>(b);
                 });
 
-            for(unsigned long i = 0; i < std::min(phrasit::max_result_size, limit); i++) {
+            for(unsigned long i = 0; i < res_size; i++) {
                 auto& x = freqs_vec[i];
                 res[i] = std::get<0>(x);
             }
-            /*
 
-            auto cmp = [&freq_map](unsigned long& left, unsigned long& right) -> bool {
-                return freq_map[left] > freq_map[right];
-            };
-
-            std::priority_queue<unsigned long, std::vector<unsigned long>, decltype(cmp) > queue(cmp);
-
-            unsigned long min_freq = 0;
-            for (auto& x : result_ids) {
-                if (freq_map[x] > min_freq) {
-                    queue.push(x);
-                }
-
-                // remove elements from queue to reduce memory overhead
-                //  when a query will receive a lot of results
-                if (queue.size() > std::min(phrasit::max_result_size, limit)) {
-                    min_freq = freq_map[queue.top()];
-                    queue.pop();
-                }
-            }
-
-            // insert elements sorted to result vector, from min to max frequency
-            while (!queue.empty()) {
-                auto top = queue.top();
-                res.emplace_back(top);
-                queue.pop();
-            }
-            // reverse results, because, most frequent should be first
-            //  this approach is necessary because of the result size
-            //  limitation using the priority queue
-            std::reverse(std::begin(res), std::end(res));
-            */
             LOGDEBUG("needed time for sort: " << t.time() << " ms");
             return res;
         }
@@ -242,7 +217,7 @@ namespace phrasit {
         *   handle a query with question mark as the only operator
         *    and return all results as a vector of n-gram ids
         */
-        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results = true) const {
+        const std::vector<unsigned long> qmark_search(const std::string& query, const bool sort_results = true) {
             if (query == "") {
                 return {};
             }
@@ -253,6 +228,11 @@ namespace phrasit {
                 phrasit::notempty_filter);
 
             std::string cleaned_query = join(parts, " ");
+            std::string cache_key = cleaned_query + std::to_string(phrasit::max_result_size) + std::to_string(sort_results);
+
+            if (_cache.has(cache_key)) {
+                return _cache.get(cache_key);
+            }
 
             // search for first not '?' part
             unsigned long start_pos = 0;
@@ -282,15 +262,18 @@ namespace phrasit {
 
             if (sort_results) {
                 // sort results based on n-gram frequency
-                return sort_ngram_ids_by_freq(result_ids);
+                auto res = sort_ngram_ids_by_freq(result_ids);
+                _cache.put(cache_key, res);
+                return res;
             }
+            _cache.put(cache_key, result_ids);
             return result_ids;
         }
 
         /*
         *   handle a query and return all results as a vector
         */
-        const std::vector<unsigned long> search(const std::string& query, const unsigned long limit = 100) const {
+        const std::vector<unsigned long> search(const std::string& query, const unsigned long limit = 100) {
             if (query == "") {
                 return {};
             }
