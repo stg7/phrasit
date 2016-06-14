@@ -1,13 +1,5 @@
 
-performance: a *
-    needed time: 162067 ms
-    (bottleneck: sorting)
-
-    with first sort all freqs as tuple:
-        140556 ms   238s
-    with quickselect:
-        247805 ms -> bad
-            135 s
+* replace boost programm options with cxxopts
 
 * run web query processing in seperate thread
 * think of storing ngram->id id->ngram things
@@ -37,6 +29,16 @@ performance: a *
 
 DONE
 ----
+* performance: a *
+    needed time: 162067 ms
+    (bottleneck: sorting)
+
+    with first sort all freqs as tuple:
+        140556 ms   238s
+    with quickselect:
+        247805 ms -> bad
+            135 s -> now phrasit uses caching
+
 * replace boost::filesystem with stl filesystem
 * just store n_gram_and_pos in seperate file instead of:
     * store start pos for each n_gram_and_pos in separate file,

@@ -148,13 +148,13 @@ else:
 testcases = set(glob.glob("src/tests/*.cpp"))
 
 header = set(glob.glob("src/*.hpp") +  glob.glob("src/*/*.hpp"))
-sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/main.cpp", "src/test.cpp", "src/tests/unittests.cpp"]) - testcases
+sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/phrasit.cpp", "src/test.cpp", "src/tests/unittests.cpp"]) - testcases
 
 # check code conventions and build programm
 #env.StyleCheck("conventions", ["src/main.cpp"] + list(sources) + list(header) + list(testcases))
 
 
-phrasit = env.Program('phrasit', ["src/main.cpp"] + list(sources))
+phrasit = env.Program('phrasit', ["src/phrasit.cpp"] + list(sources))
 test = env.Program('test', ["src/test.cpp"] + list(sources))
 unittest = env.Program('unittest', ["src/tests/unittests.cpp"] + list(sources))
 

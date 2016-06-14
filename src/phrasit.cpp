@@ -33,7 +33,6 @@
 #include <thread>
 #include <experimental/filesystem>
 
-
 #include <boost/program_options.hpp>
 
 #include "utils/log.hpp"
