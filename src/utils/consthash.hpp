@@ -50,17 +50,6 @@ namespace phrasit {
             return hash_one(str[0], str + 1, basis);
         }
 
-        // run-time hash
-        static uint64_t r_hash(const char* str) {
-            uint64_t hash = basis;
-            while (*str != 0) {
-                hash ^= str[0];
-                hash *= prime;
-                str++;
-            }
-            return hash;
-        }
-
         // run-time hash with len parameter
         static uint64_t r_hash(const char* str, const size_t len) {
             uint64_t hash = basis;

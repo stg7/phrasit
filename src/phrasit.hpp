@@ -133,12 +133,8 @@ namespace phrasit {
             }
 
             LOGINFO("initialize store with max_id: " << _max_id);
-            _cache.init(storagedir, [&](std::string key){
-                        auto tmp = utils::split(key, '|');
-                        std::string query = tmp[0];
-                        return search(query, std::stoul(tmp[1]));;
-                    }
-                );
+
+            _cache.init(storagedir);
         }
 
         ~Phrasit() {

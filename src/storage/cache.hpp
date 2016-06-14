@@ -30,10 +30,16 @@
 
 #include <string>
 #include <vector>
+#include <fstream>
 #include <algorithm>
-#include <functional>
 #include <map>
 #include <experimental/filesystem>
+
+#include <cereal/types/map.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/archives/binary.hpp>
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
@@ -63,14 +69,15 @@ namespace phrasit {
                 if (!_initialized) {
                     return;
                 }
-                // store values in seperate files
-                for (auto& k: _counts) {
-                    LOGINFO(k.first << " -> " << k.second);
-                }
 
+                std::ofstream cache_file(_storagedir + "/_cache");
+                cereal::BinaryOutputArchive output(cache_file);
+                output(cereal::make_nvp("_store", _store));
+                output(cereal::make_nvp("_counts", _counts));
             }
 
-            void init(const std::string& storagebasedir, std::function<V (K)> do_query) {
+            void init(const std::string& storagebasedir) {
+                LOGINFO("init cache");
                 namespace fs = std::experimental::filesystem;
                 _storagedir = storagebasedir + "/_cache";
                 _initialized = true;
@@ -78,28 +85,14 @@ namespace phrasit {
                     fs::create_directory(_storagedir);
                     return;
                 }
-                std::vector<unsigned long> counts;
-                std::ifstream counts_file(_storagedir + "/_counts");
 
-                for (std::string line = ""; getline(counts_file, line);) {
-                    counts.emplace_back(std::stoul(line));
+                if (!fs::exists(_storagedir + "/_cache")) {
+                    return;
                 }
-                counts_file.close();
-
-                std::vector<std::string> keys;
-                std::ifstream keys_file(_storagedir + "/_keys");
-
-                for (std::string line = ""; getline(keys_file, line);) {
-                    keys.emplace_back(line);
-                }
-                keys_file.close();
-
-                utils::check(keys.size() == counts.size(), "size of counts and keys file does not match, fix it!");
-                for(unsigned long i = 0; i < keys.size(); i++) {
-                    _counts[keys[i]] = counts[i];
-                    _store[keys[i]] = do_query(keys[i]);
-                }
-                _disabled = false;
+                std::ifstream cache_file(_storagedir + "/_cache");
+                cereal::BinaryInputArchive iarchive(cache_file);
+                iarchive(_store, _counts);
+                LOGINFO("deserialized store: " << _store.size());
             }
 
             V get(K key) {
@@ -109,9 +102,6 @@ namespace phrasit {
             }
 
             const bool has(K key) const {
-                if (_disabled) {
-                    return false;
-                }
                 return _counts.find(key) != _counts.end();
             }
 

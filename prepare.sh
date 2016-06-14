@@ -93,11 +93,23 @@ cppnetlib() {
     cd ..
 }
 
+cereal() {
+    if [ -d "cereal" ]; then
+        logInfo "cereal already installed locally"
+        return
+    fi
+    wget "https://github.com/USCiLab/cereal/archive/v1.1.2.tar.gz"
+    mv "v1.1.2.tar.gz" "cereal_v1.1.2.tar.gz"
+    tar -zxvf "cereal_v1.1.2.tar.gz"
+    mv "cereal-1.1.2" "cereal"
+}
+
 mkdir -p libs
 cd libs
 leveldb
 boost
 cppnetlib
+cereal
 cd ..
 
 mkdir -p tools

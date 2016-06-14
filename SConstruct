@@ -86,6 +86,12 @@ env.Append(
     LIBPATH = [libspath + 'leveldb/out-shared/']
 )
 
+# cereal
+env.Append(
+    CPPPATH = [libspath + "cereal/include/"]
+)
+
+
 env.Append(LINKFLAGS=['-pthread',
         '-Wl,--rpath,' + libspath + 'leveldb/out-shared',
         '-Wl,--rpath,' + libspath + 'boost/build/lib',
@@ -108,23 +114,19 @@ for lib in needed_libs:
         print "Unable to find lib: " + lib + ". Exiting."
         exit(-1)
 
-# TODO: do it automatically
-needed_headers = [
-    "leveldb/db.h",
-    'boost/program_options.hpp',
-    'boost/iostreams/device/mapped_file.hpp',
-    'boost/iostreams/filter/gzip.hpp',
-    'boost/iostreams/filtering_stream.hpp',
-    'boost/network/protocol/http/server.hpp',
-    'boost/network/uri/decode.hpp',
-    'boost/test/unit_test.hpp'] # , '''tbb/tbb.h',
+def shell_call(cmd):
+    from subprocess import check_output
+    return check_output(cmd, shell=True)
+
+includes = shell_call("""find src/ -name "*.?pp" | xargs cat | grep "#include <" | sed "s|>.*|>|g" | sort | uniq """).split("\n")
+needed_headers = [x.replace("#include <", "").replace(">", "") for x in includes if x != ""]
 
 for header in needed_headers:
     if not conf.CheckCXXHeader(header):
         print "Unable to find header: " + header + ". Exiting."
         sys.exit(-1)
 
-# TODO: maybe c++14?
+
 env.Append(CXXFLAGS=['-std=c++14'])
 
 # if you call scons debug=1 debug build is activated
@@ -142,14 +144,11 @@ else:
     # loop unrolling and link time optimization, options should be tested
     env.Append(CXXFLAGS=['-funroll-loops', '-flto', '-fwhole-program'])
 
-#env.Append(LINKFLAGS=['-Wl,--rpath,./libs/tbb/build/lib/'])
 
 testcases = set(glob.glob("src/tests/*.cpp"))
 
 header = set(glob.glob("src/*.hpp") +  glob.glob("src/*/*.hpp"))
 sources = set(glob.glob("src/*.cpp") + glob.glob("src/*/*.cpp")) - set(["src/main.cpp", "src/test.cpp", "src/tests/unittests.cpp"]) - testcases
-
-#libs = glob.glob("libs/*/*.c")
 
 # check code conventions and build programm
 #env.StyleCheck("conventions", ["src/main.cpp"] + list(sources) + list(header) + list(testcases))
