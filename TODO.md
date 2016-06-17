@@ -1,6 +1,4 @@
 
-* replace boost programm options with cxxopts
-
 * run web query processing in seperate thread
 * think of storing ngram->id id->ngram things
     ngram -> id could be: hash(ngram) -> id, with using id -> ngram a == check can be performed
