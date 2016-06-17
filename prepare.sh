@@ -104,12 +104,25 @@ cereal() {
     mv "cereal-1.1.2" "cereal"
 }
 
+cxxopts() {
+    if [ -d "cxxopts" ]; then
+        logInfo "cxxopts already installed locally"
+        return
+    fi
+    git clone "https://github.com/jarro2783/cxxopts.git"
+    cd cxxopts
+    mkdir -p include
+    cp src/cxxopts.hpp include/
+    cd ..
+}
+
 mkdir -p libs
 cd libs
 leveldb
 boost
 cppnetlib
 cereal
+cxxopts
 cd ..
 
 mkdir -p tools

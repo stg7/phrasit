@@ -33,7 +33,7 @@
 #include <thread>
 #include <experimental/filesystem>
 
-#include <boost/program_options.hpp>
+#include "cxxopts.hpp"
 
 #include "utils/log.hpp"
 #include "utils/helper.hpp"
@@ -55,43 +55,39 @@ void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
 /**
     phrasit: command line client
 **/
-int main(int argc, const char* argv[]) {
-    namespace po = boost::program_options;
+int main(int argc, char* argv[]) {
     namespace fs = std::experimental::filesystem;
 
-    // declare the supported options.
-    po::options_description desc("phrasit - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
-    desc.add_options()
-        ("help,h", "produce help message")
-        ("storagedir,d", po::value<std::string>(), "storage directory, default='storage'")
-        ("queryfile,f", po::value<std::string>(), "handle queries stored in a file")
-        ("import,i", "import from stdin, format: ngram tab freq")
-        ("optimize,o", "optimize index (e.g. if import failed with optimisation)")
-        ("max-res", po::value<unsigned long>(), "maximum result size")
-        ("server,s", "start phrasit in server mode");
+    cxxopts::Options options(argv[0], " - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
+    options.add_options()
+        ("h,help", "produce help message")
+        ("d,storagedir", "storage directory, default='storage'", cxxopts::value<std::string>())
+        ("f,queryfile", "handle queries stored in a file", cxxopts::value<std::string>())
+        ("i,import", "import from stdin, format: ngram tab freq")
+        ("o,optimize", "optimize index (e.g. if import failed with optimisation)")
+        ("max-res", "maximum result size", cxxopts::value<unsigned long>())
+        ("s,server", "start phrasit in server mode");
 
-    po::variables_map vm;
     try {
-        po::store(po::parse_command_line(argc, argv, desc), vm);
-        po::notify(vm);
-    } catch (po::error& e) {
-        LOGERROR("error: " << e.what());
-        std::cout << desc << std::endl;
+        options.parse(argc, argv);
+    } catch (...) {
+        LOGERROR("error wrong arguments");
+        std::cout << options.help() << std::endl;
         return -1;
     }
 
-    if (vm.count("help") != 0) {
-        std::cout << desc << std::endl;
-        return -1;
+    if (options.count("help")) {
+      std::cout << options.help() << std::endl;
+      return -1;
     }
 
-    if (vm.count("max-res") != 0) {
-        phrasit::max_result_size = vm["max-res"].as<unsigned long>();
+    if (options.count("max-res") != 0) {
+        phrasit::max_result_size = options["max-res"].as<unsigned long>();
     }
 
     std::string storagedir = "storage";
-    if (vm.count("storagedir") != 0) {
-        storagedir = vm["storagedir"].as<std::string>();
+    if (options.count("storagedir") != 0) {
+        storagedir = options["storagedir"].as<std::string>();
     }
 
     if (!fs::exists(storagedir)) {
@@ -100,8 +96,8 @@ int main(int argc, const char* argv[]) {
     }
 
     std::string queryfilename = "";
-    if (vm.count("queryfile") != 0) {
-        queryfilename = vm["queryfile"].as<std::string>();
+    if (options.count("queryfile") != 0) {
+        queryfilename = options["queryfile"].as<std::string>();
     }
 
     LOGMSG("start phrasit");
@@ -112,14 +108,14 @@ int main(int argc, const char* argv[]) {
 
     phrasit::Phrasit phrasit(storagedir);
 
-    if (vm.count("server") != 0) {
+    if (options.count("server") != 0) {
         LOGMSG("server mode: ");
         phrasit::srv::Webserver webserver(phrasit, storagedir);
         webserver.start();
         return 0;
     }
 
-    if (vm.count("import") != 0) {
+    if (options.count("import") != 0) {
         LOGMSG("import from stdin: ");
         char delimiter = '\t';
 
@@ -151,7 +147,7 @@ int main(int argc, const char* argv[]) {
         LOGMSG("successfully imported " << ngram_count << " ngrams");
         return 0;
     } else {
-        if (vm.count("optimize") != 0) {
+        if (options.count("optimize") != 0) {
             LOGMSG("optimize index");
             phrasit.optimize();
             LOGMSG("successfully optimized index");

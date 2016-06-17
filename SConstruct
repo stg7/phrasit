@@ -91,6 +91,10 @@ env.Append(
     CPPPATH = [libspath + "cereal/include/"]
 )
 
+# cxxopts
+env.Append(
+    CPPPATH = [libspath + "cxxopts/include/"]
+)
 
 env.Append(LINKFLAGS=['-pthread',
         '-Wl,--rpath,' + libspath + 'leveldb/out-shared',
@@ -105,9 +109,8 @@ needed_libs = [
     'stdc++fs',
     'leveldb',
     'boost_unit_test_framework',
-    'boost_program_options',
     'boost_system',
-    'boost_iostreams'] # ,'tbb'
+    'boost_iostreams']
 
 for lib in needed_libs:
     if not conf.CheckLib(lib, language="c++"):
