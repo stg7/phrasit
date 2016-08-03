@@ -1,4 +1,7 @@
-
+* solve seq fault, if n gram is not stored
+    * import 1+2+3 sample and run a * query -> seq fault
+* use a json lib: e.g. https://github.com/nlohmann/json
+* it is possible to replace boost gzip stuff with: https://github.com/mateidavid/zstr
 * run web query processing in seperate thread
 * think of storing ngram->id id->ngram things
     ngram -> id could be: hash(ngram) -> id, with using id -> ngram a == check can be performed
@@ -27,6 +30,11 @@
 
 DONE
 ----
+* add compactation call for optimizing leveldb:
+    * https://github.com/google/leveldb/blob/master/include/leveldb/db.h
+        db->CompactRange(NULL, NULL);
+    * done for all large leveldb instances (freqs, ids)
+
 * performance: a *
     needed time: 162067 ms
     (bottleneck: sorting)

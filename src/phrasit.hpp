@@ -204,6 +204,11 @@ namespace phrasit {
         void optimize(const bool ignore_existing = false) {
             LOGINFO("optimize");
             _index->optimize(ignore_existing);
+            _ngram_to_id->CompactRange(NULL, NULL);
+            _id_to_ngram->CompactRange(NULL, NULL);
+            _freq->CompactRange(NULL, NULL);
+            _global_statistic->CompactRange(NULL, NULL);
+
         }
 
         const std::string get_ngram(const unsigned long id) const {

@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
         ("d,storagedir", "storage directory, default='storage'", cxxopts::value<std::string>())
         ("f,queryfile", "handle queries stored in a file", cxxopts::value<std::string>())
         ("i,import", "import from stdin, format: ngram tab freq")
-        ("o,optimize", "optimize index (e.g. if import failed with optimisation)")
+        ("o,optimize", "optimize level db stores")
         ("max-res", "maximum result size", cxxopts::value<unsigned long>())
         ("s,server", "start phrasit in server mode");
 

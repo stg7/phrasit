@@ -108,8 +108,8 @@ conf = Configure(env)
 needed_libs = [
     'stdc++fs',
     'leveldb',
-    'boost_unit_test_framework',
     'boost_system',
+    'boost_unit_test_framework',
     'boost_iostreams']
 
 for lib in needed_libs:
@@ -122,7 +122,7 @@ def shell_call(cmd):
     return check_output(cmd, shell=True)
 
 includes = shell_call("""find src/ -name "*.?pp" | xargs cat | grep "#include <" | sed "s|>.*|>|g" | sort | uniq """).split("\n")
-needed_headers = [x.replace("#include <", "").replace(">", "") for x in includes if x != ""]
+needed_headers = [x.replace("#include <", "").replace(">", "") for x in includes if x != "" and "//" not in x[0:2]]
 
 for header in needed_headers:
     if not conf.CheckCXXHeader(header):
