@@ -61,7 +61,7 @@ namespace phrasit {
             Cache(const unsigned long size): _size(size) {
                 LOGINFO("create cache with " << size << " stored elements");
             }
-            Cache(): Cache(1000) {
+            Cache(): Cache(10000) {
             }
             ~Cache() {
                 LOGINFO("delete cache");
