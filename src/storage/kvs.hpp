@@ -92,6 +92,10 @@ namespace phrasit {
                 delete db;
                 db = nullptr;
             }
+
+            template<typename DB> inline void optimize(DB db) {
+                db->CompactRange(NULL, NULL);
+            }
             // wrapper end
         }
     }

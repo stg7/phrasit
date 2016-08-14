@@ -73,11 +73,12 @@ namespace phrasit {
             std::vector<unsigned long> _pos;
 
             /*
-            *
+            *   read header values from file to memory
             */
             void fill_header_vectors() {
                 phrasit::utils::Progress_bar pb(1000, "read index");
 
+                // TODO(stg7): a simple memcopy can do the job?
                 for (unsigned long l = 0; l < _index_header.size() - 2; l += 2) {
                     _ids.emplace_back(_index_header[l]);
                     _pos.emplace_back(_index_header[l + 1]);
@@ -282,6 +283,7 @@ namespace phrasit {
                 }
 
                 fill_header_vectors();
+                storage::kvs::optimize(_meta);
                 return true;
             }
 
@@ -340,7 +342,6 @@ namespace phrasit {
                     }
                 }
                 return res;
-
             }
         };
     }
