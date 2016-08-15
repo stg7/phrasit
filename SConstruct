@@ -82,18 +82,18 @@ env.Append(
 
 # leveldb
 env.Append(
-    CPPPATH = [libspath + "leveldb/include/"],
+    CPPPATH = [libspath + "leveldb/include"],
     LIBPATH = [libspath + 'leveldb/out-shared/']
 )
 
 # cereal
 env.Append(
-    CPPPATH = [libspath + "cereal/include/"]
+    CPPPATH = [libspath + "cereal/include"]
 )
 
 # cxxopts
 env.Append(
-    CPPPATH = [libspath + "cxxopts/include/"]
+    CPPPATH = [libspath + "cxxopts/include"]
 )
 
 env.Append(LINKFLAGS=['-pthread',
@@ -122,15 +122,15 @@ def shell_call(cmd):
     return check_output(cmd, shell=True)
 
 includes = shell_call("""find src/ -name "*.?pp" | xargs cat | grep "#include <" | sed "s|>.*|>|g" | sort | uniq """).split("\n")
-needed_headers = [x.replace("#include <", "").replace(">", "") for x in includes if x != "" and "//" not in x[0:2]]
+needed_headers = [x.replace("#include <", "").replace(">", "").strip() for x in includes if x != "" and "//" not in x[0:2]]
 
-for header in needed_headers:
+env.Append(CXXFLAGS=['-std=c++14'])
+
+for header in sorted(needed_headers):
     if not conf.CheckCXXHeader(header):
         print "Unable to find header: " + header + ". Exiting."
         sys.exit(-1)
 
-
-env.Append(CXXFLAGS=['-std=c++14'])
 
 # if you call scons debug=1 debug build is activated
 if ARGUMENTS.get('debug', 0) != 0:
