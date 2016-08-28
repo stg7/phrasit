@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
         ("o,optimize", "optimize level db stores")
         ("max-res", "maximum result size", cxxopts::value<unsigned long>())
         ("s,server", "start phrasit in server mode")
-        ("p,port", "server port", cxxopts::value<int>(&phrasit::webserver_port)->default_value(8090));
+        ("p,port", "server port", cxxopts::value<int>()->default_value("8090"));
 
     try {
         options.parse(argc, argv);
@@ -76,6 +76,8 @@ int main(int argc, char* argv[]) {
         std::cout << options.help() << std::endl;
         return -1;
     }
+
+    phrasit::webserver_port = options["port"].as<int>();
 
     if (options.count("help")) {
       std::cout << options.help() << std::endl;
