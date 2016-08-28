@@ -66,7 +66,8 @@ int main(int argc, char* argv[]) {
         ("i,import", "import from stdin, format: ngram tab freq")
         ("o,optimize", "optimize level db stores")
         ("max-res", "maximum result size", cxxopts::value<unsigned long>())
-        ("s,server", "start phrasit in server mode");
+        ("s,server", "start phrasit in server mode")
+        ("p,port", "server port", cxxopts::value<int>(&phrasit::webserver_port)->default_value(8090));
 
     try {
         options.parse(argc, argv);
