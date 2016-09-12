@@ -69,9 +69,9 @@ namespace phrasit {
                 leveldb::Options options;
                 options.write_buffer_size = utils::size::mb(400);
                 options.max_open_files = 100;
-                options.block_size = 4000 * 100;
+                options.block_size = 4000 * 10;
 
-                options.block_restart_interval = 16 * 100;
+                options.block_restart_interval = 16 * 10;
 
                 options.create_if_missing = true;
                 leveldb::DB::Open(options, path, db);
