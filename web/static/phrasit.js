@@ -42,6 +42,14 @@ function attachListener() {
         e.preventDefault();
         $("input[name=query]")[0].value = e.target.text;
     });
+
+    $(".dataset-selector").click(function(e) {
+        e.preventDefault();
+        console.log("here" + e.target.text);
+        console.log($(".dataset"))
+        $(".dataset").text(e.target.text);
+        $("input[name=dataset]")[0].value = e.target.text;
+    });
 }
 
 

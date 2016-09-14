@@ -1,3 +1,6 @@
 var config = {
-    "server_url": ["http://localhost:8090/api/"]
+    "server_url": {
+        "german": ["http://arrakis:4002/api/"],
+        "english": ["http://arrakis:4001/api/"]
+        }
 };

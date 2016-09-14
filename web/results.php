@@ -24,6 +24,7 @@
   })(jQuery);
 
   var query = $.QueryString["query"];
+  var dataset = $.QueryString["dataset"];
   console.log(query);
 
   // read config
@@ -33,7 +34,7 @@
 
 
   function get_server_url() {
-      urls = shuffle(config["server_url"]);
+      urls = shuffle(config["server_url"][dataset]);
       // TODO(stg7) perform a server reachable check!
       return urls[0];
   }
@@ -43,7 +44,7 @@
     $(".query").text(query);
     $(".results").css('visibility','hidden');
     $("input[name=query]")[0].value = query;
-
+    $("input[name=dataset]")[0].value = dataset;
 
     var server_url = get_server_url();
     if (server_url == "") {
