@@ -27,7 +27,10 @@
   </head>
   <script type="text/javascript">
   var config = {
-    "server_url": ["http://localhost:8090/api/"]
+    "server_url": {
+        "german": ["http://arrakis:4002/api/"],
+        "english": ["http://arrakis:4001/api/"]
+        }
 };
   function add_server_address() {
       // create list of servers
