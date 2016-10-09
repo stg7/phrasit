@@ -65,6 +65,7 @@
     $(".results").css('visibility','hidden');
     $("input[name=query]")[0].value = query;
     $("input[name=dataset]")[0].value = dataset;
+    $(".dataset").text(dataset);
 
     var server_url = get_server_url();
     if (server_url == "") {
