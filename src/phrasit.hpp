@@ -79,7 +79,7 @@ namespace phrasit {
             std::vector<unsigned long> freqs(result_ids.size());
             LOGDEBUG("res size:" << result_ids.size());
 
-            // if there are no retsults, just finish this method
+            // if there are no result, just finish this method
             if (result_ids.size() == 0) {
                 return res;
             }
