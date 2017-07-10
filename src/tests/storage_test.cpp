@@ -7,7 +7,7 @@
 
     \date 31.01.2016
 
-    Copyright 2016 Steve Göring
+    Copyright 2017 Steve Göring
 **/
 #include <string>
 #include <experimental/filesystem>
