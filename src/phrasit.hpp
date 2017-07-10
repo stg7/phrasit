@@ -78,6 +78,12 @@ namespace phrasit {
             std::vector<std::tuple<unsigned long, unsigned long>> freqs_vec;
             std::vector<unsigned long> freqs(result_ids.size());
             LOGDEBUG("res size:" << result_ids.size());
+
+            // if there are no retsults, just finish this method
+            if (result_ids.size() == 0) {
+                return res;
+            }
+
             for (unsigned long i = 0; i < result_ids.size(); i++) {
                 auto& x = result_ids[i];
                 freqs[i] = get_freq(x);

@@ -82,6 +82,10 @@ namespace phrasit {
 
         template<typename T> inline T quick_select_iterativ(std::vector<T> list, unsigned long left, unsigned long right, unsigned long k) {
             // based on: https://en.wikipedia.org/wiki/Quickselect
+            if (left > right) {
+                return -1;
+            }
+
             static const auto partition = [&list](unsigned long left, unsigned long right, unsigned long pivot) -> unsigned long {
                 T pivotValue = list[pivot];
                 list[pivot] = list[right];
