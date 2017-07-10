@@ -80,8 +80,8 @@ int main(int argc, char* argv[]) {
     phrasit::webserver_port = options["port"].as<int>();
 
     if (options.count("help")) {
-      std::cout << options.help() << std::endl;
-      return -1;
+        std::cout << options.help() << std::endl;
+        return -1;
     }
 
     if (options.count("max-res") != 0) {
