@@ -11,6 +11,7 @@ You only need:
 * scons
 * g++/gcc a new version which supports c++14, e.g. g++ 6.1.1
 * boost 1.61 (will be installed locally)
+    * libicu-dev libbz2-dev
 * php and a webserver (for client part)
 
 installed.
@@ -26,9 +27,9 @@ Now you can test it with a simple help screen call:
 ```
 ./phrasit -h
 ------------------------------------------------
-phraseit - an opensource netspeak clone
+phrasit - an opensource netspeak clone
 
-Steve Göring 2016
+Steve Göring 2017
 Parameter:
   -h [ --help ]           produce help message
   -d [ --storagedir ] arg storage directory, default='storage'

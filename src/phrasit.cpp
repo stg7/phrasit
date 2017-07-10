@@ -58,7 +58,7 @@ void print_search_results(const std::string& query, phrasit::Phrasit& phrasit) {
 int main(int argc, char* argv[]) {
     namespace fs = std::experimental::filesystem;
 
-    cxxopts::Options options(argv[0], " - an opensource netspeak clone\n\nSteve Göring 2016\nParameter");
+    cxxopts::Options options(argv[0], " - an opensource netspeak clone\n\nSteve Göring 2017\nParameter");
     options.add_options()
         ("h,help", "produce help message")
         ("d,storagedir", "storage directory, default='storage'", cxxopts::value<std::string>())

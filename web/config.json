@@ -1,6 +1,6 @@
 var config = {
     "server_url": {
-        "german": ["http://arrakis:4002/api/"],
-        "english": ["http://arrakis:4001/api/"]
+        "german": ["http://arrakis.goip.de:4002/api/"],
+        "english": ["http://arrakis.goip.de:4001/api/"]
         }
 };
