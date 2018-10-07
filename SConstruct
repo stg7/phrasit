@@ -76,8 +76,8 @@ env.Append(
 
 #cpp-netlib
 env.Append(
-    LIBPATH=[libspath + "/cpp-netlib/build/lib"],
-    CPPPATH=[libspath + "/cpp-netlib/" ]
+    #CPPPATH=[libspath + "cpp-netlib/" ],
+    LIBPATH=[libspath + "cpp-netlib/build/lib"]
 )
 
 # leveldb
@@ -100,6 +100,9 @@ env.Append(LINKFLAGS=['-pthread',
         '-Wl,--rpath,' + libspath + 'leveldb/build/',
         '-Wl,--rpath,' + libspath + 'boost/build/lib',
         ])
+
+# for debugging
+# print(env.Dump())
 
 env.Decider('MD5')
 
@@ -129,7 +132,7 @@ env.Append(CXXFLAGS=['-std=c++14'])
 for header in sorted(needed_headers):
     if not conf.CheckCXXHeader(header):
         print "Unable to find header: " + header + ". Exiting."
-        sys.exit(-1)
+        #sys.exit(-1)
 
 
 # if you call scons debug=1 debug build is activated

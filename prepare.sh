@@ -78,13 +78,13 @@ cppnetlib() {
         return
     fi
     logInfo "cpp-netlib download"
-    wget -c "http://downloads.cpp-netlib.org/0.12.0/cpp-netlib-0.12.0-final.tar.bz2"
-    tar -jxvf "cpp-netlib-0.12.0-final.tar.bz2"
+    wget -c "http://downloads.cpp-netlib.org/0.13.0/cpp-netlib-0.13.0-rc1.tar.bz2"
+    tar -jxvf "cpp-netlib-0.13.0-rc1.tar.bz2"
 
     export BOOST_ROOT="$(pwd)/boost/build/"
     export BOOST_INCLUDEDIR="$(pwd)/boost/build/include"
 
-    mv "cpp-netlib-0.12.0-final" "cpp-netlib"
+    mv "cpp-netlib-0.13.0-rc1" "cpp-netlib"
     cd "cpp-netlib"
     mkdir build
     cd build
@@ -93,6 +93,7 @@ cppnetlib() {
     mkdir -p lib
     find ./libs/ -name "*.a" -exec cp {} ./lib/ \;
     cd ..
+    cp -R boost ../boost/build/include/
     cd ..
 }
 
