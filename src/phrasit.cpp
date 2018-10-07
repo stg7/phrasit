@@ -69,28 +69,30 @@ int main(int argc, char* argv[]) {
         ("s,server", "start phrasit in server mode")
         ("p,port", "server port", cxxopts::value<int>()->default_value("8090"));
 
+    auto result = options.parse(argc, argv);
+    /*
     try {
-        options.parse(argc, argv);
     } catch (...) {
         LOGERROR("error wrong arguments");
         std::cout << options.help() << std::endl;
         return -1;
     }
+    */
 
-    phrasit::webserver_port = options["port"].as<int>();
+    phrasit::webserver_port = result["port"].as<int>();
 
-    if (options.count("help")) {
+    if (result.count("help")) {
         std::cout << options.help() << std::endl;
         return -1;
     }
 
-    if (options.count("max-res") != 0) {
-        phrasit::max_result_size = options["max-res"].as<unsigned long>();
+    if (result.count("max-res") != 0) {
+        phrasit::max_result_size = result["max-res"].as<unsigned long>();
     }
 
     std::string storagedir = "storage";
-    if (options.count("storagedir") != 0) {
-        storagedir = options["storagedir"].as<std::string>();
+    if (result.count("storagedir") != 0) {
+        storagedir = result["storagedir"].as<std::string>();
     }
 
     if (!fs::exists(storagedir)) {
@@ -99,8 +101,8 @@ int main(int argc, char* argv[]) {
     }
 
     std::string queryfilename = "";
-    if (options.count("queryfile") != 0) {
-        queryfilename = options["queryfile"].as<std::string>();
+    if (result.count("queryfile") != 0) {
+        queryfilename = result["queryfile"].as<std::string>();
     }
 
     LOGMSG("start phrasit");
@@ -111,14 +113,14 @@ int main(int argc, char* argv[]) {
 
     phrasit::Phrasit phrasit(storagedir);
 
-    if (options.count("server") != 0) {
+    if (result.count("server") != 0) {
         LOGMSG("server mode: ");
         phrasit::srv::Webserver webserver(phrasit, storagedir);
         webserver.start();
         return 0;
     }
 
-    if (options.count("import") != 0) {
+    if (result.count("import") != 0) {
         LOGMSG("import from stdin: ");
         char delimiter = '\t';
 
@@ -150,7 +152,7 @@ int main(int argc, char* argv[]) {
         LOGMSG("successfully imported " << ngram_count << " ngrams");
         return 0;
     } else {
-        if (options.count("optimize") != 0) {
+        if (result.count("optimize") != 0) {
             LOGMSG("optimize index");
             phrasit.optimize();
             LOGMSG("successfully optimized index");
