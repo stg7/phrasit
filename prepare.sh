@@ -62,10 +62,9 @@ boost() {
         return
     fi
     logInfo "boost download"
-    wget -c "http://sourceforge.net/projects/boost/files/boost/1.61.0/boost_1_61_0.tar.bz2/download"
-    mv "download" "boost_1_61_0.tar.bz2"
-    tar -jxvf "boost_1_61_0.tar.bz2"
-    mv "boost_1_61_0" "boost"
+    wget -c "https://dl.bintray.com/boostorg/release/1.68.0/source/boost_1_68_0.tar.bz2"
+    tar -jxvf "boost_1_68_0.tar.bz2"
+    mv "boost_1_68_0" "boost"
     cd boost
     mkdir build
     ./bootstrap.sh --prefix=./build
