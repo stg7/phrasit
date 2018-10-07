@@ -82,8 +82,8 @@ env.Append(
 
 # leveldb
 env.Append(
-    CPPPATH = [libspath + "leveldb/include"],
-    LIBPATH = [libspath + 'leveldb/out-shared/']
+    CPPPATH = [libspath + "leveldb/build/include"],
+    LIBPATH = [libspath + 'leveldb/build/']
 )
 
 # cereal
@@ -97,7 +97,7 @@ env.Append(
 )
 
 env.Append(LINKFLAGS=['-pthread',
-        '-Wl,--rpath,' + libspath + 'leveldb/out-shared',
+        '-Wl,--rpath,' + libspath + 'leveldb/build/',
         '-Wl,--rpath,' + libspath + 'boost/build/lib',
         ])
 

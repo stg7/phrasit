@@ -38,7 +38,11 @@ leveldb() {
     logInfo "leveldb download and compiling"
     git clone https://github.com/google/leveldb.git
     cd leveldb
-    make -j 4
+    mkdir -p build
+    cd build
+    cmake -DCMAKE_BUILD_TYPE=Release ..
+    cmake --build .
+    cd ..
     cd ..
     logInfo "leveldb done."
 }
