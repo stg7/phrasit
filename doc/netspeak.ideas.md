@@ -1,13 +1,11 @@
-netspeak reverse engineering and core concepts
-==============================================
+# netspeak reverse engineering and core concepts
 
 author:
 > steve göring
 
 Netspeak is a closed source but public accessible tool to assist writers [\[0\]](http://www.netspeak.org/).
 
-API
----
+## API
 The Netspeak API is documented and open accessible:
 
 The following table defines the syntax of netspeak queries [\[1\]](http://www.netspeak.org/#developer):
@@ -20,8 +18,7 @@ The following table defines the syntax of netspeak queries [\[1\]](http://www.ne
 | \{ \}       | ORDERSET      | \{ only for members \}  | Finds matches of each permutation of the enclosed words. Nesting of operators is not allowed. |
 | \#        | DICTSET       | waiting for #response     | Finds matches using the following word and each of its synonyms in turn. |
 
-Operator realization
---------------------
+## Operator realization
 General ideas for implementing all operators:
 Suppose operator ? is implemented, then * is no problem:
 ```
@@ -75,8 +72,7 @@ As a consequence of these observations it is necessary to have two base operator
 * ?
 * synonym
 
-Data Source
------------
+## Data Source
 Netspeak uses a non public dataset (ngram corpus) based on english documents from the web (google ngrams) [\[2\]](http://www.uni-weimar.de/en/media/chairs/webis/research/selected-projects/netspeak/) with approx 4 billion ngrams from length 1 to 5 words. All ngrams together have an uncompressed size of approx 100GB.
 
 Where can we get a suitable dataset for our netspeak-clone?
@@ -91,8 +87,7 @@ First of all, this implementation should only use the english dataset.
 
 
 
-Implementation Ideas
---------------------
+## Implementation Ideas
 * only implement ? operator
 * store ngrams in a key-value thing (e.g. leveldb, or similiar), to get ids for each ngram
 * use ngrams as "documents" in an inverted index

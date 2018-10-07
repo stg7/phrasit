@@ -1,11 +1,11 @@
-[PhrasIt - an open-source netspeak clone](http://stg7.github.io/phrasit/)
-======================================
+**web service is currently not running**
+
+# [PhrasIt - an open-source netspeak clone](http://stg7.github.io/phrasit/)
 > steve göring
 
 PhrasIt is an open source clone of [netspeak](http://www.netspeak.org/).
 
-Build PhrasIt
--------------
+## Build PhrasIt
 You only need:
 
 * scons
@@ -39,8 +39,7 @@ Parameter:
 
 ```
 
-Download all needed ngrams
---------------------------
+## Download all needed ngrams
 For downloading of all google-books-ngrams (english) you must start:
 ```
 cd datasets
@@ -80,8 +79,7 @@ lzcat datasets/transformed/*.lzma | ./phrasit -i
 
 Importing all ngrams will need a lot of time and disk-space, therefore drink a coffee.
 
-Converting to lzma
-------------------
+## Converting to lzma
 If you want to save disk-space you can transform all downloaded gz files to lzma using
 ```
 cd datasets
@@ -89,8 +87,7 @@ cd datasets
 ```
 This process will also need a lot of time and will use all logical cpu cores.
 
-Input Format
-------------
+## Input Format
 If you don't want to use the google-book-ngram dataset or you have an own dataset
 then you need to know which input format PhrasIt uses. The format is quite easy:
 ```
@@ -103,14 +100,13 @@ You can use e.g. [Ngram Extractor](https://github.com/stg7/ngram-extractor)
 to create an own dataset.
 
 At the moment, the input format is not customizable, if your data is stored in another format
-you should build a convert script, that e.g. throw all ngrams in the input format out to stdout.
+you should build a convert script, that e.g. throws all ngrams in the input format out to stdout.
 Then you can easily build a processing pipeline like:
 ```
 ./myConvertScript myCoolDataset | ./phrasit -i
 ```
 
-Web Part
---------
+## Web Part
 If you want to run the web-service you should start PhrasIt via
 ```
 ./phrasit -s
@@ -127,7 +123,8 @@ var config = {
 ```
 
 `server_url` must be your PhrasIt server with the correct port, this url must be reachable via internet,
-localhost will only work in a local development setup. You can add multiple servers in the array
-as a kind of load balancing. A server will be choosen randomly for each request.
+`localhost` will only work in a local development setup.
+You can add multiple servers in the array as a simplified load balancing.
+A server will be choosen randomly for each request.
 
-The server can run on another host, because all request will be done using jsonp.
+The server can run on another host, because all request will redirected using jsonp.
