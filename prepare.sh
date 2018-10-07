@@ -114,10 +114,6 @@ cxxopts() {
         return
     fi
     git clone "https://github.com/jarro2783/cxxopts.git"
-    cd cxxopts
-    mkdir -p include
-    cp src/cxxopts.hpp include/
-    cd ..
 }
 
 mkdir -p libs
