@@ -82,7 +82,7 @@ env.Append(
 
 # leveldb
 env.Append(
-    CPPPATH = [libspath + "leveldb/build/include"],
+    CPPPATH = [libspath + "leveldb/include"],
     LIBPATH = [libspath + 'leveldb/build/']
 )
 
