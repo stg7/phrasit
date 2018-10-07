@@ -11,7 +11,7 @@ You only need:
 * scons
 * g++/gcc a new version which supports c++14, e.g. g++ 6.1.1
 * boost 1.61 (will be installed locally)
-    * libicu-dev libbz2-dev
+    * libicu-dev libbz2-dev zlib1g
 * php and a webserver (for client part)
 
 installed.
