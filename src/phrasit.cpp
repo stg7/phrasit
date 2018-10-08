@@ -69,16 +69,7 @@ int main(int argc, char* argv[]) {
         ("s,server", "start phrasit in server mode")
         ("p,port", "server port", cxxopts::value<int>()->default_value("8090"));
 
-    try {
-        auto result = options.parse(argc, argv);
-    } catch (...) {
-        LOGERROR("error wrong arguments");
-        std::cout << options.help() << std::endl;
-        return -1;
-    }
-
     auto result = options.parse(argc, argv);
-
 
     if (result.count("help")) {
         std::cout << options.help() << std::endl;
