@@ -118,7 +118,7 @@ If php is not available you can build a static html version using `build.py` in 
 It is important that you update the configuration file `config.json`:
 ```
 var config = {
-    "server_url": ["http://localhost:8090/api/"]
+    "server_url": ["http://localhost:8090/api"]
 };
 ```
 
