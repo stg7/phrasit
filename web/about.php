@@ -14,8 +14,9 @@
 
   function add_server_address() {
       // create list of servers
-      for(var i = 0; i < config["server_url"].length; i++) {
-          var server = "<li><a href=\"" + config["server_url"][i] + "\" > " + config["server_url"][i] + "</a></li>";
+      console.log(config["server_url"]);
+      for(var i = 0; i < config["server_url"]["english"].length; i++) {
+          var server = "<li><a href=\"" + config["server_url"]["english"][i] + "\" > " + config["server_url"]["english"][i] + "</a></li>";
           console.log(server);
           $(".server-instances").append(server);
       }
@@ -23,7 +24,7 @@
       // update link to first server with defined query
       $(".api").each(function() {
           el = $(this);
-          el.prop("href", config["server_url"][0] + el.text());
+          el.prop("href", config["server_url"]["english"][0] + el.text());
       });
 
   }
