@@ -35,8 +35,7 @@
 #include <chrono>
 #include <map>
 
-#include <boost/network/protocol/http/server.hpp>
-#include <boost/network/uri/decode.hpp>
+#include <httplib.h>
 
 #include "utils/consthash.hpp"
 #include "utils/log.hpp"
@@ -49,6 +48,8 @@ namespace phrasit {
 
     namespace srv {
 
+        using namespace httplib;
+
         class Webserver {
          private:
             Phrasit& _phrasit;
@@ -60,6 +61,7 @@ namespace phrasit {
             *   \param params map where all extracted parameters were stored
             *   \return path without query parameters
             */
+            /*
             std::string parse(std::string& destination, std::map<std::string, std::string>& params) {
                 std::istringstream iss(destination);
                 std::string url;
@@ -80,7 +82,7 @@ namespace phrasit {
                 }
                 return url;
             }
-
+            */
             // based on: http://stackoverflow.com/questions/7724448/simple-json-string-escape-for-c
             /*
             *   escape a string as json
@@ -134,10 +136,73 @@ namespace phrasit {
             void start() {
                 LOGINFO("start webserver");
                 try {
-                    boost::network::http::server<Webserver>::options options(*this);
-                    boost::network::http::server<Webserver> server_(options.address(phrasit::webserver_bindaddress).port(std::to_string(phrasit::webserver_port)));
-                    LOGINFO("example: http://localhost:" << phrasit::webserver_port << "/api/?query=test");
-                    server_.run();
+
+                    Server svr;
+                    /*
+
+                    case c_hash("/api/"): {
+                            // todo(stg7) run query processing in seperate thread
+                            query(params, data, ipa);
+                        }
+                        break;
+                    case c_hash("/help"): {
+                            // TODO(stg7) this should be readed from a file
+                            data << "<pre>";
+                            data << "you can call: \n";
+                            data << "   ./help : to get this screen \n";
+                            data << "   ./stats : to get statistics about phrasit \n";
+                            data << "   ./api/?query=whatever : to submit a query 'whatever' to phrasit \n";
+                            data << "</pre>";
+                        }
+                        break;
+                    case c_hash("/favicon.ico"): {
+                            // TODO(stg7) return something
+                        }
+                        break;
+                    case c_hash("/stats"): {
+                            data << "<pre>";
+                            _phrasit.print_stats(data);
+                            data << "</pre>";
+                            */
+                    svr.Get("/api", [&](const Request& req, Response& res) {
+                        auto ipa = "";
+
+                        for (const auto& x: req.headers) {
+                           LOGINFO(x.first.c_str() << " " << x.second.c_str());
+                        }
+                        std::map<std::string, std::string> pmap;
+                        for (auto it = req.params.begin(); it != req.params.end(); ++it) {
+                           const auto& x = *it;
+                           pmap[x.first] = x.second;
+                        }
+
+                        std::ostringstream data;
+                        query(pmap, data, ipa);
+                        res.set_content(data.str(), "text/json");
+                    });
+
+                    svr.Get("/stats", [&](const Request& req, Response& res) {
+                        std::ostringstream data;
+                        data << "<pre>";
+                        _phrasit.print_stats(data);
+                        data << "</pre>";
+                        res.set_content(data.str(), "text/html");
+                    });
+
+                    svr.Get("/help", [&](const Request& req, Response& res) {
+                        std::ostringstream data;
+                        data << "<pre>";
+                        data << "you can call: \n";
+                        data << "   ./help : to get this screen \n";
+                        data << "   ./stats : to get statistics about phrasit \n";
+                        data << "   ./api?query=whatever : to submit a query 'whatever' to phrasit \n";
+                        data << "</pre>";
+                        res.set_content(data.str(), "text/html");
+                    });
+
+
+                    LOGINFO("example: http://localhost:" << phrasit::webserver_port << "/api?query=test");
+                    svr.listen("0.0.0.0", phrasit::webserver_port);
                 }
                 catch (std::exception& e) {
                     LOGERROR(e.what());
@@ -214,7 +279,7 @@ namespace phrasit {
                         << "}" << std::endl;
                 }
             }
-
+            /*
             // default operator for cppnetlib, this method will be called after a http request
             void operator()(boost::network::http::server<Webserver>::request const &request,
                         boost::network::http::server<Webserver>::response &response) {
@@ -264,7 +329,8 @@ namespace phrasit {
 
                 response = boost::network::http::server<Webserver>::response::stock_reply(
                     boost::network::http::server<Webserver>::response::ok, data.str());
-            }
+            }*/
+
             void log(...) { }
         };
     }

@@ -105,11 +105,11 @@ void external_sort(std::string filename) {
 }
 
 
-#include <boost/network/protocol/http/server.hpp>
 #include <iostream>
 
 #include "utils/consthash.hpp"
-
+/*
+#include <boost/network/protocol/http/server.hpp>
 class Webserver {
  private:
     std::string _bindaddress = "0.0.0.0";
@@ -173,7 +173,7 @@ void http_server_cppnetlib() {
     w.start();
 
 }
-
+*/
 #include "compress/string.hpp"
 
 std::string bytes_str(const std::string& s) {
@@ -344,6 +344,8 @@ int gzip_read(const std::string& filename) {
     return 0;
 }
 
+#include <httplib.h>
+
 /**
     phrasit: test
 **/
@@ -356,6 +358,23 @@ int main(int argc, const char* argv[]) {
     //string_comp();
     //intersection_test();
     //query_parser_test();
+
+    using namespace httplib;
+
+    Server svr;
+
+    svr.Get("/hi", [](const Request& req, Response& res) {
+        res.set_content("Hello World!", "text/plain");
+    });
+
+    svr.Get(R"(/numbers/(\d+))", [&](const Request& req, Response& res) {
+        auto numbers = req.matches[1];
+        res.set_content(numbers, "text/plain");
+    });
+
+    svr.listen("0.0.0.0", 1234);
+
+    return 0;
     std::string filename = "hello.gz";
     gzip_write(filename);
     gzip_write(filename);

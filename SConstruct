@@ -74,12 +74,6 @@ env.Append(
     CPPPATH=[libspath + x + "/build/include" for x in libs]
 )
 
-#cpp-netlib
-env.Append(
-    #CPPPATH=[libspath + "cpp-netlib/" ],
-    LIBPATH=[libspath + "cpp-netlib/build/lib"]
-)
-
 # leveldb
 env.Append(
     CPPPATH = [libspath + "leveldb/include"],
@@ -89,6 +83,11 @@ env.Append(
 # cereal
 env.Append(
     CPPPATH = [libspath + "cereal/include"]
+)
+
+# cpp-httplib
+env.Append(
+    CPPPATH = [libspath + "cpp-httplib/"]
 )
 
 # cxxopts
@@ -132,7 +131,7 @@ env.Append(CXXFLAGS=['-std=c++14'])
 for header in sorted(needed_headers):
     if not conf.CheckCXXHeader(header):
         print "Unable to find header: " + header + ". Exiting."
-        #sys.exit(-1)
+        sys.exit(-1)
 
 
 # if you call scons debug=1 debug build is activated

@@ -72,31 +72,6 @@ boost() {
     cd ..
 }
 
-cppnetlib() {
-    if [ -d "cpp-netlib" ]; then
-        logInfo "cpp-netlib already installed locally"
-        return
-    fi
-    logInfo "cpp-netlib download"
-    wget -c "http://downloads.cpp-netlib.org/0.13.0/cpp-netlib-0.13.0-rc1.tar.bz2"
-    tar -jxvf "cpp-netlib-0.13.0-rc1.tar.bz2"
-
-    export BOOST_ROOT="$(pwd)/boost/build/"
-    export BOOST_INCLUDEDIR="$(pwd)/boost/build/include"
-
-    mv "cpp-netlib-0.13.0-rc1" "cpp-netlib"
-    cd "cpp-netlib"
-    mkdir build
-    cd build
-    cmake ../
-    make -j 4
-    mkdir -p lib
-    find ./libs/ -name "*.a" -exec cp {} ./lib/ \;
-    cd ..
-    cp -R boost ../boost/build/include/
-    cd ..
-}
-
 cereal() {
     if [ -d "cereal" ]; then
         logInfo "cereal already installed locally"
@@ -116,11 +91,20 @@ cxxopts() {
     git clone "https://github.com/jarro2783/cxxopts.git"
 }
 
+cpphttplib() {
+    if [ -d "cpp-httplib" ]; then
+        logInfo "cpp-httplib already installed locally"
+        return
+    fi
+    git clone https://github.com/yhirose/cpp-httplib.git
+}
+
 mkdir -p libs
 cd libs
 leveldb
 boost
-cppnetlib
+#cppnetlib
+cpphttplib
 cereal
 cxxopts
 cd ..
